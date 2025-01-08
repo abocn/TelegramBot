@@ -1,7 +1,7 @@
 {
   "kowalskiWelcome": "*Hello! I am Kowalski!*\nI was made with love by some nerds who really love programming!\n\n*Before using, you need to read the privacy policy (/privacy) to understand where your data goes when using this bot.*\n\nAlso, you can use /help to see the bot commands!\n\n*Special thanks to @givfnz2 for his many contributions to the bot!*",
   "kowalskiHelp": "*Hey, I'm Kowalski, a simple bot made entirely from scratch in Telegraf and Node.js by some nerds who really love programming.*\n\nClick on the buttons below to see which commands you can use!\n",
-  "kowalskiPrivacy": "Check out [this link](https://blog.eleu.me/posts/lynx-privacy-policy) to read the bot's privacy policy.",
+  "kowalskiPrivacy": "Check out [this link](https://blog.lucmsilva.com/posts/lynx-privacy-policy) to read the bot's privacy policy.",
   "kowalskiAbout": "*About the bot*\n\nKowalski was originally created by [Lucas Gabriel (lucmsilva)](https://github.com/lucmsilva651), now maintained by several people.\n\nThe bot's purpose is to bring fun to your groups here on Telegram in a relaxed and simple way. The bot also features some very useful commands, which you can see using the help command (/help).\n\nSee the source code: [Click here to go to GitHub](https://github.com/abocn/TelegramBot)",
   "aboutBot": "About the bot",
   "unKnown": "Unknown",
