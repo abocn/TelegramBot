@@ -47,10 +47,12 @@
   "lastFmErr": "*Error retrieving data for Last.fm user* {lastfmUser}.\n\n`{err}`",
   "gitCurrentCommit": "*Current commit:* `{commitHash}`",
   "gitErrRetrievingCommit": "*Error retrieving commit:* {error}",
-  "weatherProvideLocation": "*Please provide a location.*",
-  "weatherInvalidLocation": "*Invalid location. Try again.*",
-  "weatherStatus": "*Weather in {addressFirst}:*\n\n*Status:* `{getStatusEmoji(iconCode)} {wxPhraseLong}`\n*Temperature:* `{temperature} °{temperatureUnit}`\n*Feels like:* `{temperatureFeelsLike} °{temperatureUnit2}`\n*Humidity:* `{relativeHumidity}%`\n*Wind speed:* `{windSpeed} {speedUnit}`",
-  "weatherErr": "*An error occurred while retrieving the weather. Please try again later.*\n\n`{error}`",
+  "weatherStatus": {
+    "provideLocation": "*Please provide a location.*",
+    "invalidLocation": "*Invalid location. Try again.*",
+    "resultMsg": "*Weather in {addressFirst}:*\n\n*Status:* `{getStatusEmoji(iconCode)} {wxPhraseLong}`\n*Temperature:* `{temperature} °{temperatureUnit}`\n*Feels like:* `{temperatureFeelsLike} °{temperatureUnit2}`\n*Humidity:* `{relativeHumidity}%`\n*Wind speed:* `{windSpeed} {speedUnit}`",
+    "apiErr": "*An error occurred while retrieving the weather. Please try again later.*\n\n`{error}`"
+  },
   "mainCommands": "Main commands",
   "mainCommandsDesc": "*Main commands*\n\n- /help: Show bot's help\n- /start: Start the bot\n- /privacy: Read the bot's Privacy Policy",
   "usefulCommands": "Useful commands",

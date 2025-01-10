@@ -35,16 +35,16 @@ module.exports = (bot) => {
   bot.command(['clima', 'weather'], spamwatchMiddleware, async (ctx) => {
     const userLang = ctx.from.language_code || "en-US";
     const Strings = getStrings(userLang);
-    const args = ctx.message.text;
+    const userInput = ctx.message.text.split(' ').slice(1).join(' ');
 
-    if (args.length < 9) {
-      return ctx.reply(Strings.weatherProvideLocation, {
+    if (!userInput) {
+      return ctx.reply(Strings.weatherStatus.provideLocation, {
         parse_mode: "Markdown",
         reply_to_message_id: ctx.message.message_id
       });
     }
 
-    const location = args.slice(9);
+    const location = userInput;
     const apiKey = process.env.weatherKey;
 
     try {
@@ -59,7 +59,7 @@ module.exports = (bot) => {
 
       const locationData = locationResponse.data.location;
       if (!locationData || !locationData.address) {
-        return ctx.reply(Strings.weatherInvalidLocation, {
+        return ctx.reply(Strings.weatherStatus.invalidLocation, {
           parse_mode: "Markdown",
           reply_to_message_id: ctx.message.message_id
         });
@@ -83,7 +83,7 @@ module.exports = (bot) => {
       const weatherData = weatherResponse.data['v3-wx-observations-current'];
       const { temperature, temperatureFeelsLike, relativeHumidity, windSpeed, iconCode, wxPhraseLong } = weatherData;
 
-      const weatherMessage = Strings.weatherStatus
+      const weatherMessage = Strings.weatherStatus.resultMsg
         .replace('{addressFirst}', addressFirst)
         .replace('{getStatusEmoji(iconCode)}', getStatusEmoji(iconCode))
         .replace('{wxPhraseLong}', wxPhraseLong)
@@ -100,7 +100,7 @@ module.exports = (bot) => {
         reply_to_message_id: ctx.message.message_id
       });
     } catch (error) {
-      const message = Strings.weatherErr.replace('{error}', error.message);
+      const message = Strings.weatherStatus.apiErr.replace('{error}', error.message);
       ctx.reply(message, {
         parse_mode: "Markdown",
         reply_to_message_id: ctx.message.message_id

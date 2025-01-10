@@ -47,10 +47,12 @@
   "lastFmErr": "*Erro ao recuperar dados para o usuário do Last.fm* {lastfmUser}.\n\n`{err}`",
   "gitCurrentCommit": "*Commit atual:* `{commitHash}`",
   "gitErrRetrievingCommit": "*Erro ao obter o commit:*\n\n`{error}`",
-  "weatherProvideLocation": "*Por favor, forneça uma localização.*",
-  "weatherInvalidLocation": "*Localização inválida. Tente novamente.*",
-  "weatherStatus": "*Clima em {addressFirst}:*\n\n*Estado:* `{getStatusEmoji(iconCode)} {wxPhraseLong}`\n*Temperatura:* `{temperature} °{temperatureUnit}`\n*Sensação térmica:* `{temperatureFeelsLike} °{temperatureUnit2}`\n*Umidade:* `{relativeHumidity}%`\n*Velocidade do vento:* `{windSpeed} {speedUnit}`",
-  "weatherErr": "*Ocorreu um erro ao obter o clima. Tente novamente mais tarde.*\n\n`{error}`",
+  "weatherStatus": {
+    "provideLocation": "*Por favor, forneça uma localização.*",
+    "invalidLocation": "*Localização inválida. Tente novamente.*",
+    "resultMsg": "*Clima em {addressFirst}:*\n\n*Estado:* `{getStatusEmoji(iconCode)} {wxPhraseLong}`\n*Temperatura:* `{temperature} °{temperatureUnit}`\n*Sensação térmica:* `{temperatureFeelsLike} °{temperatureUnit2}`\n*Umidade:* `{relativeHumidity}%`\n*Velocidade do vento:* `{windSpeed} {speedUnit}`",
+    "apiErr": "*Ocorreu um erro ao obter o clima. Tente novamente mais tarde.*\n\n`{error}`"
+  },
   "mainCommands": "Comandos principais",
   "mainCommandsDesc": "*Comandos principais*\n\n- /help: Exibe a ajuda do bot\n- /start: Inicia o bot\n- /privacy: Leia a política de privacidade do bot",
   "usefulCommands": "Comandos úteis",
