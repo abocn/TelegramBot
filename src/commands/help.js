@@ -16,7 +16,7 @@ async function sendHelpMessage(ctx, isEditing) {
       ]
     }
   };
-  const helpText = Strings.kowalskiHelp;
+  const helpText = Strings.botHelp;
   if (isEditing) {
     await ctx.editMessageText(helpText, options);
   } else {
@@ -31,7 +31,7 @@ module.exports = (bot) => {
 
   bot.command("about", spamwatchMiddleware, async (ctx) => {
     const Strings = getStrings(ctx.from.language_code);
-    ctx.reply(Strings.kowalskiAbout, {
+    ctx.reply(Strings.botAbout, {
       parse_mode: 'Markdown',
       disable_web_page_preview: true,
       reply_to_message_id: ctx.message.message_id
@@ -86,7 +86,7 @@ module.exports = (bot) => {
         break;
       case 'helpAbout':
         await ctx.answerCbQuery();
-        await ctx.editMessageText(Strings.kowalskiAbout, options);
+        await ctx.editMessageText(Strings.botAbout, options);
         break;
       case 'helpBack':
         await ctx.answerCbQuery();

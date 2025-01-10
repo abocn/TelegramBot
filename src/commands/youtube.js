@@ -68,6 +68,7 @@ module.exports = (bot) => {
     const dlpCommand = ytDlpPath;
     const ffmpegPath = getFfmpegPath();
     const ffmpegArgs = ['-i', tempMp4File, '-i', tempWebmFile, '-c:v copy -c:a copy -strict -2', mp4File];
+
     if (!videoUrl) {
       return ctx.reply(Strings.ytNoLink, {
         parse_mode: "Markdown",
@@ -146,7 +147,7 @@ module.exports = (bot) => {
 
             fs.unlinkSync(mp4File);
           } catch (error) {
-            await ctx.reply(Strings.error, {
+            await ctx.reply(Strings.ytFileError, {
               parse_mode: 'Markdown',
               reply_to_message_id: ctx.message.message_id,
             });
@@ -164,7 +165,7 @@ module.exports = (bot) => {
           ctx.chat.id,
           downloadingMessage.message_id,
           null,
-          Strings.ytFileErr, {
+          Strings.ytLibNotFound, {
             parse_mode: 'Markdown',
             reply_to_message_id: ctx.message.message_id,
           },
@@ -172,7 +173,7 @@ module.exports = (bot) => {
       }
     } catch (error) {
       console.error(error);
-      await ctx.reply(Strings.error, {
+      await ctx.reply(Strings.ytFileError, {
         parse_mode: 'Markdown',
         reply_to_message_id: ctx.message.message_id,
       });
