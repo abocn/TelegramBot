@@ -129,23 +129,12 @@ module.exports = (bot) => {
               source: mp4File }, {
               caption: message,
               parse_mode: 'Markdown',
+              reply_to_message_id: ctx.message.message_id,
             });
-
-            if (approxSizeInMB >= 50) {
-              await ctx.telegram.editMessageText(
-                ctx.chat.id,
-                downloadingMessage.message_id,
-                null,
-                Strings.ytDownload.sizeLimitWarn, {
-                  parse_mode: 'Markdown',
-                  reply_to_message_id: ctx.message.message_id,
-                },
-              );
-            }
-
+            
             fs.unlinkSync(mp4File);
           } catch (error) {
-            if (error.includes("Request Entity Too Large")) {
+            if (toString(error).includes("Request Entity Too Large")) {
               await ctx.telegram.editMessageText(
                 ctx.chat.id,
                 downloadingMessage.message_id,
@@ -188,10 +177,15 @@ module.exports = (bot) => {
       }
     } catch (error) {
       console.error(error);
-      await ctx.reply(Strings.ytDownload.uploadErr, {
-        parse_mode: 'Markdown',
-        reply_to_message_id: ctx.message.message_id,
-      });
+      await ctx.telegram.editMessageText(
+        ctx.chat.id,
+        downloadingMessage.message_id,
+        null,
+        Strings.ytDownload.uploadErr, {
+          parse_mode: 'Markdown',
+          reply_to_message_id: ctx.message.message_id,
+        },
+      );
     }
   });
 };

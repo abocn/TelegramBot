@@ -7,7 +7,7 @@ require('./plugins/ytdlp-wrapper.js');
 // require('./plugins/termlogger.js');
 
 const bot = new Telegraf(process.env.botToken);
-const MAX_RETRIES = 5;
+const maxRetries = process.env.maxRetries || 5;
 let restartCount = 0;
 
 const loadCommands = () => {
@@ -38,7 +38,7 @@ const startBot = async () => {
     restartCount = 0;
   } catch (error) {
     console.error('Failed to start bot:', error.message);
-    if (restartCount < MAX_RETRIES) {
+    if (restartCount < maxRetries) {
       restartCount++;
       console.log(`Retrying to start bot... Attempt ${restartCount}`);
       setTimeout(startBot, 5000);
