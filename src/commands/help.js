@@ -31,7 +31,9 @@ module.exports = (bot) => {
 
   bot.command("about", spamwatchMiddleware, async (ctx) => {
     const Strings = getStrings(ctx.from.language_code);
-    ctx.reply(Strings.botAbout, {
+    const aboutMsg = Strings.botAbout.replace("{sourceLink}", `${process.env.botSource}`);
+    
+    ctx.reply(aboutMsg, {
       parse_mode: 'Markdown',
       disable_web_page_preview: true,
       reply_to_message_id: ctx.message.message_id

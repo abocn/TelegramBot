@@ -31,9 +31,10 @@ const loadCommands = () => {
 };
 
 const startBot = async () => {
+  const botInfo = await bot.telegram.getMe();
+  console.log(`${botInfo.first_name} is running...`);
   try {
     await bot.launch();
-    console.log('Bot is running...');
     restartCount = 0;
   } catch (error) {
     console.error('Failed to start bot:', error.message);

@@ -5,7 +5,10 @@ const spamwatchMiddleware = require('../plugins/lib-spamwatch/Middleware.js')(is
 module.exports = (bot) => {
   bot.start(spamwatchMiddleware, async (ctx) => {
     const Strings = getStrings(ctx.from.language_code);
-    ctx.reply(Strings.botWelcome, {
+    const botInfo = await ctx.telegram.getMe();
+    const startMsg = Strings.botWelcome.replace('{botName}', botInfo.first_name);
+
+    ctx.reply(startMsg, {
       parse_mode: 'Markdown',
       reply_to_message_id: ctx.message.message_id
     });

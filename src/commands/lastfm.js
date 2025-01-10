@@ -90,6 +90,7 @@ module.exports = (bot) => {
     const Strings = getStrings(ctx.from.language_code);
     const lastfmUser = users[userId];
     const genericImg = "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png";
+    const botInfo = await ctx.telegram.getMe();
     
     if (!lastfmUser) {
       return ctx.reply(Strings.lastFmNoSet, {
@@ -109,7 +110,7 @@ module.exports = (bot) => {
           limit: 1
         },
         headers: {
-          'User-Agent': "kowalski-@KowalskiNodeBot-node-telegram-bot"
+          'User-Agent': `@${botInfo.username}-node-telegram-bot`
         }
       });
 
@@ -159,7 +160,7 @@ module.exports = (bot) => {
             format: 'json',
           },
           headers: {
-            'User-Agent': "kowalski-@KowalskiNodeBot-node-telegram-bot"
+            'User-Agent': `@${botInfo.username}-node-telegram-bot`
           }
         });
         num_plays = response_plays.data.track.userplaycount;
