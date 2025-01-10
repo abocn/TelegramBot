@@ -80,7 +80,7 @@
     "uploadingVid": "*Enviando vídeo...*",
     "msgDesc": "{userMention}*, aqui está o seu vídeo baixado.*",
     "downloadErr": "*Erro durante o download do vídeo do YT:*\n\n`{err}`",
-    "uploadErr": "Erro ao enviar o arquivo. Tente novamente mais tarde.",
+    "uploadErr": "Erro ao enviar o arquivo. Tente novamente mais tarde.\n\n{error}",
     "uploadLimit": "*Este vídeo excede o limite de carregamento de 50 MB imposto pelo Telegram ao nosso bot. Por favor, tente outro vídeo. Estamos fazendo o possível para aumentar esse limite.*",
     "sizeLimitWarn": "*Esse vídeo teve a qualidade reduzida por estar excedendo o limite de 50MB para uploads imposto pelo Telegram.*",
     "noLink": "*Por favor, forneça um link de um vídeo para download.*"

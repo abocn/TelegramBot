@@ -177,11 +177,12 @@ module.exports = (bot) => {
       }
     } catch (error) {
       console.error(error);
+      const errMsg = Strings.ytDownload.uploadErr.replace("{error}", error)
       await ctx.telegram.editMessageText(
         ctx.chat.id,
         downloadingMessage.message_id,
         null,
-        Strings.ytDownload.uploadErr, {
+        errMsg, {
           parse_mode: 'Markdown',
           reply_to_message_id: ctx.message.message_id,
         },
