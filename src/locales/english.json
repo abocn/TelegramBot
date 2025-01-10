@@ -73,7 +73,7 @@
   "ytLibNotFound": "*It seems that the yt-dlp executable does not exist on our server...\n\nIn that case, the problem is on our end! Please wait until we have noticed and solved the problem.*",
   "ytCheckingSize": "*Checking if the video exceeds the 50MB limit...*",
   "ytUploading": "*Uploading video...*",
-  "ytUploadDesc": "*[{userName}](tg://user?id={userId}), there is your downloaded video.*",
+  "ytUploadDesc": "{userMention}*, there is your downloaded video.*",
   "ytDownloadErr": "*Error during YT video download:*\n\n`{err}`",
   "ytUploadLimit": "*This video exceeds the 50 MB upload limit imposed by Telegram on our bot. Please try another video. We're doing our best to increase this limit.*",
   "ytUploadLimit2": "*This video had its quality reduced because it exceeded the 50MB limit for uploads imposed by Telegram.*",

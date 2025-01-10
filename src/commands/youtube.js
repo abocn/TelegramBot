@@ -122,13 +122,11 @@ module.exports = (bot) => {
         }
 
         if (fs.existsSync(mp4File)) {
-          const message = Strings.ytUploadDesc
-            .replace("{userId}", userId)
-            .replace("{userName}", ctx.from.first_name);
+          const message = Strings.ytUploadDesc.replace("{userMention}", `[${ctx.from.first_name}](tg://user?id=${userId})`)
 
           try {
             await ctx.replyWithVideo({
-              source: mp4File,
+              source: mp4File }, {
               caption: message,
               parse_mode: 'Markdown',
             });
