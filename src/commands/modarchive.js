@@ -41,16 +41,14 @@ async function downloadModule(moduleId) {
 module.exports = (bot) => {
   bot.command(['modarchive', 'tma'], spamwatchMiddleware, async (ctx) => {
     const Strings = getStrings(ctx.from.language_code);
-    const args = ctx.message.text.split(' ');
+    const moduleId = ctx.message.text.split(' ')[1];
 
-    if (args.length !== 2) {
+    if (moduleId == NaN || null) {
       return ctx.reply(Strings.maInvalidModule, {
         parse_mode: "Markdown",
         reply_to_message_id: ctx.message.message_id
       });
     }
-
-    const moduleId = args[1];
 
     const result = await downloadModule(moduleId);
 
