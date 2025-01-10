@@ -68,6 +68,13 @@ module.exports = (bot) => {
     const dlpCommand = ytDlpPath;
     const ffmpegPath = getFfmpegPath();
     const ffmpegArgs = ['-i', tempMp4File, '-i', tempWebmFile, '-c:v copy -c:a copy -strict -2', mp4File];
+    if (!videoUrl) {
+      return ctx.reply(Strings.ytNoLink, {
+        parse_mode: "Markdown",
+        disable_web_page_preview: true,
+        reply_to_message_id: ctx.message.message_id
+      });
+    };
 
     if (fs.existsSync(path.resolve(__dirname, "../props/cookies.txt"))) {
       cmdArgs = "--max-filesize 2G --no-playlist --cookies src/props/cookies.txt --merge-output-format mp4 -o";
