@@ -17,8 +17,7 @@ async function sendHelpMessage(ctx, isEditing) {
         [{ text: Strings.mainCommands, callback_data: 'helpMain' }, { text: Strings.usefulCommands, callback_data: 'helpUseful' }],
         [{ text: Strings.interactiveEmojis, callback_data: 'helpInteractive' }, { text: Strings.funnyCommands, callback_data: 'helpFunny' }],
         [{ text: Strings.lastFm, callback_data: 'helpLast' }, { text: Strings.animalCommands, callback_data: 'helpAnimals' }],
-        [{ text: Strings.ytDlp, callback_data: 'helpYouTube' }, { text: Strings.myLittlePony, callback_data: 'helpMLP' }],
-        [{ text: Strings.aboutBot, callback_data: 'helpAbout' }]
+        [{ text: Strings.ytDlp, callback_data: 'helpYouTube' }, { text: Strings.myLittlePony, callback_data: 'helpMLP' }]
       ]
     }
   };
@@ -90,10 +89,6 @@ module.exports = (bot) => {
       case 'helpMLP':
         await ctx.answerCbQuery();
         await ctx.editMessageText(Strings.myLittlePonyDesc, options);
-        break;
-      case 'helpAbout':
-        await ctx.answerCbQuery();
-        await ctx.editMessageText(Strings.botAbout, options);
         break;
       case 'helpBack':
         await ctx.answerCbQuery();
