@@ -70,7 +70,7 @@ module.exports = (bot) => {
     const ffmpegArgs = ['-i', tempMp4File, '-i', tempWebmFile, '-c:v copy -c:a copy -strict -2', mp4File];
 
     if (!videoUrl) {
-      return ctx.reply(Strings.ytNoLink, {
+      return ctx.reply(Strings.ytDownload.noLink, {
         parse_mode: "Markdown",
         disable_web_page_preview: true,
         reply_to_message_id: ctx.message.message_id
@@ -84,7 +84,7 @@ module.exports = (bot) => {
     }
 
     try {
-      const downloadingMessage = await ctx.reply(Strings.ytCheckingSize, {
+      const downloadingMessage = await ctx.reply(Strings.ytDownload.checkingSize, {
         parse_mode: 'Markdown',
         reply_to_message_id: ctx.message.message_id,
       });
@@ -98,7 +98,7 @@ module.exports = (bot) => {
           ctx.chat.id,
           downloadingMessage.message_id,
           null,
-          Strings.ytDownloading, {
+          Strings.ytDownload.downloadingVid, {
             parse_mode: 'Markdown',
             reply_to_message_id: ctx.message.message_id,
           },
@@ -111,7 +111,7 @@ module.exports = (bot) => {
           ctx.chat.id,
           downloadingMessage.message_id,
           null,
-          Strings.ytUploading, {
+          Strings.ytDownload.uploadingVid, {
             parse_mode: 'Markdown',
             reply_to_message_id: ctx.message.message_id,
           },
@@ -122,7 +122,7 @@ module.exports = (bot) => {
         }
 
         if (fs.existsSync(mp4File)) {
-          const message = Strings.ytUploadDesc.replace("{userMention}", `[${ctx.from.first_name}](tg://user?id=${userId})`)
+          const message = Strings.ytDownload.msgDesc.replace("{userMention}", `[${ctx.from.first_name}](tg://user?id=${userId})`)
 
           try {
             await ctx.replyWithVideo({
@@ -136,7 +136,7 @@ module.exports = (bot) => {
                 ctx.chat.id,
                 downloadingMessage.message_id,
                 null,
-                Strings.ytUploadLimit2, {
+                Strings.ytDownload.sizeLimitWarn, {
                   parse_mode: 'Markdown',
                   reply_to_message_id: ctx.message.message_id,
                 },
@@ -150,7 +150,7 @@ module.exports = (bot) => {
                 ctx.chat.id,
                 downloadingMessage.message_id,
                 null,
-                Strings.ytUploadLimit, {
+                Strings.ytDownload.uploadLimit, {
                   parse_mode: 'Markdown',
                   reply_to_message_id: ctx.message.message_id,
                 },
@@ -160,7 +160,7 @@ module.exports = (bot) => {
                 ctx.chat.id,
                 downloadingMessage.message_id,
                 null,
-                Strings.ytFileError, {
+                Strings.ytDownload.uploadErr, {
                   parse_mode: 'Markdown',
                   reply_to_message_id: ctx.message.message_id,
                 },
@@ -180,7 +180,7 @@ module.exports = (bot) => {
           ctx.chat.id,
           downloadingMessage.message_id,
           null,
-          Strings.ytLibNotFound, {
+          Strings.ytDownload.libNotFound, {
             parse_mode: 'Markdown',
             reply_to_message_id: ctx.message.message_id,
           },
@@ -188,7 +188,7 @@ module.exports = (bot) => {
       }
     } catch (error) {
       console.error(error);
-      await ctx.reply(Strings.ytFileError, {
+      await ctx.reply(Strings.ytDownload.uploadErr, {
         parse_mode: 'Markdown',
         reply_to_message_id: ctx.message.message_id,
       });
