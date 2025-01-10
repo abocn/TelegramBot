@@ -38,7 +38,7 @@ module.exports = (bot) => {
     const args = ctx.message.text;
 
     if (args.length < 9) {
-      return ctx.reply(Strings.provideLocation, {
+      return ctx.reply(Strings.weatherProvideLocation, {
         parse_mode: "Markdown",
         reply_to_message_id: ctx.message.message_id
       });
@@ -59,7 +59,7 @@ module.exports = (bot) => {
 
       const locationData = locationResponse.data.location;
       if (!locationData || !locationData.address) {
-        return ctx.reply(Strings.invalidLocation, {
+        return ctx.reply(Strings.weatherInvalidLocation, {
           parse_mode: "Markdown",
           reply_to_message_id: ctx.message.message_id
         });

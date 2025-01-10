@@ -91,17 +91,17 @@ module.exports = (bot) => {
     handleAdminCommand(ctx, async () => {
       try {
         const commitHash = await getGitCommitHash();
-        await ctx.reply(Strings.currentCommit.replace('{commitHash}', commitHash), {
+        await ctx.reply(Strings.gitCurrentCommit.replace('{commitHash}', commitHash), {
           parse_mode: 'Markdown',
           reply_to_message_id: ctx.message.message_id
         });
       } catch (error) {
-        ctx.reply(Strings.errorRetrievingCommit.replace('{error}', error), {
+        ctx.reply(Strings.gitErrRetrievingCommit.replace('{error}', error), {
           parse_mode: 'Markdown',
           reply_to_message_id: ctx.message.message_id
         });
       }
-    }, '', Strings.errorRetrievingCommit);
+    }, '', Strings.gitErrRetrievingCommit);
   });
 
   bot.command('updatebot', spamwatchMiddleware, async (ctx) => {
@@ -159,12 +159,12 @@ module.exports = (bot) => {
           caption: botFile
         });
       } catch (error) {
-        ctx.reply(Strings.varErr.replace('{error}', error.message), {
+        ctx.reply(Strings.unexpectedErr.replace('{error}', error.message), {
           parse_mode: 'Markdown',
           reply_to_message_id: ctx.message.message_id
         });
       }
-    }, '', Strings.varErr);
+    }, '', Strings.unexpectedErr);
   });
 
   bot.command('run', spamwatchMiddleware, async (ctx) => {

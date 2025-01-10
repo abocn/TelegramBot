@@ -46,7 +46,7 @@ module.exports = (bot) => {
       disable_web_page_preview: true,
       reply_markup: JSON.stringify({
         inline_keyboard: [
-          [{ text: Strings.goBack, callback_data: 'helpBack' }],
+          [{ text: Strings.varBack, callback_data: 'helpBack' }],
         ]
       })
     };
@@ -93,7 +93,7 @@ module.exports = (bot) => {
         await sendHelpMessage(ctx, true);
         break;
       default:
-        await ctx.answerCbQuery(Strings.invalidOption);
+        await ctx.answerCbQuery(Strings.errInvalidOption);
         break;
     }
   });

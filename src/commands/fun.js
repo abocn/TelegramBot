@@ -97,7 +97,7 @@ module.exports = (bot) => {
     sendRandomReply(ctx, resources.gayFlag, 'isGay', 'isNtGay');
   });
 
-  bot.command('soggy', spamwatchMiddleware, async (ctx) => {
+  bot.command('soggy', 'soggycat', spamwatchMiddleware, async (ctx) => {
     const userInput = ctx.message.text.split(' ')[1];
     
     switch (true) {
