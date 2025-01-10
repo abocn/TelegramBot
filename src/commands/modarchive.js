@@ -57,9 +57,9 @@ module.exports = (bot) => {
     if (result) {
       const { filePath, fileName } = result;
 
-      await ctx.replyWithDocument({
-        source: filePath,
+      await ctx.replyWithDocument({ source: filePath }, {
         caption: fileName,
+        reply_to_message_id: ctx.message.message_id
       });
 
       fs.unlinkSync(filePath);
