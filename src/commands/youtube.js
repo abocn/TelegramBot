@@ -56,7 +56,7 @@ const getApproxSize = async (command, videoUrl) => {
 };
 
 module.exports = (bot) => {
-  bot.command(['yt', 'ytdl', 'sdl'], spamwatchMiddleware, async (ctx) => {
+  bot.command(['yt', 'ytdl', 'sdl', 'video', 'dl'], spamwatchMiddleware, async (ctx) => {
     const Strings = getStrings(ctx.from.language_code);
     const ytDlpPath = getYtDlpPath();
     const userId = ctx.from.id;
