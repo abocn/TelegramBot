@@ -16,8 +16,8 @@ async function sendHelpMessage(ctx, isEditing) {
       inline_keyboard: [
         [{ text: Strings.mainCommands, callback_data: 'helpMain' }, { text: Strings.usefulCommands, callback_data: 'helpUseful' }],
         [{ text: Strings.interactiveEmojis, callback_data: 'helpInteractive' }, { text: Strings.funnyCommands, callback_data: 'helpFunny' }],
-        [{ text: Strings.lastFm, callback_data: 'helpLast' }, { text: Strings.animalCommands, callback_data: 'helpAnimals' }],
-        [{ text: Strings.ytDlp, callback_data: 'helpYouTube' }, { text: Strings.myLittlePony, callback_data: 'helpMLP' }]
+        [{ text: Strings.lastFm.helpEntry, callback_data: 'helpLast' }, { text: Strings.animalCommands, callback_data: 'helpAnimals' }],
+        [{ text: Strings.ytDownload.helpEntry, callback_data: 'helpYouTube' }, { text: Strings.ponyApi.helpEntry, callback_data: 'helpMLP' }]
       ]
     }
   };
@@ -76,11 +76,11 @@ module.exports = (bot) => {
         break;
       case 'helpLast':
         await ctx.answerCbQuery();
-        await ctx.editMessageText(Strings.lastFmDesc, options);
+        await ctx.editMessageText(Strings.lastFm.helpDesc, options);
         break;
       case 'helpYouTube':
         await ctx.answerCbQuery();
-        await ctx.editMessageText(Strings.ytDlpDesc, options);
+        await ctx.editMessageText(Strings.ytDownload.helpDesc, options);
         break;
       case 'helpAnimals':
         await ctx.answerCbQuery();
@@ -88,7 +88,7 @@ module.exports = (bot) => {
         break;
       case 'helpMLP':
         await ctx.answerCbQuery();
-        await ctx.editMessageText(Strings.myLittlePonyDesc, options);
+        await ctx.editMessageText(Strings.ponyApi.helpDesc, options);
         break;
       case 'helpBack':
         await ctx.answerCbQuery();
