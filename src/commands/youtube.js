@@ -145,10 +145,27 @@ module.exports = (bot) => {
 
             fs.unlinkSync(mp4File);
           } catch (error) {
-            await ctx.reply(Strings.ytFileError, {
-              parse_mode: 'Markdown',
-              reply_to_message_id: ctx.message.message_id,
-            });
+            if (error.includes("Request Entity Too Large")) {
+              await ctx.telegram.editMessageText(
+                ctx.chat.id,
+                downloadingMessage.message_id,
+                null,
+                Strings.ytUploadLimit, {
+                  parse_mode: 'Markdown',
+                  reply_to_message_id: ctx.message.message_id,
+                },
+              );
+            } else {
+              await ctx.telegram.editMessageText(
+                ctx.chat.id,
+                downloadingMessage.message_id,
+                null,
+                Strings.ytFileError, {
+                  parse_mode: 'Markdown',
+                  reply_to_message_id: ctx.message.message_id,
+                },
+              );
+            };
 
             fs.unlinkSync(mp4File);
           }
