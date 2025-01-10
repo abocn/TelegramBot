@@ -10,7 +10,7 @@ module.exports = (bot) => {
     const apiUrl = "https://status.js.org/codes.json";
 
     if (!userInput || isNaN(userInput)) {
-      return ctx.reply(Strings.httpCodeInvalid, {
+      return ctx.reply(Strings.httpCodes.invalidCode, {
         parse_mode: 'Markdown',
         reply_to_message_id: ctx.message.message_id
       });
@@ -23,7 +23,7 @@ module.exports = (bot) => {
       const codeInfo = codesArray.find(item => item.code === parseInt(userInput));
 
       if (codeInfo) {
-        const message = Strings.httpCodeResult
+        const message = Strings.httpCodes.resultMsg
           .replace("{code}", codeInfo.code)
           .replace("{message}", codeInfo.message)
           .replace("{description}", codeInfo.description);
@@ -32,13 +32,13 @@ module.exports = (bot) => {
           reply_to_message_id: ctx.message.message_id
         });
       } else {
-        await ctx.reply(Strings.httpCodeNotFound, {
+        await ctx.reply(Strings.httpCodes.notFound, {
           parse_mode: 'Markdown',
           reply_to_message_id: ctx.message.message_id
         });
       };
     } catch (error) {
-      const message = Strings.httpCodeErr.replace("{error}", error);
+      const message = Strings.httpCodes.fetchErr.replace("{error}", error);
       ctx.reply(message, {
         parse_mode: 'Markdown',
         reply_to_message_id: ctx.message.message_id
@@ -51,7 +51,7 @@ module.exports = (bot) => {
     const userInput = ctx.message.text.split(' ').slice(1).join(' ').replace(/\s+/g, '');
     
     if (!userInput || isNaN(userInput)) {
-      return ctx.reply(Strings.catImgErr, {
+      return ctx.reply(Strings.httpCodes.invalidCode, {
         parse_mode: 'Markdown',
         reply_to_message_id: ctx.message.message_id
       });

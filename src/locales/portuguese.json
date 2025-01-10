@@ -86,10 +86,12 @@
   "quoteResult": "Aqui está uma citação aleatória pra você (em inglês):",
   "quoteErr": "Desculpe, mas algo deu errado ao exibir a citação.",
   "dogImgErr": "Desculpe, mas não consegui obter a foto do cacbhorro que você queria.",
-  "httpCodeInvalid": "Por favor, insira um código HTTP válido.",
-  "httpCodeErr": "Ocorreu um erro ao buscar o código HTTP.",
-  "httpCodeNotFound": "Código HTTP não encontrado.",
-  "httpCodeResult": "*Código HTTP*: `{code}`\n*Nome*: `{message}`\n*Descrição*: `{description}`",
+  "httpCodes": {
+    "invalidCode": "Por favor, insira um código HTTP válido.",
+    "fetchErr": "Ocorreu um erro ao buscar o código HTTP.",
+    "notFound": "Código HTTP não encontrado.",
+    "resultMsg": "*Código HTTP*: `{code}`\n*Nome*: `{message}`\n*Descrição*: `{description}`"
+  },
   "ponyApi": {
     "charRes": "*Informações do Personagem de MLP para* `{input}`*:*\n\n*Nome:* `{name}`\n*Apelido:* `{alias}`\n*URL do Fandom:* [{url}]({url})\n*Sexo:* `{sex}`\n*Residência:* `{residence}`\n*Ocupação:* `{occupation}`\n*Tipo:* `{kind}`",
     "epRes": "*Informações do Episódio de MLP para* `{input}`*:*\n\n*Nome:* `{name}`\n*URL do Fandom:* [{url}]({url})\n*Temporada:* `{season}`\n*Episódio:* `{episode}`\n*Episódio Geral:* `{overall}`\n*Data de Lançamento:* `{airdate}`\n*História por:* `{storyby}`\n*Escrito por:* `{writtenby}`\n*Storyboard:* `{storyboard}`",

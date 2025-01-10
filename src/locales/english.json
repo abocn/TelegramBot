@@ -86,10 +86,12 @@
   "quoteResult": "Here is a random quote for you:",
   "quoteErr": "Sorry, but something went wrong while displaying the quote.",
   "dogImgErr": "Sorry, but I couldn't get the dog photo you wanted.",
-  "httpCodeInvalid": "Please enter a valid HTTP code.",
-  "httpCodeErr": "An error occurred while fetching the HTTP code.",
-  "httpCodeNotFound": "HTTP code not found.",
-  "httpCodeResult": "*HTTP Code*: {code}\n*Name*: `{message}`\n*Description*: {description}",
+  "httpCodes": {
+    "invalidCode": "Please enter a valid HTTP code.",
+    "fetchErr": "An error occurred while fetching the HTTP code.",
+    "notFound": "HTTP code not found.",
+    "resultMsg": "*HTTP Code*: {code}\n*Name*: `{message}`\n*Description*: {description}"
+  },
   "ponyApi": {
     "charRes": "*MLP Character Information for* \"`{input}`\"*:*\n\n*Name:* `{name}`\n*Alias*: `{alias}`\n*Fandom URL:* [{url}]({url})\n*Sex:* `{sex}`\n*Residence:* `{residence}`\n*Occupation:* `{occupation}`\n*Kind:* `{kind}`",
     "epRes": "*MLP Episode Information for* \"`{input}`\"*:*\n\n*Name:* `{name}`\n*Fandom URL:* [{url}]({url})\n*Season:* `{season}`\n*Episode:* `{episode}`\n*Overall Ep.:* `{overall}`\n*Release date:* `{airdate}`\n*Story by:* `{storyby}`\n*Written by:* `{writtenby}`\n*Storyboard:* `{storyboard}`",
