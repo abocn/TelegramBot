@@ -4,8 +4,11 @@ const spamwatchMiddleware = require('../plugins/lib-spamwatch/Middleware.js')(is
 
 async function sendHelpMessage(ctx, isEditing) {
   const Strings = getStrings(ctx.from.language_code);
+  const botInfo = await ctx.telegram.getMe();
   const options = {
     parse_mode: 'Markdown',
+    disable_web_page_preview: true,
+    reply_to_message_id: ctx.message.message_id,
     reply_markup: {
       inline_keyboard: [
         [{ text: Strings.mainCommands, callback_data: 'helpMain' }, { text: Strings.usefulCommands, callback_data: 'helpUseful' }],
@@ -16,7 +19,9 @@ async function sendHelpMessage(ctx, isEditing) {
       ]
     }
   };
-  const helpText = Strings.botHelp;
+  const helpText = Strings.botHelp
+    .replace('{botName}', botInfo.first_name)
+    .replace("{sourceLink}", `${process.env.botSource}`);
   if (isEditing) {
     await ctx.editMessageText(helpText, options);
   } else {
