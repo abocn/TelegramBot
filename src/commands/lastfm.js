@@ -66,7 +66,7 @@ module.exports = (bot) => {
     const lastUser = ctx.message.text.split(' ')[1];
 
     if (!lastUser) {
-      return ctx.reply(Strings.lastFmNoUser, {
+      return ctx.reply(Strings.lastFm.noUser, {
         parse_mode: "Markdown",
         disable_web_page_preview: true,
         reply_to_message_id: ctx.message.message_id
@@ -76,7 +76,7 @@ module.exports = (bot) => {
     users[userId] = lastUser;
     saveUsers();
 
-    const message = Strings.lastFmUserSet.replace('{lastUser}', lastUser);
+    const message = Strings.lastFm.userHasBeenSet.replace('{lastUser}', lastUser);
 
     ctx.reply(message, {
       parse_mode: "Markdown",
@@ -93,7 +93,7 @@ module.exports = (bot) => {
     const botInfo = await ctx.telegram.getMe();
     
     if (!lastfmUser) {
-      return ctx.reply(Strings.lastFmNoSet, {
+      return ctx.reply(Strings.lastFm.noUserSet, {
         parse_mode: "Markdown",
         disable_web_page_preview: true,
         reply_to_message_id: ctx.message.message_id
@@ -117,7 +117,7 @@ module.exports = (bot) => {
       const track = response.data.recenttracks.track[0];
 
       if (!track) {
-        const noRecent = Strings.lastFmNoRecent.replace('{lastfmUser}', lastfmUser);
+        const noRecent = Strings.lastFm.noRecentTracks.replace('{lastfmUser}', lastfmUser);
         return ctx.reply(noRecent, {
           parse_mode: "Markdown",
           disable_web_page_preview: true,
@@ -170,7 +170,7 @@ module.exports = (bot) => {
         };
       } catch (err) {
         console.log(err)
-        const message = Strings.lastFmErr
+        const message = Strings.lastFm.apiErr
           .replace("{lastfmUser}", `[${lastfmUser}](${userUrl})`)
           .replace("{err}", err);
         ctx.reply(message, {
@@ -180,7 +180,7 @@ module.exports = (bot) => {
         });
       };
 
-      let message = Strings.lastFmStatusFor
+      let message = Strings.lastFm.listeningTo
         .replace("{lastfmUser}", `[${lastfmUser}](${userUrl})`)
         .replace("{nowPlaying}", nowPlaying)
         .replace("{trackName}", `[${trackName}](${trackUrl})`)
@@ -188,7 +188,7 @@ module.exports = (bot) => {
 
       if (`${num_plays}` !== "0" && `${num_plays}` !== "1" && `${num_plays}` !== "2" && `${num_plays}` !== "3") {
         message = message
-          .replace("{playCount}", Strings.lastFmPlayCount)
+          .replace("{playCount}", Strings.lastFm.playCount)
           .replace("{plays}", `${num_plays}`);
       } else {
         message = message
@@ -211,7 +211,7 @@ module.exports = (bot) => {
       };
     } catch (err) {
       const userUrl = `https://www.last.fm/user/${encodeURIComponent(lastfmUser)}`;
-      const message = Strings.lastFmErr
+      const message = Strings.lastFm.apiErr
         .replace("{lastfmUser}", `[${lastfmUser}](${userUrl})`)
         .replace("{err}", err);
       ctx.reply(message, {
