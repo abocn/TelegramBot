@@ -90,14 +90,16 @@
   "httpCodeErr": "An error occurred while fetching the HTTP code.",
   "httpCodeNotFound": "HTTP code not found.",
   "httpCodeResult": "*HTTP Code*: {code}\n*Name*: `{message}`\n*Description*: {description}",
-  "ponyApiCharRes": "*MLP Character Information for* \"`{input}`\"*:*\n\n*Name:* `{name}`\n*Alias*: `{alias}`\n*Fandom URL:* [{url}]({url})\n*Sex:* `{sex}`\n*Residence:* `{residence}`\n*Occupation:* `{occupation}`\n*Kind:* `{kind}`",
-  "ponyApiEpRes": "*MLP Episode Information for* \"`{input}`\"*:*\n\n*Name:* `{name}`\n*Fandom URL:* [{url}]({url})\n*Season:* `{season}`\n*Episode:* `{episode}`\n*Overall Ep.:* `{overall}`\n*Release date:* `{airdate}`\n*Story by:* `{storyby}`\n*Written by:* `{writtenby}`\n*Storyboard:* `{storyboard}`",
-  "ponyApiComicRes": "*MLP Comic Information for* \"`{input}`\"*:*\n\n*Name:* `{name}`\n*Fandom URL:* [{url}]({url})\n*Series:* `{series}`\n*Writer:* `{writer}`\n*Artist:* `{artist}`\n*Colorist:* `{colorist}`\n*Letterer:* `{letterer}`\n*Editor:* `{editor}`",
-  "ponyApiNoCharName": "Please provide the character's name.",
-  "ponyApiNoCharFound": "No character found.",
-  "ponyApiNoEpisodeNum": "Please provide the episode's number.",
-  "ponyApiNoEpisodeFound": "No episode found.",
-  "ponyApiNoComicName": "Please provide the comic's name.",
-  "ponyApiNoComicFound": "No comic found.",
-  "ponyApiErr": "An error occurred while fetching data from the API."
+  "ponyApi": {
+    "charRes": "*MLP Character Information for* \"`{input}`\"*:*\n\n*Name:* `{name}`\n*Alias*: `{alias}`\n*Fandom URL:* [{url}]({url})\n*Sex:* `{sex}`\n*Residence:* `{residence}`\n*Occupation:* `{occupation}`\n*Kind:* `{kind}`",
+    "epRes": "*MLP Episode Information for* \"`{input}`\"*:*\n\n*Name:* `{name}`\n*Fandom URL:* [{url}]({url})\n*Season:* `{season}`\n*Episode:* `{episode}`\n*Overall Ep.:* `{overall}`\n*Release date:* `{airdate}`\n*Story by:* `{storyby}`\n*Written by:* `{writtenby}`\n*Storyboard:* `{storyboard}`",
+    "comicRes": "*MLP Comic Information for* \"`{input}`\"*:*\n\n*Name:* `{name}`\n*Fandom URL:* [{url}]({url})\n*Series:* `{series}`\n*Writer:* `{writer}`\n*Artist:* `{artist}`\n*Colorist:* `{colorist}`\n*Letterer:* `{letterer}`\n*Editor:* `{editor}`",
+    "noCharName": "Please provide the character's name.",
+    "noCharFound": "No character found.",
+    "noEpisodeNum": "Please provide the episode's number.",
+    "noEpisodeFound": "No episode found.",
+    "noComicName": "Please provide the comic's name.",
+    "noComicFound": "No comic found.",
+    "apiErr": "An error occurred while fetching data from the API."
+  }
 }

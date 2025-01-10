@@ -23,7 +23,7 @@ module.exports = (bot) => {
     const userInput = ctx.message.text.split(' ').slice(1).join(' ');
 
     if (!userInput) {
-      ctx.reply(Strings.ponyApiNoCharName, {
+      ctx.reply(Strings.ponyApi.noCharName, {
         parse_mode: 'Markdown',
         reply_to_message_id: ctx.message.message_id
       });
@@ -62,7 +62,7 @@ module.exports = (bot) => {
       };
 
       if (charactersArray.length > 0) {
-        const result = Strings.ponyApiCharRes
+        const result = Strings.ponyApi.charRes
           .replace("{input}", userInput)
           .replace("{name}", charactersArray[0].name)
           .replace("{alias}", charactersArray[0].alias)
@@ -79,14 +79,14 @@ module.exports = (bot) => {
           reply_to_message_id: ctx.message.message_id
         });
       } else {
-        ctx.reply(Strings.ponyApiNoCharFound, {
+        ctx.reply(Strings.ponyApi.noCharFound, {
           parse_mode: 'Markdown',
           reply_to_message_id: ctx.message.message_id
         });
       };
     } catch (error) {
       console.error(error);
-      ctx.reply(Strings.ponyApiErr, {
+      ctx.reply(Strings.ponyApi.apiErr, {
         parse_mode: 'Markdown',
         reply_to_message_id: ctx.message.message_id
       });
@@ -98,7 +98,7 @@ module.exports = (bot) => {
     const userInput = ctx.message.text.split(' ').slice(1).join(' ');
 
     if (!userInput) {
-      ctx.reply(Strings.ponyApiNoEpisodeNum, {
+      ctx.reply(Strings.ponyApi.noEpisodeNum, {
         parse_mode: 'Markdown',
         reply_to_message_id: ctx.message.message_id
       });
@@ -129,7 +129,7 @@ module.exports = (bot) => {
       };
 
       if (episodeArray.length > 0) {
-        const result = Strings.ponyApiEpRes
+        const result = Strings.ponyApi.epRes
           .replace("{input}", userInput)
           .replace("{name}", episodeArray[0].name)
           .replace("{url}", episodeArray[0].url)
@@ -148,14 +148,14 @@ module.exports = (bot) => {
           reply_to_message_id: ctx.message.message_id
         });
       } else {
-        ctx.reply(Strings.ponyApiNoEpisodeFound, {
+        ctx.reply(Strings.ponyApi.noEpisodeFound, {
           parse_mode: 'Markdown',
           reply_to_message_id: ctx.message.message_id
         });
       };
     } catch (error) {
       console.error(error);
-      ctx.reply(Strings.ponyApiErr, {
+      ctx.reply(Strings.ponyApi.apiErr, {
         parse_mode: 'Markdown',
         reply_to_message_id: ctx.message.message_id
       });
@@ -168,7 +168,7 @@ module.exports = (bot) => {
   //   const userInput = ctx.message.text.split(' ').slice(1).join(' ');
 
   //   if (!userInput) {
-  //     ctx.reply(Strings.ponyApiNoComicName, {
+  //     ctx.reply(Strings.ponyApi.noComicName, {
   //       parse_mode: 'Markdown',
   //       reply_to_message_id: ctx.message.message_id
   //     });
@@ -198,7 +198,7 @@ module.exports = (bot) => {
   //     };
 
   //     if (comicArray.length > 0) {
-  //       const result = Strings.ponyApiComicRes
+  //       const result = Strings.ponyApi.comicRes
   //         .replace("{input}", userInput)
   //         .replace("{name}", comicArray[0].name)
   //         .replace("{series}", comicArray[0].series)
@@ -216,14 +216,14 @@ module.exports = (bot) => {
   //         reply_to_message_id: ctx.message.message_id
   //       });
   //     } else {
-  //       ctx.reply(Strings.ponyApiNoComicFound, {
+  //       ctx.reply(Strings.ponyApi.noComicFound, {
   //         parse_mode: 'Markdown',
   //         reply_to_message_id: ctx.message.message_id
   //       });
   //     };
   //   } catch (error) {
   //     console.error(error);
-  //     ctx.reply(Strings.ponyApiErr, {
+  //     ctx.reply(Strings.ponyApi.apiErr, {
   //       parse_mode: 'Markdown',
   //       reply_to_message_id: ctx.message.message_id
   //     });

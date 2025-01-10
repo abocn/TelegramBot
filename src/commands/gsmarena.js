@@ -115,7 +115,7 @@ function formatPhone(phone) {
     .filter(([_, key]) => formattedPhone[key])
     .map(([label, key]) => `<b>${label}:</b> <code>${formattedPhone[key]}</code>`)
     .join("\n\n");
-  
+
   const deviceUrl = `<b>GSMArena page:</b> ${formattedPhone.url}`;
   const deviceImage = phone.picture ? `<b>Device Image</b>: ${phone.picture}` : '';
 
@@ -208,9 +208,10 @@ module.exports = (bot) => {
       return ctx.reply("No phones found.", { reply_to_message_id: ctx.message.message_id });
     }
 
-    const testUser = `<a href="tg://user?id=${userId}">${userName}</a>, Select a device:`;
+    const testUser = `<a href="tg://user?id=${userId}">${userName}</a>, please select your device:`;
     const options = {
       parse_mode: 'HTML',
+      reply_to_message_id: ctx.message.message_id,
       disable_web_page_preview: true,
       reply_markup: {
         inline_keyboard: results.map(result => [{ text: result.name, callback_data: `details:${result.url}:${ctx.from.id}` }])
@@ -237,7 +238,7 @@ module.exports = (bot) => {
 
     if (phoneDetails.name) {
       const message = formatPhone(phoneDetails);
-      ctx.editMessageText(`<b><a href="tg://user?id=${userId}">${userName}</a>, there are the details of your device:</b>` + message, { parse_mode: 'HTML', disable_web_page_preview: false });
+      ctx.editMessageText(`<b><a href="tg://user?id=${userId}">${userName}</a>, these are the details of your device:</b>` + message, { parse_mode: 'HTML', disable_web_page_preview: false });
     } else {
       ctx.reply("Error fetching phone details.", { reply_to_message_id: ctx.message.message_id });
     }

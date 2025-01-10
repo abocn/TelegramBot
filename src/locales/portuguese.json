@@ -90,13 +90,15 @@
   "httpCodeErr": "Ocorreu um erro ao buscar o código HTTP.",
   "httpCodeNotFound": "Código HTTP não encontrado.",
   "httpCodeResult": "*Código HTTP*: `{code}`\n*Nome*: `{message}`\n*Descrição*: `{description}`",
-  "ponyApiCharRes": "*Informações do Personagem de MLP para* `{input}`*:*\n\n*Nome:* `{name}`\n*Apelido:* `{alias}`\n*URL do Fandom:* [{url}]({url})\n*Sexo:* `{sex}`\n*Residência:* `{residence}`\n*Ocupação:* `{occupation}`\n*Tipo:* `{kind}`",
-  "ponyApiEpRes": "*Informações do Episódio de MLP para* `{input}`*:*\n\n*Nome:* `{name}`\n*URL do Fandom:* [{url}]({url})\n*Temporada:* `{season}`\n*Episódio:* `{episode}`\n*Episódio Geral:* `{overall}`\n*Data de Lançamento:* `{airdate}`\n*História por:* `{storyby}`\n*Escrito por:* `{writtenby}`\n*Storyboard:* `{storyboard}`",
-  "ponyApiNoCharName": "Por favor, forneça o nome do personagem.",
-  "ponyApiNoCharFound": "Nenhum personagem encontrado.",
-  "ponyApiNoEpisodeNum": "Por favor, forneça o número do episódio.",
-  "ponyApiNoEpisodeFound": "Nenhum episódio encontrado.",
-  "ponyApiNoComicName": "Por favor, forneça o nome da comic.",
-  "ponyApiNoComicFound": "Nenhuma comic foi encontrada.",
-  "ponyApiErr": "Ocorreu um erro ao buscar dados da API."
+  "ponyApi": {
+    "charRes": "*Informações do Personagem de MLP para* `{input}`*:*\n\n*Nome:* `{name}`\n*Apelido:* `{alias}`\n*URL do Fandom:* [{url}]({url})\n*Sexo:* `{sex}`\n*Residência:* `{residence}`\n*Ocupação:* `{occupation}`\n*Tipo:* `{kind}`",
+    "epRes": "*Informações do Episódio de MLP para* `{input}`*:*\n\n*Nome:* `{name}`\n*URL do Fandom:* [{url}]({url})\n*Temporada:* `{season}`\n*Episódio:* `{episode}`\n*Episódio Geral:* `{overall}`\n*Data de Lançamento:* `{airdate}`\n*História por:* `{storyby}`\n*Escrito por:* `{writtenby}`\n*Storyboard:* `{storyboard}`",
+    "noCharName": "Por favor, forneça o nome do personagem.",
+    "noCharFound": "Nenhum personagem encontrado.",
+    "noEpisodeNum": "Por favor, forneça o número do episódio.",
+    "noEpisodeFound": "Nenhum episódio encontrado.",
+    "noComicName": "Por favor, forneça o nome da comic.",
+    "noComicFound": "Nenhuma comic foi encontrada.",
+    "apiErr": "Ocorreu um erro ao buscar dados da API."
+  }
 }
