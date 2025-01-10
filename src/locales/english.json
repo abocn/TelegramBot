@@ -67,8 +67,6 @@
   "interactiveEmojisDesc": "*Interactive emojis*\n\n- /dice: Roll a dice\n- /idice: Infinitely roll a colored dice\n- /slot: Try to combine the figures!\n- /ball: Try to kick the ball into the goal!\n- /bowling: Try to hit the pins!\n- /dart: Try to hit the target!",
   "animalCommands": "Animals",
   "animalCommandsDesc": "*Animals*\n\n- /soggy | /soggycat `<1 | 2 | 3 | 4 | orig | thumb | sticker | alt>`: Sends the [Soggy cat meme](https://knowyourmeme.com/memes/soggy-cat)\n - /cat `<tags>`: Sends a random picture of a cat. You can specify some tags, separating each by a comma. Example: `/cat orange, cute`\n- /dog: Sends a random picture of a dog.\n- /httpcat `<http code>`: Send cat memes from http.cat with your specified HTTP code. Example: `/httpcat 404`",
-  "myLittlePony": "My Little Pony",
-  "myLittlePonyDesc": "*My Little Pony*\n\n- /mlp: Displays this help message.\n- /mlpchar `<character name>`: Shows specific information about a My Little Pony character. Example: `/mlpchar twilight`\n- /mlpep: Shows specific information about a My Little Pony episode. Example: `/mlpep 136`",
   "maInvalidModule": "Please provide a valid module ID from The Mod Archive.\nExample: `/modarchive 81574`",
   "maDownloadError": "Error downloading the file. Check the module ID and try again.",
   "ytDownload": {
@@ -99,6 +97,8 @@
     "resultMsg": "*HTTP Code*: {code}\n*Name*: `{message}`\n*Description*: {description}"
   },
   "ponyApi": {
+    "helpEntry": "My Little Pony",
+    "helpDesc": "*My Little Pony*\n\n- /mlp: Displays this help message.\n- /mlpchar `<character name>`: Shows specific information about a My Little Pony character. Example: `/mlpchar twilight`\n- /mlpep: Shows specific information about a My Little Pony episode. Example: `/mlpep 136`",
     "charRes": "*MLP Character Information for* \"`{input}`\"*:*\n\n*Name:* `{name}`\n*Alias*: `{alias}`\n*Fandom URL:* [{url}]({url})\n*Sex:* `{sex}`\n*Residence:* `{residence}`\n*Occupation:* `{occupation}`\n*Kind:* `{kind}`",
     "epRes": "*MLP Episode Information for* \"`{input}`\"*:*\n\n*Name:* `{name}`\n*Fandom URL:* [{url}]({url})\n*Season:* `{season}`\n*Episode:* `{episode}`\n*Overall Ep.:* `{overall}`\n*Release date:* `{airdate}`\n*Story by:* `{storyby}`\n*Written by:* `{writtenby}`\n*Storyboard:* `{storyboard}`",
     "comicRes": "*MLP Comic Information for* \"`{input}`\"*:*\n\n*Name:* `{name}`\n*Fandom URL:* [{url}]({url})\n*Series:* `{series}`\n*Writer:* `{writer}`\n*Artist:* `{artist}`\n*Colorist:* `{colorist}`\n*Letterer:* `{letterer}`\n*Editor:* `{editor}`",
