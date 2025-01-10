@@ -159,12 +159,12 @@ module.exports = (bot) => {
           caption: botFile
         });
       } catch (error) {
-        ctx.reply(Strings.fileError.replace('{error}', error.message), {
+        ctx.reply(Strings.varErr.replace('{error}', error.message), {
           parse_mode: 'Markdown',
           reply_to_message_id: ctx.message.message_id
         });
       }
-    }, '', Strings.fileError);
+    }, '', Strings.varErr);
   });
 
   bot.command('run', spamwatchMiddleware, async (ctx) => {
