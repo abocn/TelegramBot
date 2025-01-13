@@ -68,7 +68,7 @@ async function handleAdminCommand(ctx, action, successMessage, errorMessage) {
       });
     }
   } else {
-    ctx.reply(Strings.botAdminOnly, {
+    ctx.reply(Strings.noPermission, {
       reply_to_message_id: ctx.message.message_id
     });
   }

@@ -17,7 +17,6 @@
   "kickingMyself": "*Since you don't need me, I'll leave.*",
   "kickingMyselfErr": "Error leaving the chat.",
   "noPermission": "You don't have permission to run this command.",
-  "botAdminOnly": "This command is exclusive to the bot's general administrators. I can't disclose who they are, nor what this command does.",
   "privateOnly": "This command should only be used in private chats, not in groups.",
   "groupOnly": "This command should only be used in groups, not in private chats.",
   "botNameChanged": "*Bot name changed to* `{botName}`.",
