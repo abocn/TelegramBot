@@ -52,7 +52,7 @@ module.exports = (bot) => {
       disable_web_page_preview: true,
       reply_markup: JSON.stringify({
         inline_keyboard: [
-          [{ text: Strings.varBack, callback_data: 'helpBack' }],
+          [{ text: Strings.varStrings.varBack, callback_data: 'helpBack' }],
         ]
       })
     };

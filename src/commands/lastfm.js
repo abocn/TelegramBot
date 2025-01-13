@@ -127,7 +127,7 @@ module.exports = (bot) => {
 
       const trackName = track.name;
       const artistName = track.artist['#text'];
-      const nowPlaying = track['@attr'] && track['@attr'].nowplaying ? Strings.varIs : Strings.varWas;
+      const nowPlaying = track['@attr'] && track['@attr'].nowplaying ? Strings.varStrings.varIs : Strings.varStrings.varWas;
       const albumMbid = track.album.mbid;
 
       let imageUrl = "";
@@ -192,7 +192,7 @@ module.exports = (bot) => {
           .replace("{plays}", `${num_plays}`);
       } else {
         message = message
-          .replace("{playCount}", Strings.varTo);
+          .replace("{playCount}", Strings.varStrings.varTo);
       };
 
       if (imageUrl) {

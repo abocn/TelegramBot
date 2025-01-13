@@ -10,11 +10,11 @@ async function getUserInfo(ctx) {
   }
 
   userInfo = Strings.userInfo
-    .replace('{userName}', `${ctx.from.first_name} ${lastName}` || Strings.unKnown)
-    .replace('{userId}', ctx.from.id || Strings.unKnown)
-    .replace('{userHandle}', ctx.from.username ? `@${ctx.from.username}` : Strings.varNone)
-    .replace('{userPremium}', ctx.from.is_premium ? Strings.varYes : Strings.varNo)
-    .replace('{userLang}', ctx.from.language_code || Strings.unKnown);
+    .replace('{userName}', `${ctx.from.first_name} ${lastName}` || Strings.varStrings.varUnknown)
+    .replace('{userId}', ctx.from.id || Strings.varStrings.varUnknown)
+    .replace('{userHandle}', ctx.from.username ? `@${ctx.from.username}` : Strings.varStrings.varStrings.varNone)
+    .replace('{userPremium}', ctx.from.is_premium ? Strings.varStrings.varYes : Strings.varStrings.varNo)
+    .replace('{userLang}', ctx.from.language_code || Strings.varStrings.varUnknown);
 
   return userInfo;
 }
@@ -23,12 +23,12 @@ async function getChatInfo(ctx) {
   const Strings = getStrings(ctx.from.language_code);
   if (ctx.chat.type === 'group' || ctx.chat.type === 'supergroup') {
     chatInfo = Strings.chatInfo
-      .replace('{chatId}', ctx.chat.id || Strings.unKnown)
-      .replace('{chatName}', ctx.chat.title || Strings.unKnown)
-      .replace('{chatHandle}', ctx.chat.username ? `@${ctx.chat.username}` : Strings.varNone)
-      .replace('{chatMembersCount}', await ctx.getChatMembersCount(ctx.chat.id || Strings.unKnown))
-      .replace('{chatType}', ctx.chat.type || Strings.unKnown)
-      .replace('{isForum}', ctx.chat.is_forum ? Strings.varYes : Strings.varNo);
+      .replace('{chatId}', ctx.chat.id || Strings.varStrings.varUnknown)
+      .replace('{chatName}', ctx.chat.title || Strings.varStrings.varUnknown)
+      .replace('{chatHandle}', ctx.chat.username ? `@${ctx.chat.username}` : Strings.varStrings.varStrings.varNone)
+      .replace('{chatMembersCount}', await ctx.getChatMembersCount(ctx.chat.id || Strings.varStrings.varUnknown))
+      .replace('{chatType}', ctx.chat.type || Strings.varStrings.varUnknown)
+      .replace('{isForum}', ctx.chat.is_forum ? Strings.varStrings.varYes : Strings.varStrings.varNo);
     
     return chatInfo;
   } else {
