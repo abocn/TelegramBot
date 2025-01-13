@@ -40,7 +40,7 @@
     "noRecentTracks": "*No recent tracks found for Last.fm user* `{lastfmUser}`*.*",
     "userHasBeenSet": "*Your Last.fm username has been set to:* `{lastUser}`.",
     "listeningTo": "{lastfmUser} *{nowPlaying} listening {playCount}*:\n\n{trackName} by {artistName}",
-    "playCount": "by the {plays}th time",
+    "playCount": "to, for the {plays}th time",
     "apiErr": "*Error retrieving data for Last.fm user* {lastfmUser}.\n\n`{err}`"
   },
   "gitCurrentCommit": "*Current commit:* `{commitHash}`",
