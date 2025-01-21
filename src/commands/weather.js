@@ -19,12 +19,10 @@ const statusEmojis = {
 
 const getStatusEmoji = (statusCode) => statusEmojis[statusCode] || 'n/a';
 
-function getLocaleUnit(userLang) {
+function getLocaleUnit(countryCode) {
   const fahrenheitCountries = ['US', 'BS', 'BZ', 'KY', 'LR'];
-  const languagePrefix = userLang.split('-')[0];
-  const countryCode = userLang.split('-')[1];
 
-  if (languagePrefix === 'en' || (countryCode && fahrenheitCountries.includes(countryCode))) {
+  if (fahrenheitCountries.includes(countryCode)) {
     return { temperatureUnit: 'F', speedUnit: 'mph', apiUnit: 'e' };
   } else {
     return { temperatureUnit: 'C', speedUnit: 'km/h', apiUnit: 'm' };
@@ -68,7 +66,8 @@ module.exports = (bot) => {
       const addressFirst = locationData.address[0];
       const latFirst = locationData.latitude[0];
       const lonFirst = locationData.longitude[0];
-      const { temperatureUnit, speedUnit, apiUnit } = getLocaleUnit(userLang);
+      const countryCode = locationData.countryCode[0];
+      const { temperatureUnit, speedUnit, apiUnit } = getLocaleUnit(countryCode);
 
       const weatherResponse = await axios.get('https://api.weather.com/v3/aggcommon/v3-wx-observations-current', {
         params: {
