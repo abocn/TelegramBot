@@ -40,6 +40,14 @@ const downloadFromYoutube = async (command, args) => {
   });
 };
 
+const timeoutPromise = (timeout) => {
+  return new Promise((_, reject) => {
+    setTimeout(() => {
+      reject(new Error('Timeout: Check took too long'));
+    }, timeout);
+  });
+};
+
 const getApproxSize = async (command, videoUrl) => {
   const args = [videoUrl, '--compat-opt', 'manifest-filesize-approx', '-O', 'filesize_approx'];
   try {
@@ -61,13 +69,20 @@ module.exports = (bot) => {
     const ytDlpPath = getYtDlpPath();
     const userId = ctx.from.id;
     const videoUrl = ctx.message.text.split(' ').slice(1).join(' ');
-    const mp4File = `tmp/${userId}.mp4`;
-    const tempMp4File = `tmp/${userId}.f137.mp4`;
-    const tempWebmFile = `tmp/${userId}.f251.webm`;
+    const tempMp4File = path.resolve(`tmp/${userId}.f137.mp4`);
+    const tempWebmFile = path.resolve(`tmp/${userId}.f251.webm`);
+    const mp4File = path.resolve(`tmp/${userId}.mp4`);
     let cmdArgs = "";
     const dlpCommand = ytDlpPath;
     const ffmpegPath = getFfmpegPath();
-    const ffmpegArgs = ['-i', tempMp4File, '-i', tempWebmFile, '-c:v copy -c:a copy -strict -2', mp4File];
+    const ffmpegArgs = [
+      '-i', tempMp4File,
+      '-i', tempWebmFile,
+      '-c:v', 'copy',
+      '-c:a', 'copy',
+      '-strict', '-2',
+      mp4File
+    ];
 
     if (!videoUrl) {
       return ctx.reply(Strings.ytDownload.noLink, {
@@ -77,23 +92,15 @@ module.exports = (bot) => {
       });
     };
 
-    if (fs.existsSync(path.resolve(__dirname, "../props/cookies.txt"))) {
-      cmdArgs = "--max-filesize 2G --no-playlist --cookies src/props/cookies.txt --merge-output-format mp4 -o";
-    } else {
-      cmdArgs = `--max-filesize 2G --no-playlist --merge-output-format mp4 -o`;
-    }
-
+    const downloadingMessage = await ctx.reply(Strings.ytDownload.checkingSize, {
+      parse_mode: 'Markdown',
+      reply_to_message_id: ctx.message.message_id,
+    });
+    
     try {
-      const downloadingMessage = await ctx.reply(Strings.ytDownload.checkingSize, {
-        parse_mode: 'Markdown',
-        reply_to_message_id: ctx.message.message_id,
-      });
-
       if (fs.existsSync(ytDlpPath)) {
-        const approxSizeInMB = await Promise.race([
-          getApproxSize(ytDlpPath, videoUrl),
-        ]);
-
+        let videoFormat = '-f bestvideo+bestaudio';
+        
         await ctx.telegram.editMessageText(
           ctx.chat.id,
           downloadingMessage.message_id,
@@ -103,9 +110,12 @@ module.exports = (bot) => {
             reply_to_message_id: ctx.message.message_id,
           },
         );
-
-        const dlpArgs = [videoUrl, ...cmdArgs.split(' '), mp4File];
-        await downloadFromYoutube(dlpCommand, dlpArgs);
+        if (fs.existsSync(path.resolve(__dirname, "../props/cookies.txt"))) {
+          cmdArgs = "--max-filesize 2G --no-playlist --cookies src/props/cookies.txt --merge-output-format mp4 -o";
+        } else {
+          cmdArgs = `--max-filesize 2G --no-playlist --merge-output-format mp4 -o`;
+        }
+        let dlpArgs = [videoUrl, videoFormat, ...cmdArgs.split(' '), mp4File];
 
         await ctx.telegram.editMessageText(
           ctx.chat.id,
@@ -117,11 +127,22 @@ module.exports = (bot) => {
           },
         );
 
+        await downloadFromYoutube(dlpCommand, dlpArgs);
+
         if(fs.existsSync(tempMp4File)){
-          await downloadFromYoutube(ffmpegPath, ffmpegArgs);
+            await downloadFromYoutube(ffmpegPath, ffmpegArgs);
         }
 
         if (fs.existsSync(mp4File)) {
+          const videoStats = fs.statSync(mp4File);
+          const videoSize = videoStats.size;
+          const videoSizeInMb = videoSize/(1024*1024);
+          if(videoSizeInMb >= 50){
+            fs.unlinkSync(mp4File);
+            videoFormat = '-f best';
+            dlpArgs = [videoUrl, videoFormat, ...cmdArgs.split(' '), mp4File];
+            await downloadFromYoutube(dlpCommand, dlpArgs);
+          }
           const message = Strings.ytDownload.msgDesc.replace("{userMention}", `[${ctx.from.first_name}](tg://user?id=${userId})`)
 
           try {
@@ -133,6 +154,8 @@ module.exports = (bot) => {
             });
             
             fs.unlinkSync(mp4File);
+            fs.unlinkSync(tempMp4File);
+            fs.unlinkSync(tempWebmFile);
           } catch (error) {
             if (toString(error).includes("Request Entity Too Large")) {
               await ctx.telegram.editMessageText(
