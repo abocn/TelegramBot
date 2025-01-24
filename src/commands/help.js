@@ -29,14 +29,10 @@ async function sendHelpMessage(ctx, isEditing) {
 }
 
 module.exports = (bot) => {
-  // bot.help(spamwatchMiddleware, async (ctx) => {
-  //   await sendHelpMessage(ctx);
-  // });
-
   bot.help(spamwatchMiddleware, async (ctx) => {
-    ctx.reply("\`\`[DISABLED BY MAINTENANCE, SORRY ABOUT THAT]\`\`")
-  })
-  
+    await sendHelpMessage(ctx);
+  });
+
   bot.command("about", spamwatchMiddleware, async (ctx) => {
     const Strings = getStrings(ctx.from.language_code);
     const aboutMsg = Strings.botAbout.replace("{sourceLink}", `${process.env.botSource}`);
