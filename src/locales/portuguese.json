@@ -63,8 +63,6 @@
   "interactiveEmojisDesc": "*Emojis interativos*\n\n- /dice: Jogue um dado\n- /idice: Role infinitamente um dado colorido\n- /slot: Tente combinar as figuras!\n- /ball: Tente chutar a bola no gol!\n- /bowling: Tente derrubar os pinos!\n- /dart: Tente acertar o alvo!",
   "animalCommands": "Animais",
   "animalCommandsDesc": "*Animais*\n\n- /soggy | /soggycat `<1 | 2 | 3 | 4 | orig | thumb | sticker | alt>`: Envia o [meme do gato encharcado](https://knowyourmeme.com/memes/soggy-cat)\n- /cat `<tags>` - Envia uma foto aleatória de um gato. Você pode especificar algumas tags em inglês, separando cada uma por uma vírgula. Exemplo: `/cat orange, cute`\n- /dog - Envia uma imagem aleatória de um cachorro.\n- /httpcat `<código http>`: Envia memes de gato do http.cat com o código HTTP especificado. Exemplo: `/httpcat 404`",
-  "myLittlePony": "My Little Pony",
-  "myLittlePonyDesc": "*My Little Pony*\n\n- /mlp: Exibe esta mensagem de ajuda.\n- /mlpchar `<nome do personagem>`: Mostra informações específicas sobre um personagem de My Little Pony em inglês. Exemplo: `/mlpchar twilight`\n- /mlpep: Mostra informações específicas sobre um episódio de My Little Pony em inglês. Exemplo: `/mlpep 136`",
   "maInvalidModule": "Por favor, forneça um ID de módulo válido do The Mod Archive.\nExemplo: `/modarchive 81574`",
   "maDownloadError": "Erro ao baixar o arquivo. Verifique o ID do módulo e tente novamente.",
   "ytDownload": {
@@ -95,8 +93,11 @@
     "resultMsg": "*Código HTTP*: `{code}`\n*Nome*: `{message}`\n*Descrição*: `{description}`"
   },
   "ponyApi": {
+    "helpEntry": "My Little Pony",
+    "helpDesc": "*My Little Pony*\n\n- /mlp: Exibe esta mensagem de ajuda.\n- /mlpchar `<nome do personagem>`: Mostra informações específicas sobre um personagem de My Little Pony em inglês. Exemplo: `/mlpchar twilight`\n- /mlpep: Mostra informações específicas sobre um episódio de My Little Pony em inglês. Exemplo: `/mlpep 136`",
     "charRes": "*Informações do Personagem de MLP para* `{input}`*:*\n\n*Nome:* `{name}`\n*Apelido:* `{alias}`\n*URL do Fandom:* [{url}]({url})\n*Sexo:* `{sex}`\n*Residência:* `{residence}`\n*Ocupação:* `{occupation}`\n*Tipo:* `{kind}`",
     "epRes": "*Informações do Episódio de MLP para* `{input}`*:*\n\n*Nome:* `{name}`\n*URL do Fandom:* [{url}]({url})\n*Temporada:* `{season}`\n*Episódio:* `{episode}`\n*Episódio Geral:* `{overall}`\n*Data de Lançamento:* `{airdate}`\n*História por:* `{storyby}`\n*Escrito por:* `{writtenby}`\n*Storyboard:* `{storyboard}`",
+    "comicRes": "*Informações da Comic de MLP para* \"`{input}`\"*:*\n\n*Nome:* `{name}`\n*URL do Fandom:* [{url}]({url})\n*Série:* `{series}`\n*Escritor:* `{writer}`\n*Artista:* `{artist}`\n*Colorista:* `{colorist}`\n*Letrista:* `{letterer}`\n*Editor:* `{editor}`",
     "noCharName": "Por favor, forneça o nome do personagem.",
     "noCharFound": "Nenhum personagem encontrado.",
     "noEpisodeNum": "Por favor, forneça o número do episódio.",
