@@ -42,13 +42,12 @@ module.exports = (bot) => {
     
     const deviceDetails = jsonRes[phoneSearch];
     const device = deviceDetails.find((item) => item.brand) || deviceDetails[0];
-    const { brand = "Unknown", name = "Unknown", model = "Unknown" } = device;
     const message = Strings.codenameCheck.resultMsg
       .replace('{brand}', device.brand)
       .replace('{codename}', userInput)
       .replace('{model}', device.model)
       .replace('{name}', device.name);
-    console.log(message)
+
     return ctx.reply(message, {
       parse_mode: 'Markdown',
       reply_to_message_id: ctx.message.message_id
