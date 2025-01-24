@@ -56,7 +56,7 @@
   "mainCommands": "Main commands",
   "mainCommandsDesc": "*Main commands*\n\n- /help: Show bot's help\n- /start: Start the bot\n- /privacy: Read the bot's Privacy Policy",
   "usefulCommands": "Useful commands",
-  "usefulCommandsDesc": "*Useful commands*\n\n- /chatinfo: Send information about the group\n- /userinfo: Send information about yourself\n- /d | /device `<model>`: Search for a device on GSMArena and show its specs.\n- /weather | /clima `<city>`: See weather status for a specific location.\n- /modarchive | /tma `<module id>`: Download a module from The Mod Archive.\n- /wiki `<wiki page>` (WIP): Displays content from a Wikipedia page, converting some things to a more familiar format on Telegram.\n- /http `<HTTP code>`: Send details about a specific HTTP code. Example: `/http 404`",
+  "usefulCommandsDesc": "*Useful commands*\n\n- /chatinfo: Send information about the group\n- /userinfo: Send information about yourself\n- /d | /device `<model>`: Search for a device on GSMArena and show its specs.\n/codename `<device codename>`: Shows what device is based on the codename. Example: `/codename begonia`\n- /weather | /clima `<city>`: See weather status for a specific location.\n- /modarchive | /tma `<module id>`: Download a module from The Mod Archive.\n- /wiki `<wiki page>` (WIP): Displays content from a Wikipedia page, converting some things to a more familiar format on Telegram.\n- /http `<HTTP code>`: Send details about a specific HTTP code. Example: `/http 404`",
   "funnyCommands": "Funny commands",
   "funnyCommandsDesc": "*Funny commands*\n\n- /gay: Check if you are gay\n- /furry: Check if you are a furry\n- /random: Pick a random number between 0-10",
   "interactiveEmojis": "Interactive emojis",
@@ -105,5 +105,12 @@
     "noComicName": "Please provide the comic's name.",
     "noComicFound": "No comic found.",
     "apiErr": "An error occurred while fetching data from the API."
+  },
+  "codenameCheck": {
+    "noCodename": "Please provide a codename to search.",
+    "invalidCodename": "Invalid codename.",
+    "notFound": "Phone not found.",
+    "resultMsg": "*Name:* `{name}`\n*Brand:* `{brand}`\n*Model:* `{model}`\n*Codename:* `{codename}`",
+    "apiErr": "An error occurred while fetching data from the API.\n\n`{err}`"
   }
 }
