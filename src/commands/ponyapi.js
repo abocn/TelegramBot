@@ -162,71 +162,70 @@ module.exports = (bot) => {
     };
   });
 
+  bot.command("mlpcomic", spamwatchMiddleware, async (ctx) => {
+    const Strings = getStrings(ctx.from.language_code);
+    const userInput = ctx.message.text.split(' ').slice(1).join(' ');
 
-  // bot.command("mlpcomic", spamwatchMiddleware, async (ctx) => {
-  //   const Strings = getStrings(ctx.from.language_code);
-  //   const userInput = ctx.message.text.split(' ').slice(1).join(' ');
+    if (!userInput) {
+      ctx.reply(Strings.ponyApi.noComicName, {
+        parse_mode: 'Markdown',
+        reply_to_message_id: ctx.message.message_id
+      });
+      return;
+    };
 
-  //   if (!userInput) {
-  //     ctx.reply(Strings.ponyApi.noComicName, {
-  //       parse_mode: 'Markdown',
-  //       reply_to_message_id: ctx.message.message_id
-  //     });
-  //     return;
-  //   };
+    const apiUrl = `http://ponyapi.net/v1/comics-story/${userInput}`;
 
-  //   const apiUrl = `http://ponyapi.net/v1/comics-story/${userInput}`;
+    try {
+      const response = await axios(apiUrl);
+      const comicArray = [];
+      console.log(response.data.data)
+      if (Array.isArray(response.data.data)) {
+        response.data.data.forEach(comic => {
+          comicArray.push({
+            name: comic.name,
+            series: comic.series,
+            image: comic.image,
+            url: comic.url,
+            writer: comic.writer ? comic.writer.replace(/\n/g, ' / ') : 'N/A',
+            artist: comic.artist ? comic.artist.replace(/\n/g, ' / ') : 'N/A',
+            colorist: comic.colorist ? comic.colorist.replace(/\n/g, ' / ') : 'N/A',
+            letterer: comic.letterer ? comic.letterer.replace(/\n/g, ' / ') : 'N/A',
+            editor: comic.editor
+          });
+        });
+      };
 
-  //   try {
-  //     const response = await axios(apiUrl);
-  //     const comicArray = [];
-  //     console.log(response.data.data)
-  //     if (Array.isArray(response.data.data)) {
-  //       response.data.data.forEach(comic => {
-  //         comicArray.push({
-  //           name: comic.name,
-  //           series: comic.series,
-  //           image: comic.image,
-  //           url: comic.url,
-  //           writer: comic.writer ? comic.writer.replace(/\n/g, ' / ') : 'N/A',
-  //           artist: comic.artist ? comic.artist.replace(/\n/g, ' / ') : 'N/A',
-  //           colorist: comic.colorist ? comic.colorist.replace(/\n/g, ' / ') : 'N/A',
-  //           letterer: comic.letterer ? comic.letterer.replace(/\n/g, ' / ') : 'N/A',
-  //           editor: comic.editor
-  //         });
-  //       });
-  //     };
+      if (comicArray.length > 0) {
+        const result = Strings.ponyApi.comicRes
+          .replace("{input}", userInput)
+          .replace("{name}", comicArray[0].name)
+          .replace("{series}", comicArray[0].series)
+          .replace("{url}", comicArray[0].url)
+          .replace("{writer}", comicArray[0].writer)
+          .replace("{artist}", comicArray[0].artist)
+          .replace("{colorist}", comicArray[0].colorist)
+          .replace("{letterer}", comicArray[0].writtenby)
+          .replace("{editor}", comicArray[0].editor);
 
-  //     if (comicArray.length > 0) {
-  //       const result = Strings.ponyApi.comicRes
-  //         .replace("{input}", userInput)
-  //         .replace("{name}", comicArray[0].name)
-  //         .replace("{series}", comicArray[0].series)
-  //         .replace("{url}", comicArray[0].url)
-  //         .replace("{writer}", comicArray[0].writer)
-  //         .replace("{artist}", comicArray[0].artist)
-  //         .replace("{colorist}", comicArray[0].colorist)
-  //         .replace("{letterer}", comicArray[0].writtenby)
-  //         .replace("{editor}", comicArray[0].editor);
-
-  //       ctx.replyWithPhoto(comicArray[0].image, {
-  //         caption: `${result}`,
-  //         parse_mode: 'Markdown',
-  //         disable_web_page_preview: true,
-  //         reply_to_message_id: ctx.message.message_id
-  //       });
-  //     } else {
-  //       ctx.reply(Strings.ponyApi.noComicFound, {
-  //         parse_mode: 'Markdown',
-  //         reply_to_message_id: ctx.message.message_id
-  //       });
-  //     };
-  //   } catch (error) {
-  //     console.error(error);
-  //     ctx.reply(Strings.ponyApi.apiErr, {
-  //       parse_mode: 'Markdown',
-  //       reply_to_message_id: ctx.message.message_id
-  //     });
-  //   };
-  // });
+        ctx.replyWithPhoto(comicArray[0].image, {
+          caption: `${result}`,
+          parse_mode: 'Markdown',
+          disable_web_page_preview: true,
+          reply_to_message_id: ctx.message.message_id
+        });
+      } else {
+        ctx.reply(Strings.ponyApi.noComicFound, {
+          parse_mode: 'Markdown',
+          reply_to_message_id: ctx.message.message_id
+        });
+      };
+    } catch (error) {
+      console.error(error);
+      ctx.reply(Strings.ponyApi.apiErr, {
+        parse_mode: 'Markdown',
+        reply_to_message_id: ctx.message.message_id
+      });
+    };
+  });
 };

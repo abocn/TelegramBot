@@ -7,7 +7,7 @@ async function sendHelpMessage(ctx, isEditing) {
   const botInfo = await ctx.telegram.getMe();
   const helpText = Strings.botHelp
     .replace('{botName}', botInfo.first_name)
-    .replace("{sourceLink}", `${process.env.botSource}`);
+    .replace("{sourceLink}", process.env.botSource);
   const options = {
     parse_mode: 'Markdown',
     disable_web_page_preview: true,
