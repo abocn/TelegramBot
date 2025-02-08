@@ -94,7 +94,7 @@
   },
   "ponyApi": {
     "helpEntry": "My Little Pony",
-    "helpDesc": "*My Little Pony*\n\n- /mlp: Exibe esta mensagem de ajuda.\n- /mlpchar `<nome do personagem>`: Mostra informações específicas sobre um personagem de My Little Pony em inglês. Exemplo: `/mlpchar twilight`\n- /mlpep: Mostra informações específicas sobre um episódio de My Little Pony em inglês. Exemplo: `/mlpep 136`",
+    "helpDesc": "*My Little Pony*\n\n- /mlp: Exibe esta mensagem de ajuda.\n- /mlpchar `<nome do personagem>`: Mostra informações específicas sobre um personagem de My Little Pony em inglês. Exemplo: `/mlpchar twilight`\n- /mlpep: Mostra informações específicas sobre um episódio de My Little Pony em inglês. Exemplo: `/mlpep 136`\n- /mlpcomic `<nome da comic>`: Mostra informações específicas sobre uma comic de My Little Pony em inglês. Exemplo: `/mlpcomic Nightmare Rarity`\n- /rpony | /randompony: Envia uma arte aleatória feita pela comunidade de My Little Pony.",
     "charRes": "*Informações do Personagem de MLP para* `{input}`*:*\n\n*Nome:* `{name}`\n*Apelido:* `{alias}`\n*URL do Fandom:* [{url}]({url})\n*Sexo:* `{sex}`\n*Residência:* `{residence}`\n*Ocupação:* `{occupation}`\n*Tipo:* `{kind}`",
     "epRes": "*Informações do Episódio de MLP para* `{input}`*:*\n\n*Nome:* `{name}`\n*URL do Fandom:* [{url}]({url})\n*Temporada:* `{season}`\n*Episódio:* `{episode}`\n*Episódio Geral:* `{overall}`\n*Data de Lançamento:* `{airdate}`\n*História por:* `{storyby}`\n*Escrito por:* `{writtenby}`\n*Storyboard:* `{storyboard}`",
     "comicRes": "*Informações da Comic de MLP para* \"`{input}`\"*:*\n\n*Nome:* `{name}`\n*URL do Fandom:* [{url}]({url})\n*Série:* `{series}`\n*Escritor:* `{writer}`\n*Artista:* `{artist}`\n*Colorista:* `{colorist}`\n*Letrista:* `{letterer}`\n*Editor:* `{editor}`",
@@ -104,7 +104,7 @@
     "noEpisodeFound": "Nenhum episódio encontrado.",
     "noComicName": "Por favor, forneça o nome da comic.",
     "noComicFound": "Nenhuma comic foi encontrada.",
-    "apiErr": "Ocorreu um erro ao buscar dados da API."
+    "apiErr": "Ocorreu um erro ao buscar dados da API.\n\n`{error}`"
   },
   "codenameCheck": {
     "noCodename": "Por favor, forneça um codinome para pesquisar.",

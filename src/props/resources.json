@@ -17,5 +17,6 @@
   "modArchiveApi": "https://api.modarchive.org/downloads.php?moduleid=",
   "ponyApi": "http://ponyapi.net/v1",
   "quoteApi": "https://quotes-api-self.vercel.app/quote",
-  "weatherApi": "https://api.weather.com/v3"
+  "weatherApi": "https://api.weather.com/v3",
+  "randomPonyApi": "https://theponyapi.com/api/v1/pony/random"
 }

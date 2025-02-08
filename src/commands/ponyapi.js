@@ -86,8 +86,8 @@ module.exports = (bot) => {
         });
       };
     } catch (error) {
-      console.error(error);
-      ctx.reply(Strings.ponyApi.apiErr, {
+      const message = Strings.ponyApi.apiErr.replace('{error}', error.message);
+      ctx.reply(message, {
         parse_mode: 'Markdown',
         reply_to_message_id: ctx.message.message_id
       });
@@ -155,8 +155,8 @@ module.exports = (bot) => {
         });
       };
     } catch (error) {
-      console.error(error);
-      ctx.reply(Strings.ponyApi.apiErr, {
+      const message = Strings.ponyApi.apiErr.replace('{error}', error.message);
+      ctx.reply(message, {
         parse_mode: 'Markdown',
         reply_to_message_id: ctx.message.message_id
       });
@@ -222,8 +222,8 @@ module.exports = (bot) => {
         });
       };
     } catch (error) {
-      console.error(error);
-      ctx.reply(Strings.ponyApi.apiErr, {
+      const message = Strings.ponyApi.apiErr.replace('{error}', error.message);
+      ctx.reply(message, {
         parse_mode: 'Markdown',
         reply_to_message_id: ctx.message.message_id
       });
