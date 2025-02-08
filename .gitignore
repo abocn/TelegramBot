@@ -136,6 +136,7 @@ dist
 lastfm.json
 sw-blocklist.txt
 package-lock.json
+bun.lock
 tmp/
 plugins/
 
