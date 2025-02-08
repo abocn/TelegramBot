@@ -19,5 +19,6 @@
   "quoteApi": "https://quotes-api-self.vercel.app/quote",
   "weatherApi": "https://api.weather.com/v3",
   "randomPonyApi": "https://theponyapi.com/api/v1/pony/random",
-  "foxApi": "https://randomfox.ca/floof/"
+  "foxApi": "https://randomfox.ca/floof/",
+  "duckApi": "https://random-d.uk/api/v2/random"
 }

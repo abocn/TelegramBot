@@ -87,6 +87,7 @@
   "quoteErr": "Sorry, but something went wrong while displaying the quote.",
   "dogImgErr": "Sorry, but I couldn't get the dog photo you wanted.",
   "foxApiErr": "An error occurred while fetching data from the API.\n\n`{error}`",
+  "duckApiErr": "An error occurred while fetching data from the API.\n\n`{error}`",
   "httpCodes": {
     "invalidCode": "Please enter a valid HTTP code.",
     "fetchErr": "An error occurred while fetching the HTTP code.",

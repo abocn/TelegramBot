@@ -87,6 +87,7 @@
   "quoteErr": "Desculpe, mas algo deu errado ao exibir a citação.",
   "dogImgErr": "Desculpe, mas não consegui obter a foto do cacbhorro que você queria.",
   "foxApiErr": "Ocorreu um erro ao buscar dados da API.\n\n`{error}`",
+  "duckApiErr": "Ocorreu um erro ao buscar dados da API.\n\n`{error}`",
   "httpCodes": {
     "invalidCode": "Por favor, insira um código HTTP válido.",
     "fetchErr": "Ocorreu um erro ao buscar o código HTTP.",
