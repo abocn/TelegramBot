@@ -96,7 +96,7 @@ module.exports = (bot) => {
 
   bot.command("mlpep", spamwatchMiddleware, async (ctx) => {
     const Strings = getStrings(ctx.from.language_code);
-    const userInput = ctx.message.text.split(' ').slice(1).join(' ');
+    const userInput = ctx.message.text.split(' ').slice(1).join(' ').replace(" ", "+");
 
     if (!userInput) {
       ctx.reply(Strings.ponyApi.noEpisodeNum, {
@@ -165,7 +165,7 @@ module.exports = (bot) => {
 
   bot.command("mlpcomic", spamwatchMiddleware, async (ctx) => {
     const Strings = getStrings(ctx.from.language_code);
-    const userInput = ctx.message.text.split(' ').slice(1).join(' ');
+    const userInput = ctx.message.text.split(' ').slice(1).join(' ').replace(" ", "+");
 
     if (!userInput) {
       ctx.reply(Strings.ponyApi.noComicName, {
