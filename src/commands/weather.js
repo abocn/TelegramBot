@@ -2,6 +2,7 @@
 // Copyright (c) 2024 BubbalooTeam. (https://github.com/BubbalooTeam)
 // Minor code changes by lucmsilva (https://github.com/lucmsilva651)
 
+const Resources = require('../props/resources.json');
 const axios = require('axios');
 const { getStrings } = require('../plugins/checklang.js');
 const { isOnSpamWatch } = require('../plugins/lib-spamwatch/spamwatch.js');
@@ -46,7 +47,7 @@ module.exports = (bot) => {
     const apiKey = process.env.weatherKey;
 
     try {
-      const locationResponse = await axios.get('https://api.weather.com/v3/location/search', {
+      const locationResponse = await axios.get(`${Resources.weatherApi}/location/search`, {
         params: {
           apiKey: apiKey,
           format: 'json',
@@ -69,7 +70,7 @@ module.exports = (bot) => {
       const countryCode = locationData.countryCode[0];
       const { temperatureUnit, speedUnit, apiUnit } = getLocaleUnit(countryCode);
 
-      const weatherResponse = await axios.get('https://api.weather.com/v3/aggcommon/v3-wx-observations-current', {
+      const weatherResponse = await axios.get(`${Resources.weatherApi}/aggcommon/v3-wx-observations-current`, {
         params: {
           apiKey: apiKey,
           format: 'json',

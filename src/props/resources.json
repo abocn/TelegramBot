@@ -5,5 +5,17 @@
   "soggyCatSticker": "CAACAgEAAxkBAAJ9SWb0vY0Xgg4RtNQeU5iLOx3iTVRAAAKgAwACN-NRRFf8v9p0Nz1INgQ",
   "infiniteDice": "CAACAgQAAxkBAAJxjWbSSP-8ZNEhEpAJjQsHsGf-UuEPAAJCAAPI-uwTAAEBVWWh4ucINQQ",
   "gayFlag": "https://c.tenor.com/VTBe5BFc73sAAAAC/tenor.gif",
-  "furryGif": "https://c.tenor.com/_V_k0BVj48IAAAAd/tenor.gif"
+  "furryGif": "https://c.tenor.com/_V_k0BVj48IAAAAd/tenor.gif",
+  "codenameApi": "https://raw.githubusercontent.com/androidtrackers/certified-android-devices/master/by_device.json",
+  "catApi": "https://cataas.com/cat",
+  "dogApi": "https://dog.ceo/api/breeds/image/random",
+  "httpCatApi": "https://http.cat/",
+  "httpApi": "https://status.js.org/codes.json",
+  "lastFmApi": "http://ws.audioscrobbler.com/2.0/",
+  "musicBrainzApi": "https://coverartarchive.org/release/",
+  "lastFmGenericImg": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
+  "modArchiveApi": "https://api.modarchive.org/downloads.php?moduleid=",
+  "ponyApi": "http://ponyapi.net/v1",
+  "quoteApi": "https://quotes-api-self.vercel.app/quote",
+  "weatherApi": "https://api.weather.com/v3"
 }

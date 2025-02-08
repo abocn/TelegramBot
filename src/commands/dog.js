@@ -1,3 +1,4 @@
+const Resources = require('../props/resources.json');
 const { getStrings } = require('../plugins/checklang.js');
 const { isOnSpamWatch } = require('../plugins/lib-spamwatch/spamwatch.js');
 const spamwatchMiddleware = require('../plugins/lib-spamwatch/Middleware.js')(isOnSpamWatch);
@@ -6,7 +7,7 @@ const axios = require('axios');
 module.exports = (bot) => {
   bot.command("dog", spamwatchMiddleware, async (ctx) => {
     const Strings = getStrings(ctx.from.language_code);
-    const apiUrl = "https://dog.ceo/api/breeds/image/random";
+    const apiUrl = Resources.dogApi;
     const response = await axios.get(apiUrl);
     const data = response.data;
 

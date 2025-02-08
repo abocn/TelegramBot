@@ -1,3 +1,4 @@
+const Resources = require('../props/resources.json');
 const { getStrings } = require('../plugins/checklang.js');
 const { isOnSpamWatch } = require('../plugins/lib-spamwatch/spamwatch.js');
 const spamwatchMiddleware = require('../plugins/lib-spamwatch/Middleware.js')(isOnSpamWatch);
@@ -5,7 +6,7 @@ const axios = require('axios');
 
 async function getDeviceList() {
   try {
-    const response = await axios.get('https://raw.githubusercontent.com/androidtrackers/certified-android-devices/master/by_device.json');
+    const response = await axios.get(Resources.codenameApi);
     return response.data
   } catch (error) {
     const message = Strings.codenameCheck.apiErr

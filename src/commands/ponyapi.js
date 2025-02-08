@@ -1,3 +1,4 @@
+const Resources = require('../props/resources.json');
 const { getStrings } = require('../plugins/checklang.js');
 const { isOnSpamWatch } = require('../plugins/lib-spamwatch/spamwatch.js');
 const spamwatchMiddleware = require('../plugins/lib-spamwatch/Middleware.js')(isOnSpamWatch);
@@ -31,7 +32,7 @@ module.exports = (bot) => {
     };
 
     const capitalizedInput = capitalizeFirstLetter(userInput);
-    const apiUrl = `http://ponyapi.net/v1/character/${capitalizedInput}`;
+    const apiUrl = `${Resources.ponyApi}/character/${capitalizedInput}`;
 
     try {
       const response = await axios(apiUrl);
@@ -105,7 +106,7 @@ module.exports = (bot) => {
       return;
     };
 
-    const apiUrl = `http://ponyapi.net/v1/episode/by-overall/${userInput}`;
+    const apiUrl = `${Resources.ponyApi}/episode/by-overall/${userInput}`;
 
     try {
       const response = await axios(apiUrl);
@@ -174,7 +175,7 @@ module.exports = (bot) => {
       return;
     };
 
-    const apiUrl = `http://ponyapi.net/v1/comics-story/${userInput}`;
+    const apiUrl = `${Resources.ponyApi}/comics-story/${userInput}`;
 
     try {
       const response = await axios(apiUrl);

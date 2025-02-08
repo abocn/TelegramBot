@@ -1,3 +1,4 @@
+const Resources = require('../props/resources.json');
 const { getStrings } = require('../plugins/checklang.js');
 const { isOnSpamWatch } = require('../plugins/lib-spamwatch/spamwatch.js');
 const spamwatchMiddleware = require('../plugins/lib-spamwatch/Middleware.js')(isOnSpamWatch);
@@ -7,7 +8,7 @@ module.exports = (bot) => {
   bot.command("http", spamwatchMiddleware, async (ctx) => {
     const Strings = getStrings(ctx.from.language_code);
     const userInput = ctx.message.text.split(' ')[1];
-    const apiUrl = "https://status.js.org/codes.json";
+    const apiUrl = Resources.httpApi;
 
     if (!userInput || isNaN(userInput)) {
       return ctx.reply(Strings.httpCodes.invalidCode, {
@@ -57,7 +58,7 @@ module.exports = (bot) => {
       });
     }
 
-    const apiUrl = `https://http.cat/${userInput}`;
+    const apiUrl = `${Resources.httpCatApi}${userInput}`;
 
     try {
       await ctx.replyWithPhoto(apiUrl, {

@@ -1,3 +1,4 @@
+const Resources = require('../props/resources.json');
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
@@ -7,7 +8,7 @@ const spamwatchMiddleware = require('../plugins/lib-spamwatch/Middleware.js')(is
 
 async function downloadModule(moduleId) {
   try {
-    const downloadUrl = `https://api.modarchive.org/downloads.php?moduleid=${moduleId}`;
+    const downloadUrl = `${Resources.modArchiveApi}${moduleId}`;
     const response = await axios({
       url: downloadUrl,
       method: 'GET',

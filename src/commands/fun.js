@@ -1,4 +1,4 @@
-const resources = require('../props/resources.json');
+const Resources = require('../props/resources.json');
 const { getStrings } = require('../plugins/checklang.js');
 const { isOnSpamWatch } = require('../plugins/lib-spamwatch/spamwatch.js');
 const spamwatchMiddleware = require('../plugins/lib-spamwatch/Middleware.js')(isOnSpamWatch);
@@ -84,17 +84,17 @@ module.exports = (bot) => {
 
   bot.command('idice', spamwatchMiddleware, async (ctx) => {
     ctx.replyWithSticker(
-      resources.infiniteDice, {
+      Resources.infiniteDice, {
       reply_to_message_id: ctx.message.message_id
     });
   });
 
   bot.command('furry', spamwatchMiddleware, async (ctx) => {
-    sendRandomReply(ctx, resources.furryGif, 'isFurry', 'isNtFurry');
+    sendRandomReply(ctx, Resources.furryGif, 'isFurry', 'isNtFurry');
   });
 
   bot.command('gay', spamwatchMiddleware, async (ctx) => {
-    sendRandomReply(ctx, resources.gayFlag, 'isGay', 'isNtGay');
+    sendRandomReply(ctx, Resources.gayFlag, 'isGay', 'isNtGay');
   });
 
   bot.command(['soggy', 'soggycat'], spamwatchMiddleware, async (ctx) => {
@@ -103,8 +103,8 @@ module.exports = (bot) => {
     switch (true) {
       case (userInput === "2" || userInput === "thumb"):
         ctx.replyWithPhoto(
-          resources.soggyCat2, {
-          caption: resources.soggyCat2,
+          Resources.soggyCat2, {
+          caption: Resources.soggyCat2,
           parse_mode: 'Markdown',
           reply_to_message_id: ctx.message.message_id
         });
@@ -112,15 +112,15 @@ module.exports = (bot) => {
 
       case (userInput === "3" || userInput === "sticker"):
         ctx.replyWithSticker(
-          resources.soggyCatSticker, {
+          Resources.soggyCatSticker, {
           reply_to_message_id: ctx.message.message_id
         });
         break;
 
       case (userInput === "4" || userInput === "alt"):
         ctx.replyWithPhoto(
-          resources.soggyCatAlt, {
-          caption: resources.soggyCatAlt,
+          Resources.soggyCatAlt, {
+          caption: Resources.soggyCatAlt,
           parse_mode: 'Markdown',
           reply_to_message_id: ctx.message.message_id
         });
@@ -128,8 +128,8 @@ module.exports = (bot) => {
 
       default:
         ctx.replyWithPhoto(
-          resources.soggyCat, {
-          caption: resources.soggyCat,
+          Resources.soggyCat, {
+          caption: Resources.soggyCat,
           parse_mode: 'Markdown',
           reply_to_message_id: ctx.message.message_id
         });

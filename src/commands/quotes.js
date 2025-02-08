@@ -1,3 +1,4 @@
+const Resources = require('../props/resources.json');
 const { getStrings } = require('../plugins/checklang.js');
 const { isOnSpamWatch } = require('../plugins/lib-spamwatch/spamwatch.js');
 const spamwatchMiddleware = require('../plugins/lib-spamwatch/Middleware.js')(isOnSpamWatch);
@@ -8,7 +9,7 @@ module.exports = (bot) => {
     const Strings = getStrings(ctx.from.language_code);
 
     try {
-      const response = await axios.get('https://quotes-api-self.vercel.app/quote');
+      const response = await axios.get(Resources.quoteApi);
       const data = response.data;
       const escapedQuote = data.quote.replace(/([\\_*~`>.!-])/g, '\\$1');
       const escapedAuthor = `- ${data.author}.`.replace(/([\\_*~`>.!-])/g, '\\$1');

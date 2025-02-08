@@ -1,10 +1,11 @@
+const Resources = require('../props/resources.json');
 const fs = require('fs');
 const axios = require('axios');
 const { getStrings } = require('../plugins/checklang.js');
 const { isOnSpamWatch } = require('../plugins/lib-spamwatch/spamwatch.js');
 const spamwatchMiddleware = require('../plugins/lib-spamwatch/Middleware.js')(isOnSpamWatch);
 
-const scrobbler_url = 'http://ws.audioscrobbler.com/2.0/';
+const scrobbler_url = Resources.lastFmApi;
 const api_key = process.env.lastKey;
 
 const dbFile = 'src/props/lastfm.json';
@@ -36,7 +37,7 @@ function saveUsers() {
 
 async function getFromMusicBrainz(mbid) {
   try {
-    const response = await axios.get(`https://coverartarchive.org/release/${mbid}`);
+    const response = await axios.get(`${Resources.musicBrainzApi}${mbid}`);
     const imgObjLarge = response.data.images[0]?.thumbnails?.['1200'];
     const imgObjMid = response.data.images[0]?.thumbnails?.large;
     const imageUrl = imgObjLarge || imgObjMid || '';
@@ -89,7 +90,7 @@ module.exports = (bot) => {
     const userId = ctx.from.id;
     const Strings = getStrings(ctx.from.language_code);
     const lastfmUser = users[userId];
-    const genericImg = "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png";
+    const genericImg = Resources.lastFmGenericImg;
     const botInfo = await ctx.telegram.getMe();
     
     if (!lastfmUser) {

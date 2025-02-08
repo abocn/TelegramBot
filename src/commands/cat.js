@@ -1,3 +1,4 @@
+const Resources = require('../props/resources.json');
 const { getStrings } = require('../plugins/checklang.js');
 const { isOnSpamWatch } = require('../plugins/lib-spamwatch/spamwatch.js');
 const spamwatchMiddleware = require('../plugins/lib-spamwatch/Middleware.js')(isOnSpamWatch);
@@ -46,10 +47,10 @@ module.exports = (bot) => {
 
   bot.command("cat", spamwatchMiddleware, async (ctx) => {
     const Strings = getStrings(ctx.from.language_code);
-    const apiUrl = "https://cataas.com/cat?json=true";
+    const apiUrl = `${Resources.catApi}?json=true`;
     const response = await axios.get(apiUrl);
     const data = response.data;
-    const imageUrl = `https://cataas.com/cat/${data._id}`;
+    const imageUrl = `${Resources.catApi}/${data._id}`;
 
     try {
       await ctx.replyWithPhoto(imageUrl, {
