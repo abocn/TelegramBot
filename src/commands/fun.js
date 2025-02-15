@@ -3,25 +3,27 @@ const { getStrings } = require('../plugins/checklang.js');
 const { isOnSpamWatch } = require('../plugins/lib-spamwatch/spamwatch.js');
 const spamwatchMiddleware = require('../plugins/lib-spamwatch/Middleware.js')(isOnSpamWatch);
 
-function sendRandomReply(ctx, gifUrl, textKey, notTextKey) {
+function sendRandomReply(ctx, gifUrl, textKey) {
   const Strings = getStrings(ctx.from.language_code);
-  const shouldSendGif = Math.random() < 0.5;
+  const randomNumber = Math.floor(Math.random() * 100);
+  const shouldSendGif = randomNumber > 50;
+
+  const caption = Strings[textKey].replace('{randomNum}', randomNumber)
 
   if (shouldSendGif) {
     ctx.replyWithAnimation(gifUrl, {
-      caption: Strings[textKey],
+      caption,
       parse_mode: 'Markdown',
       reply_to_message_id: ctx.message.message_id
     }).catch(err => {
       gifErr = gifErr.replace('{err}', err);
-
       ctx.reply(Strings.gifErr, {
         parse_mode: 'Markdown',
         reply_to_message_id: ctx.message.message_id
       });
     });
   } else {
-    ctx.reply(Strings[notTextKey], {
+    ctx.reply(caption, {
       parse_mode: 'Markdown',
       reply_to_message_id: ctx.message.message_id
     });
@@ -46,7 +48,7 @@ async function handleDiceCommand(ctx, emoji, delay) {
 }
 
 function getRandomInt(max) {
-  return Math.floor(Math.random() * max);
+  return Math.floor(Math.random() * (max + 1));
 }
 
 module.exports = (bot) => {
@@ -90,11 +92,11 @@ module.exports = (bot) => {
   });
 
   bot.command('furry', spamwatchMiddleware, async (ctx) => {
-    sendRandomReply(ctx, Resources.furryGif, 'isFurry', 'isNtFurry');
+    sendRandomReply(ctx, Resources.furryGif, 'furryAmount');
   });
 
   bot.command('gay', spamwatchMiddleware, async (ctx) => {
-    sendRandomReply(ctx, Resources.gayFlag, 'isGay', 'isNtGay');
+    sendRandomReply(ctx, Resources.gayFlag, 'gayAmount');
   });
 
   bot.command(['soggy', 'soggycat'], spamwatchMiddleware, async (ctx) => {
