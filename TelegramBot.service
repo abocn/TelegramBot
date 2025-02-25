@@ -3,11 +3,10 @@ Description=TelegramBot
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/bun start
+ExecStart=bash -c 'source $HOME/.profile && (command -v bun &> /dev/null && exec bun start || exec npm start)'
 WorkingDirectory=/home/%u/TelegramBot
 Restart=always
 User=%u
-Environment="PATH=/usr/bin:/usr/local/bin"
 
 [Install]
 WantedBy=multi-user.target
