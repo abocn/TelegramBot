@@ -3,6 +3,7 @@ const { getStrings } = require('../plugins/checklang.js');
 const { isOnSpamWatch } = require('../plugins/lib-spamwatch/spamwatch.js');
 const spamwatchMiddleware = require('../plugins/lib-spamwatch/Middleware.js')(isOnSpamWatch);
 const axios = require('axios');
+const { verifyInput } = require('../plugins/verifyInput.js');
 
 async function getDeviceList() {
   try {
@@ -23,12 +24,10 @@ module.exports = (bot) => {
   bot.command(['codename', 'whatis'], spamwatchMiddleware, async (ctx) => {
     const userInput = ctx.message.text.split(" ").slice(1).join(" ");
     const Strings = getStrings(ctx.from.language_code);
-
-    if (!userInput) {
-      ctx.reply(Strings.codenameCheck.noCodename, {
-        parse_mode: "Markdown",
-        reply_to_message_id: ctx.message.message_id
-      });
+    const { noCodename } = Strings.codenameCheck
+  
+    if(verifyInput(ctx, userInput, noCodename)){
+      return;
     }
 
     const jsonRes = await getDeviceList()

@@ -6,6 +6,7 @@ const Resources = require('../props/resources.json');
 const axios = require('axios');
 const { getStrings } = require('../plugins/checklang.js');
 const { isOnSpamWatch } = require('../plugins/lib-spamwatch/spamwatch.js');
+const { verifyInput } = require('../plugins/verifyInput.js');
 const spamwatchMiddleware = require('../plugins/lib-spamwatch/Middleware.js')(isOnSpamWatch);
 
 const statusEmojis = {
@@ -35,12 +36,10 @@ module.exports = (bot) => {
     const userLang = ctx.from.language_code || "en-US";
     const Strings = getStrings(userLang);
     const userInput = ctx.message.text.split(' ').slice(1).join(' ');
+    const { provideLocation } = Strings.weatherStatus
 
-    if (!userInput) {
-      return ctx.reply(Strings.weatherStatus.provideLocation, {
-        parse_mode: "Markdown",
-        reply_to_message_id: ctx.message.message_id
-      });
+    if (verifyInput(ctx, userInput, provideLocation)) {
+      return;
     }
 
     const location = userInput;
@@ -95,7 +94,7 @@ module.exports = (bot) => {
         .replace('{windSpeed}', windSpeed)
         .replace('{speedUnit}', speedUnit);
 
-      ctx.reply(weatherMessage, { 
+      ctx.reply(weatherMessage, {
         parse_mode: "Markdown",
         reply_to_message_id: ctx.message.message_id
       });
