@@ -98,44 +98,4 @@ module.exports = (bot) => {
   bot.command('gay', spamwatchMiddleware, async (ctx) => {
     sendRandomReply(ctx, Resources.gayFlag, 'gayAmount');
   });
-
-  bot.command(['soggy', 'soggycat'], spamwatchMiddleware, async (ctx) => {
-    const userInput = ctx.message.text.split(' ')[1];
-    
-    switch (true) {
-      case (userInput === "2" || userInput === "thumb"):
-        ctx.replyWithPhoto(
-          Resources.soggyCat2, {
-          caption: Resources.soggyCat2,
-          parse_mode: 'Markdown',
-          reply_to_message_id: ctx.message.message_id
-        });
-        break;
-
-      case (userInput === "3" || userInput === "sticker"):
-        ctx.replyWithSticker(
-          Resources.soggyCatSticker, {
-          reply_to_message_id: ctx.message.message_id
-        });
-        break;
-
-      case (userInput === "4" || userInput === "alt"):
-        ctx.replyWithPhoto(
-          Resources.soggyCatAlt, {
-          caption: Resources.soggyCatAlt,
-          parse_mode: 'Markdown',
-          reply_to_message_id: ctx.message.message_id
-        });
-        break;
-
-      default:
-        ctx.replyWithPhoto(
-          Resources.soggyCat, {
-          caption: Resources.soggyCat,
-          parse_mode: 'Markdown',
-          reply_to_message_id: ctx.message.message_id
-        });
-        break;
-    };
-  });
 };
