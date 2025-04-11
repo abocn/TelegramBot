@@ -139,7 +139,6 @@ package-lock.json
 bun.lock
 bun.lockb
 tmp/
-plugins/
 
 # Executables
 *.exe
