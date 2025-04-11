@@ -33,4 +33,4 @@ jobs:
         run: |
           git add AUTHORS
           git commit -m "Update AUTHORS file automatically"
-          git push
+          git push https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }} HEAD:main
