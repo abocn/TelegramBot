@@ -27,7 +27,7 @@ module.exports = (bot) => {
 
     if (verifyInput(ctx, userInput, noCharName)) {
       return;
-    }
+    };
 
     const capitalizedInput = capitalizeFirstLetter(userInput);
     const apiUrl = `${Resources.ponyApi}/character/${capitalizedInput}`;
@@ -48,13 +48,14 @@ module.exports = (bot) => {
           }
 
           charactersArray.push({
+            id: character.id,
             name: character.name,
-            alias: aliases.length > 0 ? aliases.join(', ') : 'N/A',
+            alias: aliases.length > 0 ? aliases.join(', ') : 'None',
             url: character.url,
             sex: character.sex,
-            residence: character.residence ? character.residence.replace(/\n/g, ' / ') : 'N/A',
-            occupation: character.occupation ? character.occupation.replace(/\n/g, ' / ') : 'N/A',
-            kind: character.kind ? character.kind.join(', ') : 'N/A',
+            residence: character.residence ? character.residence.replace(/\n/g, ' / ') : 'None',
+            occupation: character.occupation ? character.occupation.replace(/\n/g, ' / ') : 'None',
+            kind: character.kind ? character.kind.join(', ') : 'None',
             image: character.image
           });
         });
@@ -62,7 +63,7 @@ module.exports = (bot) => {
 
       if (charactersArray.length > 0) {
         const result = Strings.ponyApi.charRes
-          .replace("{input}", userInput)
+          .replace("{id}", charactersArray[0].id)
           .replace("{name}", charactersArray[0].name)
           .replace("{alias}", charactersArray[0].alias)
           .replace("{url}", charactersArray[0].url)
@@ -100,7 +101,7 @@ module.exports = (bot) => {
 
     if (verifyInput(ctx, userInput, noEpisodeNum, true)) {
       return;
-    }
+    };
 
     const apiUrl = `${Resources.ponyApi}/episode/by-overall/${userInput}`;
 
@@ -111,6 +112,7 @@ module.exports = (bot) => {
       if (Array.isArray(response.data.data)) {
         response.data.data.forEach(episode => {
           episodeArray.push({
+            id: episode.id,
             name: episode.name,
             image: episode.image,
             url: episode.url,
@@ -118,16 +120,16 @@ module.exports = (bot) => {
             episode: episode.episode,
             overall: episode.overall,
             airdate: episode.airdate,
-            storyby: episode.storyby ? episode.storyby.replace(/\n/g, ' / ') : 'N/A',
-            writtenby: episode.writtenby ? episode.writtenby.replace(/\n/g, ' / ') : 'N/A',
-            storyboard: episode.storyboard ? episode.storyboard.replace(/\n/g, ' / ') : 'N/A',
+            storyby: episode.storyby ? episode.storyby.replace(/\n/g, ' / ') : 'None',
+            writtenby: episode.writtenby ? episode.writtenby.replace(/\n/g, ' / ') : 'None',
+            storyboard: episode.storyboard ? episode.storyboard.replace(/\n/g, ' / ') : 'None',
           });
         });
       };
 
       if (episodeArray.length > 0) {
         const result = Strings.ponyApi.epRes
-          .replace("{input}", userInput)
+          .replace("{id}", episodeArray[0].id)
           .replace("{name}", episodeArray[0].name)
           .replace("{url}", episodeArray[0].url)
           .replace("{season}", episodeArray[0].season)
@@ -178,14 +180,15 @@ module.exports = (bot) => {
       if (Array.isArray(response.data.data)) {
         response.data.data.forEach(comic => {
           comicArray.push({
+            id: comic.id,
             name: comic.name,
             series: comic.series,
             image: comic.image,
             url: comic.url,
-            writer: comic.writer ? comic.writer.replace(/\n/g, ' / ') : 'N/A',
-            artist: comic.artist ? comic.artist.replace(/\n/g, ' / ') : 'N/A',
-            colorist: comic.colorist ? comic.colorist.replace(/\n/g, ' / ') : 'N/A',
-            letterer: comic.letterer ? comic.letterer.replace(/\n/g, ' / ') : 'N/A',
+            writer: comic.writer ? comic.writer.replace(/\n/g, ' / ') : 'None',
+            artist: comic.artist ? comic.artist.replace(/\n/g, ' / ') : 'None',
+            colorist: comic.colorist ? comic.colorist.replace(/\n/g, ' / ') : 'None',
+            letterer: comic.letterer ? comic.letterer.replace(/\n/g, ' / ') : 'None',
             editor: comic.editor
           });
         });
@@ -193,7 +196,7 @@ module.exports = (bot) => {
 
       if (comicArray.length > 0) {
         const result = Strings.ponyApi.comicRes
-          .replace("{input}", userInput)
+          .replace("{id}", comicArray[0].id)
           .replace("{name}", comicArray[0].name)
           .replace("{series}", comicArray[0].series)
           .replace("{url}", comicArray[0].url)

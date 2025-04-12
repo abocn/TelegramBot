@@ -95,9 +95,9 @@
   "ponyApi": {
     "helpEntry": "My Little Pony",
     "helpDesc": "*My Little Pony*\n\n- /mlp: Exibe esta mensagem de ajuda.\n- /mlpchar `<nome do personagem>`: Mostra informações específicas sobre um personagem de My Little Pony em inglês. Exemplo: `/mlpchar twilight`\n- /mlpep: Mostra informações específicas sobre um episódio de My Little Pony em inglês. Exemplo: `/mlpep 136`\n- /mlpcomic `<nome da comic>`: Mostra informações específicas sobre uma comic de My Little Pony em inglês. Exemplo: `/mlpcomic Nightmare Rarity`\n- /rpony | /randompony: Envia uma arte aleatória feita pela comunidade de My Little Pony.",
-    "charRes": "*Informações do Personagem de MLP para* `{input}`*:*\n\n*Nome:* `{name}`\n*Apelido:* `{alias}`\n*URL do Fandom:* [{url}]({url})\n*Sexo:* `{sex}`\n*Residência:* `{residence}`\n*Ocupação:* `{occupation}`\n*Tipo:* `{kind}`",
-    "epRes": "*Informações do Episódio de MLP para* `{input}`*:*\n\n*Nome:* `{name}`\n*URL do Fandom:* [{url}]({url})\n*Temporada:* `{season}`\n*Episódio:* `{episode}`\n*Episódio Geral:* `{overall}`\n*Data de Lançamento:* `{airdate}`\n*História por:* `{storyby}`\n*Escrito por:* `{writtenby}`\n*Storyboard:* `{storyboard}`",
-    "comicRes": "*Informações da Comic de MLP para* \"`{input}`\"*:*\n\n*Nome:* `{name}`\n*URL do Fandom:* [{url}]({url})\n*Série:* `{series}`\n*Escritor:* `{writer}`\n*Artista:* `{artist}`\n*Colorista:* `{colorist}`\n*Letrista:* `{letterer}`\n*Editor:* `{editor}`",
+    "charRes": "*{name} (ID: {id})*\n\n*Apelido:* `{alias}`\n*Sexo:* `{sex}`\n*Residência:* `{residence}`\n*Ocupação:* `{occupation}`\n*Tipo:* `{kind}`\n\n*URL do Fandom:* [{url}]({url})",
+    "epRes": "*{name} (ID: {id})*\n\n*Temporada:* `{season}`\n*Episódio:* `{episode}`\n*Número do Episódio:* `{overall}`\n*Data de lançamento:* `{airdate}`\n*História por:* `{storyby}`\n*Escrito por:* `{writtenby}`\n*Storyboard:* `{storyboard}`\n\n*URL no Fandom:* [{url}]({url})",
+    "comicRes": "*{name} (ID: {id})*\n\n*Série:* `{series}`\n*Roteirista:* `{writer}`\n*Artista:* `{artist}`\n*Colorista:* `{colorist}`\n*Letrista:* `{letterer}`\n*Editor:* `{editor}`\n\n*URL no Fandom:* [{url}]({url})",
     "noCharName": "Por favor, forneça o nome do personagem.",
     "noCharFound": "Nenhum personagem encontrado.",
     "noEpisodeNum": "Por favor, forneça o número do episódio.",

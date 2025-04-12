@@ -5,7 +5,7 @@ const spamwatchMiddleware = require('../spamwatch/Middleware.js')(isOnSpamWatch)
 const axios = require("axios");
 
 module.exports = (bot) => {
-  bot.command(["rpony", "randompony"], spamwatchMiddleware, async (ctx) => {
+  bot.command(["rpony", "randompony", "mlpart"], spamwatchMiddleware, async (ctx) => {
     const Strings = getStrings(ctx.from.language_code);
     try {
       const response = await axios(Resources.randomPonyApi);
@@ -20,7 +20,7 @@ module.exports = (bot) => {
       }
 
       ctx.replyWithPhoto(response.data.pony.representations.full, {
-        caption: `${response.data.pony.sourceURL}\n\n${tags.length > 0 ? tags.join(', ') : 'N/A'}`,
+        caption: `${response.data.pony.sourceURL}\n\n${tags.length > 0 ? tags.join(', ') : ''}`,
         parse_mode: 'Markdown',
         reply_to_message_id: ctx.message.message_id
       });
