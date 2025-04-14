@@ -6,8 +6,8 @@ async function sendHelpMessage(ctx, isEditing) {
   const Strings = getStrings(ctx.from.language_code);
   const botInfo = await ctx.telegram.getMe();
   const helpText = Strings.botHelp
-    .replace('{botName}', botInfo.first_name)
-    .replace("{sourceLink}", process.env.botSource);
+    .replace(/{botName}/g, botInfo.first_name)
+    .replace(/{sourceLink}/g, process.env.botSource);
   const options = {
     parse_mode: 'Markdown',
     disable_web_page_preview: true,
@@ -35,7 +35,7 @@ module.exports = (bot) => {
 
   bot.command("about", spamwatchMiddleware, async (ctx) => {
     const Strings = getStrings(ctx.from.language_code);
-    const aboutMsg = Strings.botAbout.replace("{sourceLink}", `${process.env.botSource}`);
+    const aboutMsg = Strings.botAbout.replace(/{sourceLink}/g, `${process.env.botSource}`);
     
     ctx.reply(aboutMsg, {
       parse_mode: 'Markdown',
