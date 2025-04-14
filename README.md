@@ -37,6 +37,7 @@ After editing the file, save all changes and run the bot with ``npm start``.
 > To deal with dependencies, just run ``npm install`` or ``npm i`` at any moment to install all of them.
 
 ## config.env Functions
+
 - **botSource**: Put the link to your bot source code.
 - **botToken**: Put your bot token that you created at [@BotFather](https://t.me/botfather).
 - **botAdmins**: Put the ID of the people responsible for managing the bot. They can use some administrative + exclusive commands on any group.
