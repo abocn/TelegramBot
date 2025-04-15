@@ -16,8 +16,9 @@ module.exports = (bot) => {
 
   bot.command('privacy', spamwatchMiddleware, async (ctx) => {
     const Strings = getStrings(ctx.from.language_code);
-    ctx.reply(
-      Strings.botPrivacy, {
+    const message = Strings.botPrivacy.replace("{botPrivacy}", process.env.botPrivacy);
+
+    ctx.reply(message, {
       parse_mode: 'Markdown',
       disable_web_page_preview: true,
       reply_to_message_id: ctx.message.message_id
