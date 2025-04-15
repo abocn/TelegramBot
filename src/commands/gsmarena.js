@@ -193,14 +193,18 @@ function extractMetaData(meta, key) {
   return line ? line.split('"')[1] : "";
 }
 
+function getUsername(ctx){
+  let userName = String(ctx.from.first_name);
+  if(userName.includes("<") && userName.includes(">")) {
+    userName = userName.replaceAll("<", "").replaceAll(">", "");
+  }
+  return userName;
+}
+
 module.exports = (bot) => {
   bot.command(['d', 'device'], spamwatchMiddleware, async (ctx) => {
     const userId = ctx.from.id;
-    let userName = String(ctx.from.first_name);
-
-    if(userName.includes("<") && userName.includes(">")) {
-      userName = userName.replaceAll("<", "").replaceAll(">", "");
-    }
+    const userName = getUsername(ctx);
 
     const phone = ctx.message.text.split(" ").slice(1).join(" ");
     if (!phone) {
@@ -228,7 +232,7 @@ module.exports = (bot) => {
   bot.action(/details:(.+):(.+)/, async (ctx) => {
     const url = ctx.match[1];
     const userId = parseInt(ctx.match[2]);
-    const userName = ctx.from.first_name;
+    const userName = getUsername(ctx);
 
     const callbackQueryUserId = ctx.update.callback_query.from.id;
 
