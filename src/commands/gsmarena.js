@@ -4,8 +4,8 @@
 // With some help from GPT (I don't really like AI but whatever)
 // If this were a kang, I would not be giving credits to him!
 
-const { isOnSpamWatch } = require('../plugins/lib-spamwatch/spamwatch.js');
-const spamwatchMiddleware = require('../plugins/lib-spamwatch/Middleware.js')(isOnSpamWatch);
+const { isOnSpamWatch } = require('../spamwatch/spamwatch.js');
+const spamwatchMiddleware = require('../spamwatch/Middleware.js')(isOnSpamWatch);
 
 const axios = require('axios');
 const { parse } = require('node-html-parser');

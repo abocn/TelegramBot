@@ -1,6 +1,6 @@
 const { getStrings } = require('../plugins/checklang.js');
-const { isOnSpamWatch } = require('../plugins/lib-spamwatch/spamwatch.js');
-const spamwatchMiddleware = require('../plugins/lib-spamwatch/Middleware.js')(isOnSpamWatch);
+const { isOnSpamWatch } = require('../spamwatch/spamwatch.js');
+const spamwatchMiddleware = require('../spamwatch/Middleware.js')(isOnSpamWatch);
 
 module.exports = (bot) => {
   bot.start(spamwatchMiddleware, async (ctx) => {

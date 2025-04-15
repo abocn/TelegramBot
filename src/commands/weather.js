@@ -5,8 +5,8 @@
 const Resources = require('../props/resources.json');
 const axios = require('axios');
 const { getStrings } = require('../plugins/checklang.js');
-const { isOnSpamWatch } = require('../plugins/lib-spamwatch/spamwatch.js');
-const spamwatchMiddleware = require('../plugins/lib-spamwatch/Middleware.js')(isOnSpamWatch);
+const { isOnSpamWatch } = require('../spamwatch/spamwatch.js');
+const spamwatchMiddleware = require('../spamwatch/Middleware.js')(isOnSpamWatch);
 
 const statusEmojis = {
   0: '⛈', 1: '⛈', 2: '⛈', 3: '⛈', 4: '⛈', 5: '🌨', 6: '🌨', 7: '🌨',

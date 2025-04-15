@@ -1,7 +1,7 @@
 const Resources = require('../props/resources.json');
 const { getStrings } = require('../plugins/checklang.js');
-const { isOnSpamWatch } = require('../plugins/lib-spamwatch/spamwatch.js');
-const spamwatchMiddleware = require('../plugins/lib-spamwatch/Middleware.js')(isOnSpamWatch);
+const { isOnSpamWatch } = require('../spamwatch/spamwatch.js');
+const spamwatchMiddleware = require('../spamwatch/Middleware.js')(isOnSpamWatch);
 
 function sendRandomReply(ctx, gifUrl, textKey) {
   const Strings = getStrings(ctx.from.language_code);
