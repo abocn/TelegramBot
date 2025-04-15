@@ -2,8 +2,8 @@ const Resources = require('../props/resources.json');
 const fs = require('fs');
 const axios = require('axios');
 const { getStrings } = require('../plugins/checklang.js');
-const { isOnSpamWatch } = require('../plugins/lib-spamwatch/spamwatch.js');
-const spamwatchMiddleware = require('../plugins/lib-spamwatch/Middleware.js')(isOnSpamWatch);
+const { isOnSpamWatch } = require('../spamwatch/spamwatch.js');
+const spamwatchMiddleware = require('../spamwatch/Middleware.js')(isOnSpamWatch);
 
 const scrobbler_url = Resources.lastFmApi;
 const api_key = process.env.lastKey;
