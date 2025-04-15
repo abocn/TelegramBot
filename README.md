@@ -4,6 +4,7 @@
 [![GitHub License](https://img.shields.io/github/license/ABOCN/TelegramBot)](https://github.com/abocn/TelegramBot/blob/main/LICENSE)
 [![CodeQL](https://github.com/abocn/TelegramBot/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/abocn/TelegramBot/actions/workflows/github-code-scanning/codeql)
 [![Dependabot Updates](https://github.com/abocn/TelegramBot/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/abocn/TelegramBot/actions/workflows/dependabot/dependabot-updates)
+
 Kowalski is a a simple Telegram bot made in Node.js.
 
 - You can find Kowalski at [@KowalskiNodeBot](https://t.me/KowalskiNodeBot) on Telegram.
