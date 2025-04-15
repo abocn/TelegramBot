@@ -11,24 +11,20 @@ Kowalski is a a simple Telegram bot made in Node.js.
 
 ## Self-host requirements
 
-- Node.js 20 or newer (you can also use [Bun](https://bun.sh))
+> [!IMPORTANT]
+> You will only need all of them if you are not running it dockerized. Read ["Running with Docker"](#running-with-docker) for more information.
+
+- Node.js 23 or newer (you can also use [Bun](https://bun.sh))
 - A Telegram bot (create one at [@BotFather](https://t.me/botfather))
 - FFmpeg (only for the `/yt` command)
 - Docker and Docker Compose (only required for Docker setup)
 
-## Run it yourself, develop or contribute with Kowalski
+## Running locally (non-Docker setup)
 
 First, clone the repo with Git:
 
 ```bash
-git clone https://github.com/ABOCN/TelegramBot
-```
-
-And now, init the submodules with these commands (this is very important):
-
-```bash
-cd TelegramBot
-git submodule update --init --recursive
+git clone --recurse-submodules https://github.com/ABOCN/TelegramBot
 ```
 
 Next, inside the repository directory, create a `config.env` file with some content, which you can see the [example .env file](config.env.example) to fill info with. To see the meaning of each one, see [the Functions section](#configenv-functions).
@@ -82,6 +78,8 @@ If you prefer to use Docker directly, you can use these instructions instead.
 ## config.env Functions
 
 - **botSource**: Put the link to your bot source code.
+- **botPrivacy**: Put the link to your bot privacy policy.
+- **maxRetries**: Maximum number of retries for a failing command on Kowalski. Default is 5. If the limit is hit, the bot will crash past this number.
 - **botToken**: Put your bot token that you created at [@BotFather](https://t.me/botfather).
 - **botAdmins**: Put the ID of the people responsible for managing the bot. They can use some administrative + exclusive commands on any group.
 - **lastKey**: Last.fm API key, for use on `lastfm.js` functions, like see who is listening to what song and etc.
