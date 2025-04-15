@@ -1,0 +1,37 @@
+name: Update AUTHORS File
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  update-authors:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Generate AUTHORS file (Name <email> format)
+        run: |
+          git log --format='%aN <%aE>' | sort -u > AUTHORS
+
+      - name: Check if AUTHORS file changed
+        run: |
+          if git diff --quiet AUTHORS; then
+            echo "No changes in AUTHORS file."
+            exit 0
+          fi
+
+      - name: Commit and push changes
+        uses: EndBug/add-and-commit@v9.1.4
+        with:
+          push: true
+          add: "AUTHORS"
+          default_author: github_actions
+          message: "Update AUTHORS file automatically"

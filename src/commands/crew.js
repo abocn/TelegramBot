@@ -62,7 +62,7 @@ async function handleAdminCommand(ctx, action, successMessage, errorMessage) {
         reply_to_message_id: ctx.message.message_id
       });
     } catch (error) {
-      ctx.reply(errorMessage.replace('{error}', error.message), {
+      ctx.reply(errorMessage.replace(/{error}/g, error.message), {
         parse_mode: 'Markdown',
         reply_to_message_id: ctx.message.message_id
       });
@@ -91,12 +91,12 @@ module.exports = (bot) => {
     handleAdminCommand(ctx, async () => {
       try {
         const commitHash = await getGitCommitHash();
-        await ctx.reply(Strings.gitCurrentCommit.replace('{commitHash}', commitHash), {
+        await ctx.reply(Strings.gitCurrentCommit.replace(/{commitHash}/g, commitHash), {
           parse_mode: 'Markdown',
           reply_to_message_id: ctx.message.message_id
         });
       } catch (error) {
-        ctx.reply(Strings.gitErrRetrievingCommit.replace('{error}', error), {
+        ctx.reply(Strings.gitErrRetrievingCommit.replace(/{error}/g, error), {
           parse_mode: 'Markdown',
           reply_to_message_id: ctx.message.message_id
         });
@@ -109,12 +109,12 @@ module.exports = (bot) => {
     handleAdminCommand(ctx, async () => {
       try {
         const result = await updateBot();
-        await ctx.reply(Strings.botUpdated.replace('{result}', result), {
+        await ctx.reply(Strings.botUpdated.replace(/{result}/g, result), {
           parse_mode: 'Markdown',
           reply_to_message_id: ctx.message.message_id
         });
       } catch (error) {
-        ctx.reply(Strings.errorUpdatingBot.replace('{error}', error), {
+        ctx.reply(Strings.errorUpdatingBot.replace(/{error}/g, error), {
           parse_mode: 'Markdown',
           reply_to_message_id: ctx.message.message_id
         });
@@ -127,7 +127,7 @@ module.exports = (bot) => {
     const botName = ctx.message.text.split(' ').slice(1).join(' ');
     handleAdminCommand(ctx, async () => {
       await ctx.telegram.setMyName(botName);
-    }, Strings.botNameChanged.replace('{botName}', botName), Strings.botNameErr.replace('{error}', error));
+    }, Strings.botNameChanged.replace(/{botName}/g, botName), Strings.botNameErr.replace(/{error}/g, error));
   });
 
   bot.command('setbotdesc', spamwatchMiddleware, async (ctx) => {
@@ -135,7 +135,7 @@ module.exports = (bot) => {
     const botDesc = ctx.message.text.split(' ').slice(1).join(' ');
     handleAdminCommand(ctx, async () => {
       await ctx.telegram.setMyDescription(botDesc);
-    }, Strings.botDescChanged.replace('{botDesc}', botDesc), Strings.botDescErr.replace('{error}', error));
+    }, Strings.botDescChanged.replace(/{botDesc}/g, botDesc), Strings.botDescErr.replace(/{error}/g, error));
   });
 
   bot.command('botkickme', spamwatchMiddleware, async (ctx) => {
@@ -159,7 +159,7 @@ module.exports = (bot) => {
           caption: botFile
         });
       } catch (error) {
-        ctx.reply(Strings.unexpectedErr.replace('{error}', error.message), {
+        ctx.reply(Strings.unexpectedErr.replace(/{error}/g, error.message), {
           parse_mode: 'Markdown',
           reply_to_message_id: ctx.message.message_id
         });

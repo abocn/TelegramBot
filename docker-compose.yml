@@ -1,0 +1,9 @@
+services:
+  kowalski:
+    build: .
+    container_name: kowalski
+    restart: unless-stopped
+    volumes:
+      - ./config.env:/usr/src/app/config.env:ro
+    environment:
+      - NODE_ENV=production 

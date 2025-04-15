@@ -41,7 +41,12 @@ const downloadFromYoutube = async (command, args) => {
 };
 
 const getApproxSize = async (command, videoUrl) => {
-  const args = [videoUrl, '--compat-opt', 'manifest-filesize-approx', '-O', 'filesize_approx'];
+  let args = [];
+  if (fs.existsSync(path.resolve(__dirname, "../props/cookies.txt"))) {
+    args = [videoUrl, '--compat-opt', 'manifest-filesize-approx', '-O', 'filesize_approx', '--cookies', path.resolve(__dirname, "../props/cookies.txt")];
+  } else {
+    args = [videoUrl, '--compat-opt', 'manifest-filesize-approx', '-O', 'filesize_approx'];
+  }
   try {
     const { stdout } = await downloadFromYoutube(command, args);
     const sizeInBytes = parseInt(stdout.trim(), 10);
@@ -94,14 +99,28 @@ module.exports = (bot) => {
           getApproxSize(ytDlpPath, videoUrl),
         ]);
 
+        if (approxSizeInMB > 50) {
+          await ctx.telegram.editMessageText(
+            ctx.chat.id,
+            downloadingMessage.message_id,
+            null,
+            Strings.ytDownload.uploadLimit, {
+              parse_mode: 'Markdown',
+              reply_to_message_id: ctx.message.message_id,
+            },
+          );
+
+          return;
+        }
+
         await ctx.telegram.editMessageText(
           ctx.chat.id,
           downloadingMessage.message_id,
           null,
           Strings.ytDownload.downloadingVid, {
-            parse_mode: 'Markdown',
-            reply_to_message_id: ctx.message.message_id,
-          },
+          parse_mode: 'Markdown',
+          reply_to_message_id: ctx.message.message_id,
+        },
         );
 
         const dlpArgs = [videoUrl, ...cmdArgs.split(' '), mp4File];
@@ -112,12 +131,12 @@ module.exports = (bot) => {
           downloadingMessage.message_id,
           null,
           Strings.ytDownload.uploadingVid, {
-            parse_mode: 'Markdown',
-            reply_to_message_id: ctx.message.message_id,
-          },
+          parse_mode: 'Markdown',
+          reply_to_message_id: ctx.message.message_id,
+        },
         );
 
-        if(fs.existsSync(tempMp4File)){
+        if (fs.existsSync(tempMp4File)) {
           await downloadFromYoutube(ffmpegPath, ffmpegArgs);
         }
 
@@ -126,23 +145,24 @@ module.exports = (bot) => {
 
           try {
             await ctx.replyWithVideo({
-              source: mp4File }, {
+              source: mp4File
+            }, {
               caption: message,
               parse_mode: 'Markdown',
               reply_to_message_id: ctx.message.message_id,
             });
-            
+
             fs.unlinkSync(mp4File);
           } catch (error) {
-            if (toString(error).includes("Request Entity Too Large")) {
+            if (error.response.description.includes("Request Entity Too Large")) {
               await ctx.telegram.editMessageText(
                 ctx.chat.id,
                 downloadingMessage.message_id,
                 null,
                 Strings.ytDownload.uploadLimit, {
-                  parse_mode: 'Markdown',
-                  reply_to_message_id: ctx.message.message_id,
-                },
+                parse_mode: 'Markdown',
+                reply_to_message_id: ctx.message.message_id,
+              },
               );
             } else {
               const errMsg = Strings.ytDownload.uploadErr.replace("{error}", error)
@@ -151,9 +171,9 @@ module.exports = (bot) => {
                 downloadingMessage.message_id,
                 null,
                 errMsg, {
-                  parse_mode: 'Markdown',
-                  reply_to_message_id: ctx.message.message_id,
-                },
+                parse_mode: 'Markdown',
+                reply_to_message_id: ctx.message.message_id,
+              },
               );
             };
 
@@ -171,22 +191,21 @@ module.exports = (bot) => {
           downloadingMessage.message_id,
           null,
           Strings.ytDownload.libNotFound, {
-            parse_mode: 'Markdown',
-            reply_to_message_id: ctx.message.message_id,
-          },
+          parse_mode: 'Markdown',
+          reply_to_message_id: ctx.message.message_id,
+        },
         );
       }
     } catch (error) {
-      console.error(error);
       const errMsg = Strings.ytDownload.uploadErr.replace("{error}", error)
       await ctx.telegram.editMessageText(
         ctx.chat.id,
         downloadingMessage.message_id,
         null,
         errMsg, {
-          parse_mode: 'Markdown',
-          reply_to_message_id: ctx.message.message_id,
-        },
+        parse_mode: 'Markdown',
+        reply_to_message_id: ctx.message.message_id,
+      },
       );
     }
   });

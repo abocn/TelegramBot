@@ -6,7 +6,7 @@ module.exports = (bot) => {
   bot.start(spamwatchMiddleware, async (ctx) => {
     const Strings = getStrings(ctx.from.language_code);
     const botInfo = await ctx.telegram.getMe();
-    const startMsg = Strings.botWelcome.replace('{botName}', botInfo.first_name);
+    const startMsg = Strings.botWelcome.replace(/{botName}/g, botInfo.first_name);
 
     ctx.reply(startMsg, {
       parse_mode: 'Markdown',
