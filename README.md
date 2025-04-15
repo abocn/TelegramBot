@@ -89,6 +89,18 @@ If you prefer to use Docker directly, you can use these instructions instead.
 
 - Take care of your ``config.env`` file, as it is so much important and needs to be secret (like your passwords), as anyone can do whatever they want to the bot with this token!
 
+## Troubleshooting
+
+### YouTube Downloading
+
+**Q:** I get a "Permission denied (EACCES)" error in the console when running the `/yt` command
+
+**A:** Make sure `src/plugins/yt-dlp/yt-dlp` is executable. You can do this on Linux like so:
+
+```bash
+chmod +x src/plugins/yt-dlp/yt-dlp
+```
+
 ## About/License
 
 BSD-3-Clause - 2024 Lucas Gabriel (lucmsilva).
