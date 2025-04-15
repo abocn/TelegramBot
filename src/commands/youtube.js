@@ -99,6 +99,20 @@ module.exports = (bot) => {
           getApproxSize(ytDlpPath, videoUrl),
         ]);
 
+        if (approxSizeInMB > 50) {
+          await ctx.telegram.editMessageText(
+            ctx.chat.id,
+            downloadingMessage.message_id,
+            null,
+            Strings.ytDownload.uploadLimit, {
+              parse_mode: 'Markdown',
+              reply_to_message_id: ctx.message.message_id,
+            },
+          );
+
+          return;
+        }
+
         await ctx.telegram.editMessageText(
           ctx.chat.id,
           downloadingMessage.message_id,
@@ -140,7 +154,7 @@ module.exports = (bot) => {
 
             fs.unlinkSync(mp4File);
           } catch (error) {
-            if (toString(error).includes("Request Entity Too Large")) {
+            if (error.response.description.includes("Request Entity Too Large")) {
               await ctx.telegram.editMessageText(
                 ctx.chat.id,
                 downloadingMessage.message_id,

@@ -6,6 +6,12 @@ require('@dotenvx/dotenvx').config({ path: "config.env" });
 require('./plugins/ytdlp-wrapper.js');
 // require('./plugins/termlogger.js');
 
+// Ensures bot token is set, and not default value
+if (!process.env.botToken || process.env.botToken === 'InsertYourBotTokenHere') {
+  console.error('Bot token is not set. Please set the bot token in the config.env file.')
+  process.exit(1)
+}
+
 const bot = new Telegraf(process.env.botToken);
 const maxRetries = process.env.maxRetries || 5;
 let restartCount = 0;
