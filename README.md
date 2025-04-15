@@ -53,8 +53,8 @@ You can also run Kowalski using Docker, which simplifies the setup process. Make
    docker compose up -d
    ```
 
-   > [!NOTE]
-   > The `-d` flag causes the bot to run in the background. If you're just playing around, you may not want to use this flag.
+> [!NOTE]
+> The `-d` flag causes Kowalski to run in the background. If you're just playing around, you may not want to use this flag.
 
 ### Using Docker Run
 
@@ -74,8 +74,8 @@ If you prefer to use Docker directly, you can use these instructions instead.
    docker run -d --name kowalski --restart unless-stopped -v $(pwd)/config.env:/usr/src/app/config.env:ro kowalski
    ```
 
-   > [!NOTE]
-   > The `-d` flag causes Kowalski to run in the background. If you're just playing around, you may not want to use this flag.
+> [!NOTE]
+> The `-d` flag causes Kowalski to run in the background. If you're just playing around, you may not want to use this flag.
 
 ## config.env Functions
 
