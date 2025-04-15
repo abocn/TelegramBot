@@ -39,6 +39,9 @@ After editing the file, save all changes and run the bot with ``npm start``.
 > [!IMPORTANT]
 > Please complete the above steps to prepare your local copy for building. You do not need to install FFmpeg on your host system.
 
+> [!NOTE]
+> Using the `-d` flag when running causes Kowalski to run in the background. If you're just playing around or testing, you may not want to use this flag.
+
 You can also run Kowalski using Docker, which simplifies the setup process. Make sure you have Docker and Docker Compose installed.
 
 ### Using Docker Compose
@@ -50,9 +53,6 @@ You can also run Kowalski using Docker, which simplifies the setup process. Make
    ```bash
    docker compose up -d
    ```
-
-> [!NOTE]
-> The `-d` flag causes Kowalski to run in the background. If you're just playing around, you may not want to use this flag.
 
 ### Using Docker Run
 
@@ -72,10 +72,9 @@ If you prefer to use Docker directly, you can use these instructions instead.
    docker run -d --name kowalski --restart unless-stopped -v $(pwd)/config.env:/usr/src/app/config.env:ro kowalski
    ```
 
-> [!NOTE]
-> The `-d` flag causes Kowalski to run in the background. If you're just playing around, you may not want to use this flag.
-
 ## config.env Functions
+> [!IMPORTANT]
+> Take care of your ``config.env`` file, as it is so much important and needs to be secret (like your passwords), as anyone can do whatever they want to the bot with this token!
 
 - **botSource**: Put the link to your bot source code.
 - **botPrivacy**: Put the link to your bot privacy policy.
@@ -84,10 +83,6 @@ If you prefer to use Docker directly, you can use these instructions instead.
 - **botAdmins**: Put the ID of the people responsible for managing the bot. They can use some administrative + exclusive commands on any group.
 - **lastKey**: Last.fm API key, for use on `lastfm.js` functions, like see who is listening to what song and etc.
 - **weatherKey**: Weather.com API key, used for the `/weather` command.
-
-## Note
-
-- Take care of your ``config.env`` file, as it is so much important and needs to be secret (like your passwords), as anyone can do whatever they want to the bot with this token!
 
 ## Troubleshooting
 
