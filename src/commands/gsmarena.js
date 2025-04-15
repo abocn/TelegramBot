@@ -199,7 +199,7 @@ module.exports = (bot) => {
     let userName = String(ctx.from.first_name);
 
     if(userName.includes("<") && userName.includes(">")) {
-      userName = userName.replace("<", "").replace(">", "");
+      userName = userName.replaceAll("<", "").replaceAll(">", "");
     }
 
     const phone = ctx.message.text.split(" ").slice(1).join(" ");
