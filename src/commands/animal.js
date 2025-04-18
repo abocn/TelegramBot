@@ -64,7 +64,7 @@ module.exports = (bot) => {
     const apiUrl = `${Resources.catApi}?json=true`;
     const response = await axios.get(apiUrl);
     const data = response.data;
-    const imageUrl = `${Resources.catApi}/${data._id}`;
+    const imageUrl = `${data.url}`;
 
     try {
       await ctx.replyWithPhoto(imageUrl, {
