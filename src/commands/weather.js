@@ -4,7 +4,7 @@
 
 const Resources = require('../props/resources.json');
 const axios = require('axios');
-const { getStrings } = require('../plugins/checklang.js');
+const { getStrings } = require('../plugins/checkLang.js');
 const { isOnSpamWatch } = require('../spamwatch/spamwatch.js');
 const spamwatchMiddleware = require('../spamwatch/Middleware.js')(isOnSpamWatch);
 const { verifyInput } = require('../plugins/verifyInput.js');

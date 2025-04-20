@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const { isOnSpamWatch } = require('./spamwatch/spamwatch.js');
 require('@dotenvx/dotenvx').config({ path: "config.env" });
-require('./plugins/ytdlp-wrapper.js');
+require('./plugins/ytDlpWrapper.js');
 
 // Ensures bot token is set, and not default value
 if (!process.env.botToken || process.env.botToken === 'InsertYourBotTokenHere') {

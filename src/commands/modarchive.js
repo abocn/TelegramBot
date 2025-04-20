@@ -2,7 +2,7 @@ const Resources = require('../props/resources.json');
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
-const { getStrings } = require('../plugins/checklang.js');
+const { getStrings } = require('../plugins/checkLang.js');
 const { isOnSpamWatch } = require('../spamwatch/spamwatch.js');
 const spamwatchMiddleware = require('../spamwatch/Middleware.js')(isOnSpamWatch);
 
