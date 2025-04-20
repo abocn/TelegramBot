@@ -8,24 +8,35 @@ async function sendHelpMessage(ctx, isEditing) {
   const helpText = Strings.botHelp
     .replace(/{botName}/g, botInfo.first_name)
     .replace(/{sourceLink}/g, process.env.botSource);
-  const options = {
-    parse_mode: 'Markdown',
-    disable_web_page_preview: true,
-    reply_to_message_id: ctx.message.message_id,
-    reply_markup: {
-      inline_keyboard: [
-        [{ text: Strings.mainCommands, callback_data: 'helpMain' }, { text: Strings.usefulCommands, callback_data: 'helpUseful' }],
-        [{ text: Strings.interactiveEmojis, callback_data: 'helpInteractive' }, { text: Strings.funnyCommands, callback_data: 'helpFunny' }],
-        [{ text: Strings.lastFm.helpEntry, callback_data: 'helpLast' }, { text: Strings.animalCommands, callback_data: 'helpAnimals' }],
-        [{ text: Strings.ytDownload.helpEntry, callback_data: 'helpYouTube' }, { text: Strings.ponyApi.helpEntry, callback_data: 'helpMLP' }]
-      ]
-    }
+  function getMessageId(ctx) {
+    return ctx.message?.message_id || ctx.callbackQuery?.message?.message_id;
+  };
+  const createOptions = (ctx, includeReplyTo = false) => {
+    const options = {
+      parse_mode: 'Markdown',
+      disable_web_page_preview: true,
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: Strings.mainCommands, callback_data: 'helpMain' }, { text: Strings.usefulCommands, callback_data: 'helpUseful' }],
+          [{ text: Strings.interactiveEmojis, callback_data: 'helpInteractive' }, { text: Strings.funnyCommands, callback_data: 'helpFunny' }],
+          [{ text: Strings.lastFm.helpEntry, callback_data: 'helpLast' }, { text: Strings.animalCommands, callback_data: 'helpAnimals' }],
+          [{ text: Strings.ytDownload.helpEntry, callback_data: 'helpYouTube' }, { text: Strings.ponyApi.helpEntry, callback_data: 'helpMLP' }]
+        ]
+      }
+    };
+    if (includeReplyTo) {
+      const messageId = getMessageId(ctx);
+      if (messageId) {
+        options.reply_to_message_id = messageId;
+      };
+    };
+    return options;
   };
   if (isEditing) {
-    await ctx.editMessageText(helpText, options);
+    await ctx.editMessageText(helpText, createOptions(ctx));
   } else {
-    await ctx.reply(helpText, options);
-  }
+    await ctx.reply(helpText, createOptions(ctx, true));
+  };
 }
 
 module.exports = (bot) => {
@@ -36,7 +47,6 @@ module.exports = (bot) => {
   bot.command("about", spamwatchMiddleware, async (ctx) => {
     const Strings = getStrings(ctx.from.language_code);
     const aboutMsg = Strings.botAbout.replace(/{sourceLink}/g, `${process.env.botSource}`);
-    
     ctx.reply(aboutMsg, {
       parse_mode: 'Markdown',
       disable_web_page_preview: true,
