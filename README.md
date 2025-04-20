@@ -1,7 +1,7 @@
 # Kowalski (Node.js Telegram Bot)
 
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
-[![GitHub License](https://img.shields.io/github/license/ABOCN/TelegramBot)](https://github.com/abocn/TelegramBot/blob/main/LICENSE)
+[![GitHub License](https://img.shields.io/github/license/abocn/TelegramBot)](https://github.com/abocn/TelegramBot/blob/main/LICENSE)
 [![CodeQL](https://github.com/abocn/TelegramBot/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/abocn/TelegramBot/actions/workflows/github-code-scanning/codeql)
 [![Dependabot Updates](https://github.com/abocn/TelegramBot/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/abocn/TelegramBot/actions/workflows/dependabot/dependabot-updates)
 
@@ -95,6 +95,14 @@ If you prefer to use Docker directly, you can use these instructions instead.
 ```bash
 chmod +x src/plugins/yt-dlp/yt-dlp
 ```
+
+## Contributors
+
+<a href="https://github.com/abocn/TelegramBot/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=abocn/TelegramBot" />
+</a>
+
+Made with [contrib.rocks](https://contrib.rocks).
 
 ## About/License
 
