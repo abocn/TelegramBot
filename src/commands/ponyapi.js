@@ -182,9 +182,16 @@ module.exports = (bot) => {
     try {
       const response = await axios(apiUrl);
       const comicArray = [];
-      console.log(response.data.data)
       if (Array.isArray(response.data.data)) {
         response.data.data.forEach(comic => {
+          let letterers = [];
+          if (comic.letterer) {
+            if (typeof comic.letterer === 'string') {
+              letterers.push(comic.letterer);
+            } else if (Array.isArray(comic.letterer)) {
+              letterers = aliases.concat(comic.letterer);
+            }
+          }
           comicArray.push({
             id: comic.id,
             name: comic.name,
@@ -194,7 +201,7 @@ module.exports = (bot) => {
             writer: comic.writer ? comic.writer.replace(/\n/g, ' / ') : 'None',
             artist: comic.artist ? comic.artist.replace(/\n/g, ' / ') : 'None',
             colorist: comic.colorist ? comic.colorist.replace(/\n/g, ' / ') : 'None',
-            letterer: comic.letterer ? comic.letterer.replace(/\n/g, ' / ') : 'None',
+            letterer: letterers.length > 0 ? letterers.join(', ') : 'None',
             editor: comic.editor
           });
         });
@@ -209,7 +216,7 @@ module.exports = (bot) => {
           .replace("{writer}", comicArray[0].writer)
           .replace("{artist}", comicArray[0].artist)
           .replace("{colorist}", comicArray[0].colorist)
-          .replace("{letterer}", comicArray[0].writtenby)
+          .replace("{letterer}", comicArray[0].letterer)
           .replace("{editor}", comicArray[0].editor);
 
         ctx.replyWithPhoto(comicArray[0].image, {
