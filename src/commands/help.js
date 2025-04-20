@@ -11,7 +11,6 @@ async function sendHelpMessage(ctx, isEditing) {
   const options = {
     parse_mode: 'Markdown',
     disable_web_page_preview: true,
-    reply_to_message_id: ctx.message.message_id,
     reply_markup: {
       inline_keyboard: [
         [{ text: Strings.mainCommands, callback_data: 'helpMain' }, { text: Strings.usefulCommands, callback_data: 'helpUseful' }],
