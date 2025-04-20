@@ -96,6 +96,14 @@ If you prefer to use Docker directly, you can use these instructions instead.
 chmod +x src/plugins/yt-dlp/yt-dlp
 ```
 
+## Contributors
+
+<a href="https://github.com/abocn/TelegramBot/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=abocn/TelegramBot" />
+</a>
+
+Made with [contrib.rocks](https://contrib.rocks).
+
 ## About/License
 
 BSD-3-Clause - 2024 Lucas Gabriel (lucmsilva).
