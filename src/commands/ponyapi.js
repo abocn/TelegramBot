@@ -50,12 +50,12 @@ module.exports = (bot) => {
           charactersArray.push({
             id: character.id,
             name: character.name,
-            alias: aliases.length > 0 ? aliases.join(', ') : 'None',
+            alias: aliases.length > 0 ? aliases.join(', ') : Strings.varStrings.varNone,
             url: character.url,
             sex: character.sex,
-            residence: character.residence ? character.residence.replace(/\n/g, ' / ') : 'None',
-            occupation: character.occupation ? character.occupation.replace(/\n/g, ' / ') : 'None',
-            kind: character.kind ? character.kind.join(', ') : 'None',
+            residence: character.residence ? character.residence.replace(/\n/g, ' / ') : Strings.varStrings.varNone,
+            occupation: character.occupation ? character.occupation.replace(/\n/g, ' / ') : Strings.varStrings.varNone,
+            kind: character.kind ? character.kind.join(', ') : Strings.varStrings.varNone,
             image: character.image
           });
         });
@@ -120,9 +120,9 @@ module.exports = (bot) => {
             episode: episode.episode,
             overall: episode.overall,
             airdate: episode.airdate,
-            storyby: episode.storyby ? episode.storyby.replace(/\n/g, ' / ') : 'None',
-            writtenby: episode.writtenby ? episode.writtenby.replace(/\n/g, ' / ') : 'None',
-            storyboard: episode.storyboard ? episode.storyboard.replace(/\n/g, ' / ') : 'None',
+            storyby: episode.storyby ? episode.storyby.replace(/\n/g, ' / ') : Strings.varStrings.varNone,
+            writtenby: episode.writtenby ? episode.writtenby.replace(/\n/g, ' / ') : Strings.varStrings.varNone,
+            storyboard: episode.storyboard ? episode.storyboard.replace(/\n/g, ' / ') : Strings.varStrings.varNone,
           });
         });
       };
@@ -192,10 +192,10 @@ module.exports = (bot) => {
             series: comic.series,
             image: comic.image,
             url: comic.url,
-            writer: comic.writer ? comic.writer.replace(/\n/g, ' / ') : 'None',
-            artist: comic.artist ? comic.artist.replace(/\n/g, ' / ') : 'None',
-            colorist: comic.colorist ? comic.colorist.replace(/\n/g, ' / ') : 'None',
-            letterer: letterers.length > 0 ? letterers.join(', ') : 'None',
+            writer: comic.writer ? comic.writer.replace(/\n/g, ' / ') : Strings.varStrings.varNone,
+            artist: comic.artist ? comic.artist.replace(/\n/g, ' / ') : Strings.varStrings.varNone,
+            colorist: comic.colorist ? comic.colorist.replace(/\n/g, ' / ') : Strings.varStrings.varNone,
+            letterer: letterers.length > 0 ? letterers.join(', ') : Strings.varStrings.varNone,
             editor: comic.editor
           });
         });
