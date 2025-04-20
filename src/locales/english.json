@@ -95,9 +95,9 @@
   "ponyApi": {
     "helpEntry": "My Little Pony",
     "helpDesc": "*My Little Pony*\n\n- /mlp: Displays this help message.\n- /mlpchar `<character name>`: Shows specific information about a My Little Pony character. Example: `/mlpchar Twilight Sparkle`\n- /mlpep: Shows specific information about a My Little Pony episode. Example: `/mlpep 136`\n- /mlpcomic `<comic name>`: Shows specific information about a My Little Pony comic. Example: `/mlpcomic Nightmare Rarity`\n- /rpony | /randompony: Sends a random artwork made by the My Little Pony community.",
-    "charRes": "*{name} (ID: {id})*\n\n*Alias:* `{alias}`\n*Sex:* `{sex}`\n*Residence:* `{residence}`\n*Occupation:* `{occupation}`\n*Kind:* `{kind}`\n\n*Fandom URL:* [{url}]({url})",
-    "epRes": "*{name} (ID: {id})*\n\n*Season:* `{season}`\n*Episode:* `{episode}`\n*Overall Ep.:* `{overall}`\n*Release date:* `{airdate}`\n*Story by:* `{storyby}`\n*Written by:* `{writtenby}`\n*Storyboard:* `{storyboard}`\n\n*Fandom URL:* [{url}]({url})",
-    "comicRes": "*{name} (ID: {id})*\n\n*Series:* `{series}`\n*Writer:* `{writer}`\n*Artist:* `{artist}`\n*Colorist:* `{colorist}`\n*Letterer:* `{letterer}`\n*Editor:* `{editor}`\n\n*Fandom URL:* [{url}]({url})",
+    "charRes": "*{name} (ID: {id})*\n\n*Alias:* `{alias}`\n*Sex:* `{sex}`\n*Residence:* `{residence}`\n*Occupation:* `{occupation}`\n*Kind:* `{kind}`\n\n*Fandom URL:*\n[{url}]({url})",
+    "epRes": "*{name} (ID: {id})*\n\n*Season:* `{season}`\n*Episode:* `{episode}`\n*Overall Ep.:* `{overall}`\n*Release date:* `{airdate}`\n*Story by:* `{storyby}`\n*Written by:* `{writtenby}`\n*Storyboard:* `{storyboard}`\n\n*Fandom URL:*\n[{url}]({url})",
+    "comicRes": "*{name} (ID: {id})*\n\n*Series:* `{series}`\n*Writer:* `{writer}`\n*Artist:* `{artist}`\n*Colorist:* `{colorist}`\n*Letterer:* `{letterer}`\n*Editor:* `{editor}`\n\n*Fandom URL:*\n[{url}]({url})",
     "noCharName": "Please provide the character's name.",
     "noCharFound": "No character found.",
     "noEpisodeNum": "Please provide the episode's number.",
