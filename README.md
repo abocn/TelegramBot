@@ -14,7 +14,7 @@ Kowalski is a a simple Telegram bot made in Node.js.
 > [!IMPORTANT]
 > You will only need all of them if you are not running it dockerized. Read ["Running with Docker"](#running-with-docker) for more information.
 
-- Node.js 23 or newer (you can also use [Bun](https://bun.sh))
+- [Bun](https://bun.sh) (latest is suggested)
 - A Telegram bot (create one at [@BotFather](https://t.me/botfather))
 - FFmpeg (only for the `/yt` command)
 - Docker and Docker Compose (only required for Docker setup)
@@ -29,15 +29,17 @@ git clone --recurse-submodules https://github.com/ABOCN/TelegramBot
 
 Next, inside the repository directory, create a `config.env` file with some content, which you can see the [example .env file](config.env.example) to fill info with. To see the meaning of each one, see [the Functions section](#configenv-functions).
 
-After editing the file, save all changes and run the bot with ``npm start``.
+After editing the file, save all changes and run the bot with ``bun start``.
 
 > [!TIP]
-> To deal with dependencies, just run ``npm install`` or ``npm i`` at any moment to install all of them.
+> To deal with dependencies, just run ``bun install`` or ``bun i`` at any moment to install all of them.
 
 ## Running with Docker
 
 > [!IMPORTANT]
 > Please complete the above steps to prepare your local copy for building. You do not need to install FFmpeg on your host system.
+
+---
 
 > [!NOTE]
 > Using the `-d` flag when running causes Kowalski to run in the background. If you're just playing around or testing, you may not want to use this flag.
@@ -73,6 +75,7 @@ If you prefer to use Docker directly, you can use these instructions instead.
    ```
 
 ## config.env Functions
+
 > [!IMPORTANT]
 > Take care of your ``config.env`` file, as it is so much important and needs to be secret (like your passwords), as anyone can do whatever they want to the bot with this token!
 
@@ -99,7 +102,7 @@ chmod +x src/plugins/yt-dlp/yt-dlp
 ## Contributors
 
 <a href="https://github.com/abocn/TelegramBot/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=abocn/TelegramBot" />
+  <img src="https://contrib.rocks/image?repo=abocn/TelegramBot" alt="Profile pictures of Kowalski contributors" />
 </a>
 
 Made with [contrib.rocks](https://contrib.rocks).
