@@ -1,9 +1,11 @@
-const Resources = require('../props/resources.json');
-const fs = require('fs');
-const axios = require('axios');
-const { getStrings } = require('../plugins/checkLang.js');
-const { isOnSpamWatch } = require('../spamwatch/spamwatch.js');
-const spamwatchMiddleware = require('../spamwatch/Middleware.js')(isOnSpamWatch);
+import Resources from '../props/resources.json';
+import fs from 'fs';
+import axios from 'axios';
+import { getStrings } from '../plugins/checklang';
+import { isOnSpamWatch } from '../spamwatch/spamwatch';
+import spamwatchMiddlewareModule from '../spamwatch/Middleware';
+
+const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 
 const scrobbler_url = Resources.lastFmApi;
 const api_key = process.env.lastKey;
@@ -35,7 +37,7 @@ function saveUsers() {
   }
 }
 
-async function getFromMusicBrainz(mbid) {
+async function getFromMusicBrainz(mbid: string) {
   try {
     const response = await axios.get(`${Resources.musicBrainzApi}${mbid}`);
     const imgObjLarge = response.data.images[0]?.thumbnails?.['1200'];
@@ -58,7 +60,7 @@ function getFromLast(track) {
   return imageUrl;
 }
 
-module.exports = (bot) => {
+export default (bot) => {
   loadUsers();
 
   bot.command('setuser', (ctx) => {
@@ -149,7 +151,7 @@ module.exports = (bot) => {
       const artistUrl = `https://www.last.fm/music/${encodeURIComponent(artistName)}`;
       const userUrl = `https://www.last.fm/user/${encodeURIComponent(lastfmUser)}`;
 
-      let num_plays = '';
+      let num_plays = 0;
       try {
         const response_plays = await axios.get(scrobbler_url, {
           params: {
@@ -164,11 +166,8 @@ module.exports = (bot) => {
             'User-Agent': `@${botInfo.username}-node-telegram-bot`
           }
         });
+        
         num_plays = response_plays.data.track.userplaycount;
-
-        if (!num_plays || num_plays === undefined) {
-          num_plays = 0;
-        };
       } catch (err) {
         console.log(err)
         const message = Strings.lastFm.apiErr

@@ -1,9 +1,11 @@
-const { getStrings } = require('../plugins/checkLang.js');
-const { isOnSpamWatch } = require('../spamwatch/spamwatch.js');
-const spamwatchMiddleware = require('../spamwatch/Middleware.js')(isOnSpamWatch);
-const os = require('os');
-const { exec } = require('child_process');
-const { error } = require('console');
+import { getStrings } from '../plugins/checklang';
+import { isOnSpamWatch } from '../spamwatch/spamwatch';
+import spamwatchMiddlewareModule from '../spamwatch/Middleware';
+import os from 'os';
+import { exec } from 'child_process';
+import { error } from 'console';
+
+const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 
 function getGitCommitHash() {
   return new Promise((resolve, reject) => {
@@ -74,7 +76,7 @@ async function handleAdminCommand(ctx, action, successMessage, errorMessage) {
   }
 }
 
-module.exports = (bot) => {
+export default (bot) => {
   bot.command('getbotstats', spamwatchMiddleware, async (ctx) => {
     const Strings = getStrings(ctx.from.language_code);
     handleAdminCommand(ctx, async () => {

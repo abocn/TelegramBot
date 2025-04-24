@@ -2,12 +2,14 @@
 // Copyright (c) 2024 BubbalooTeam. (https://github.com/BubbalooTeam)
 // Minor code changes by lucmsilva (https://github.com/lucmsilva651)
 
-const Resources = require('../props/resources.json');
-const axios = require('axios');
-const { getStrings } = require('../plugins/checkLang.js');
-const { isOnSpamWatch } = require('../spamwatch/spamwatch.js');
-const spamwatchMiddleware = require('../spamwatch/Middleware.js')(isOnSpamWatch);
-const { verifyInput } = require('../plugins/verifyInput.js');
+import Resources from '../props/resources.json';
+import axios from 'axios';
+import { getStrings } from '../plugins/checklang';
+import { isOnSpamWatch } from '../spamwatch/spamwatch';
+import spamwatchMiddlewareModule from '../spamwatch/Middleware';
+import verifyInput from '../plugins/verifyInput';
+
+const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 
 const statusEmojis = {
   0: '⛈', 1: '⛈', 2: '⛈', 3: '⛈', 4: '⛈', 5: '🌨', 6: '🌨', 7: '🌨',
@@ -31,7 +33,7 @@ function getLocaleUnit(countryCode) {
   }
 }
 
-module.exports = (bot) => {
+export default (bot) => {
   bot.command(['clima', 'weather'], spamwatchMiddleware, async (ctx) => {
     const userLang = ctx.from.language_code || "en-US";
     const Strings = getStrings(userLang);

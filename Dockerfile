@@ -13,6 +13,6 @@ COPY . .
 
 RUN chmod +x /usr/src/app/src/plugins/yt-dlp/yt-dlp
 
-VOLUME /usr/src/app/config.env
+VOLUME /usr/src/app/.env
 
 CMD ["npm", "start"]

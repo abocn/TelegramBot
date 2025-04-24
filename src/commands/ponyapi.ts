@@ -1,15 +1,56 @@
-const Resources = require('../props/resources.json');
-const { getStrings } = require('../plugins/checkLang.js');
-const { isOnSpamWatch } = require('../spamwatch/spamwatch.js');
-const spamwatchMiddleware = require('../spamwatch/Middleware.js')(isOnSpamWatch);
-const axios = require("axios");
-const { verifyInput } = require('../plugins/verifyInput.js');
+import Resources from '../props/resources.json';
+import { getStrings } from '../plugins/checklang';
+import { isOnSpamWatch } from '../spamwatch/spamwatch';
+import spamwatchMiddlewareModule from '../spamwatch/Middleware';
+import axios from 'axios';
+import verifyInput from '../plugins/verifyInput';
+
+const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
+
+interface Character {
+  id: string;
+  name: string;
+  alias: string;
+  url: string;
+  sex: string;
+  residence: string;
+  occupation: string;
+  kind: string;
+  image: string[];
+}
+
+interface Episode {
+  id: string;
+  name: string;
+  image: string;
+  url: string;
+  season: string;
+  episode: string;
+  overall: string;
+  airdate: string;
+  storyby: string;
+  writtenby: string;
+  storyboard: string;
+}
+
+interface Comic {
+  id: string;
+  name: string;
+  series: string;
+  image: string;
+  url: string;
+  writer: string;
+  artist: string;
+  colorist: string;
+  letterer: string;
+  editor: string;
+}
 
 function capitalizeFirstLetter(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-module.exports = (bot) => {
+export default (bot) => {
   bot.command("mlp", spamwatchMiddleware, async (ctx) => {
     const Strings = getStrings(ctx.from.language_code);
 
@@ -34,11 +75,11 @@ module.exports = (bot) => {
 
     try {
       const response = await axios(apiUrl);
-      const charactersArray = [];
+      const charactersArray: Character[] = [];
 
       if (Array.isArray(response.data.data)) {
         response.data.data.forEach(character => {
-          let aliases = [];
+          let aliases: string[] = [];
           if (character.alias) {
             if (typeof character.alias === 'string') {
               aliases.push(character.alias);
@@ -107,7 +148,7 @@ module.exports = (bot) => {
 
     try {
       const response = await axios(apiUrl);
-      const episodeArray = [];
+      const episodeArray: Episode[] = [];
 
       if (Array.isArray(response.data.data)) {
         response.data.data.forEach(episode => {
@@ -175,15 +216,15 @@ module.exports = (bot) => {
 
     try {
       const response = await axios(apiUrl);
-      const comicArray = [];
+      const comicArray: Comic[] = [];
       if (Array.isArray(response.data.data)) {
         response.data.data.forEach(comic => {
-          let letterers = [];
+          let letterers: string[] = [];
           if (comic.letterer) {
             if (typeof comic.letterer === 'string') {
               letterers.push(comic.letterer);
             } else if (Array.isArray(comic.letterer)) {
-              letterers = aliases.concat(comic.letterer);
+              letterers = letterers.concat(comic.letterer);
             }
           }
           comicArray.push({

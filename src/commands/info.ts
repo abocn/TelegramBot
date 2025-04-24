@@ -1,6 +1,8 @@
-const { getStrings } = require('../plugins/checkLang.js');
-const { isOnSpamWatch } = require('../spamwatch/spamwatch.js');
-const spamwatchMiddleware = require('../spamwatch/Middleware.js')(isOnSpamWatch);
+import { getStrings } from '../plugins/checklang';
+import { isOnSpamWatch } from '../spamwatch/spamwatch';
+import spamwatchMiddlewareModule from '../spamwatch/Middleware';
+
+const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 
 async function getUserInfo(ctx) {
   const Strings = getStrings(ctx.from.language_code);
@@ -9,7 +11,7 @@ async function getUserInfo(ctx) {
     lastName = " ";
   }
 
-  userInfo = Strings.userInfo
+  const userInfo = Strings.userInfo
     .replace('{userName}', `${ctx.from.first_name} ${lastName}` || Strings.varStrings.varUnknown)
     .replace('{userId}', ctx.from.id || Strings.varStrings.varUnknown)
     .replace('{userHandle}', ctx.from.username ? `@${ctx.from.username}` : Strings.varStrings.varNone)
@@ -22,7 +24,7 @@ async function getUserInfo(ctx) {
 async function getChatInfo(ctx) {
   const Strings = getStrings(ctx.from.language_code);
   if (ctx.chat.type === 'group' || ctx.chat.type === 'supergroup') {
-    chatInfo = Strings.chatInfo
+    const chatInfo = Strings.chatInfo
       .replace('{chatId}', ctx.chat.id || Strings.varStrings.varUnknown)
       .replace('{chatName}', ctx.chat.title || Strings.varStrings.varUnknown)
       .replace('{chatHandle}', ctx.chat.username ? `@${ctx.chat.username}` : Strings.varStrings.varNone)
@@ -40,7 +42,7 @@ async function getChatInfo(ctx) {
   }
 }
 
-module.exports = (bot) => {
+export default (bot) => {
   bot.command('chatinfo', spamwatchMiddleware, async (ctx) => {
     const chatInfo = await getChatInfo(ctx);
     ctx.reply(

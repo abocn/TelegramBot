@@ -1,10 +1,12 @@
-const Resources = require('../props/resources.json');
-const { getStrings } = require('../plugins/checkLang.js');
-const { isOnSpamWatch } = require('../spamwatch/spamwatch.js');
-const spamwatchMiddleware = require('../spamwatch/Middleware.js')(isOnSpamWatch);
-const axios = require("axios");
+import Resources from '../props/resources.json';
+import { getStrings } from '../plugins/checklang';
+import { isOnSpamWatch } from '../spamwatch/spamwatch';
+import spamwatchMiddlewareModule from '../spamwatch/Middleware';
+import axios from 'axios';
 
-module.exports = (bot) => {
+const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
+
+export default (bot) => {
   bot.command("duck", spamwatchMiddleware, async (ctx) => {
     const Strings = getStrings(ctx.from.language_code);
     try {

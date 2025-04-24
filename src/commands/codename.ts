@@ -1,11 +1,13 @@
-const Resources = require('../props/resources.json');
-const { getStrings } = require('../plugins/checkLang.js');
-const { isOnSpamWatch } = require('../spamwatch/spamwatch.js');
-const spamwatchMiddleware = require('../spamwatch/Middleware.js')(isOnSpamWatch);
-const axios = require('axios');
-const { verifyInput } = require('../plugins/verifyInput.js');
+import Resources from '../props/resources.json';
+import { getStrings } from '../plugins/checklang';
+import { isOnSpamWatch } from '../spamwatch/spamwatch';
+import spamwatchMiddlewareModule from '../spamwatch/Middleware';
+import axios from 'axios';
+import verifyInput from '../plugins/verifyInput';
 
-async function getDeviceList() {
+const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
+
+async function getDeviceList({ Strings, ctx }) {
   try {
     const response = await axios.get(Resources.codenameApi);
     return response.data
@@ -20,7 +22,7 @@ async function getDeviceList() {
   }
 }
 
-module.exports = (bot) => {
+export default (bot) => {
   bot.command(['codename', 'whatis'], spamwatchMiddleware, async (ctx) => {
     const userInput = ctx.message.text.split(" ").slice(1).join(" ");
     const Strings = getStrings(ctx.from.language_code);
@@ -30,7 +32,7 @@ module.exports = (bot) => {
       return;
     }
 
-    const jsonRes = await getDeviceList()
+    const jsonRes = await getDeviceList({ Strings, ctx })
     const phoneSearch = Object.keys(jsonRes).find((codename) => codename === userInput);
 
     if (!phoneSearch) {

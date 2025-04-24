@@ -1,7 +1,7 @@
-const axios = require('axios');
-const fs = require('fs');
-const path = require('path');
-const os = require('os');
+import axios from 'axios';
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
 
 const downloadDir = path.resolve(__dirname, 'yt-dlp');
 

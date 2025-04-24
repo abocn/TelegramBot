@@ -1,7 +1,9 @@
-const Resources = require('../props/resources.json');
-const { getStrings } = require('../plugins/checkLang.js');
-const { isOnSpamWatch } = require('../spamwatch/spamwatch.js');
-const spamwatchMiddleware = require('../spamwatch/Middleware.js')(isOnSpamWatch);
+import Resources from '../props/resources.json';
+import { getStrings } from '../plugins/checklang';
+import { isOnSpamWatch } from '../spamwatch/spamwatch';
+import spamwatchMiddlewareModule from '../spamwatch/Middleware';
+
+const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 
 function sendRandomReply(ctx, gifUrl, textKey) {
   const Strings = getStrings(ctx.from.language_code);
@@ -16,8 +18,8 @@ function sendRandomReply(ctx, gifUrl, textKey) {
       parse_mode: 'Markdown',
       reply_to_message_id: ctx.message.message_id
     }).catch(err => {
-      gifErr = gifErr.replace('{err}', err);
-      ctx.reply(Strings.gifErr, {
+      const gifErr = Strings.gifErr.replace('{err}', err);
+      ctx.reply(gifErr, {
         parse_mode: 'Markdown',
         reply_to_message_id: ctx.message.message_id
       });
@@ -51,7 +53,7 @@ function getRandomInt(max) {
   return Math.floor(Math.random() * (max + 1));
 }
 
-module.exports = (bot) => {
+export default (bot) => {
   bot.command('random', spamwatchMiddleware, async (ctx) => {
     const Strings = getStrings(ctx.from.language_code);
     const randomValue = getRandomInt(11);

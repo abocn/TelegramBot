@@ -1,9 +1,11 @@
-const { getStrings } = require('../plugins/checkLang.js');
-const { isOnSpamWatch } = require('../spamwatch/spamwatch.js');
-const spamwatchMiddleware = require('../spamwatch/Middleware.js')(isOnSpamWatch);
+import { getStrings } from '../plugins/checklang';
+import { isOnSpamWatch } from '../spamwatch/spamwatch';
+import spamwatchMiddlewareModule from '../spamwatch/Middleware';
 
-module.exports = (bot) => {
-  bot.start(spamwatchMiddleware, async (ctx) => {
+const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
+
+export default (bot: any) => {
+  bot.start(spamwatchMiddleware, async (ctx: any) => {
     const Strings = getStrings(ctx.from.language_code);
     const botInfo = await ctx.telegram.getMe();
     const startMsg = Strings.botWelcome.replace(/{botName}/g, botInfo.first_name);
@@ -14,7 +16,7 @@ module.exports = (bot) => {
     });
   });
 
-  bot.command('privacy', spamwatchMiddleware, async (ctx) => {
+  bot.command('privacy', spamwatchMiddleware, async (ctx: any) => {
     const Strings = getStrings(ctx.from.language_code);
     const message = Strings.botPrivacy.replace("{botPrivacy}", process.env.botPrivacy);
 

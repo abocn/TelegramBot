@@ -1,13 +1,13 @@
-const { Telegraf } = require('telegraf');
-const path = require('path');
-const fs = require('fs');
-const { isOnSpamWatch } = require('./spamwatch/spamwatch.js');
-require('@dotenvx/dotenvx').config({ path: "config.env" });
-require('./plugins/ytDlpWrapper.js');
+import { Telegraf } from 'telegraf';
+import path from 'path';
+import fs from 'fs';
+import { isOnSpamWatch } from './spamwatch/spamwatch';
+import '@dotenvx/dotenvx';
+import './plugins/ytDlpWrapper';
 
 // Ensures bot token is set, and not default value
 if (!process.env.botToken || process.env.botToken === 'InsertYourBotTokenHere') {
-  console.error('Bot token is not set. Please set the bot token in the config.env file.')
+  console.error('Bot token is not set. Please set the bot token in the .env file.')
   process.exit(1)
 }
 
@@ -19,10 +19,13 @@ const loadCommands = () => {
   const commandsPath = path.join(__dirname, 'commands');
 
   try {
-    const files = fs.readdirSync(commandsPath);
+    const files = fs.readdirSync(commandsPath)
+      .filter(file => file.endsWith('.ts') || file.endsWith('.js'));
+    
     files.forEach((file) => {
       try {
-        const command = require(path.join(commandsPath, file));
+        const commandPath = path.join(commandsPath, file);
+        const command = require(commandPath).default || require(commandPath);
         if (typeof command === 'function') {
           command(bot, isOnSpamWatch);
         }
@@ -43,7 +46,7 @@ const startBot = async () => {
     restartCount = 0;
   } catch (error) {
     console.error('Failed to start bot:', error.message);
-    if (restartCount < maxRetries) {
+    if (restartCount < Number(maxRetries)) {
       restartCount++;
       console.log(`Retrying to start bot... Attempt ${restartCount}`);
       setTimeout(startBot, 5000);

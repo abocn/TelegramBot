@@ -1,10 +1,12 @@
-const { getStrings } = require('../plugins/checkLang.js');
-const { isOnSpamWatch } = require('../spamwatch/spamwatch.js');
-const spamwatchMiddleware = require('../spamwatch/Middleware.js')(isOnSpamWatch);
-const { execFile } = require('child_process');
-const os = require('os');
-const fs = require('fs');
-const path = require('path');
+import { getStrings } from '../plugins/checklang';
+import { isOnSpamWatch } from '../spamwatch/spamwatch';
+import spamwatchMiddlewareModule from '../spamwatch/Middleware';
+import { execFile } from 'child_process';
+import os from 'os';
+import fs from 'fs';
+import path from 'path';
+
+const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 
 const ytDlpPaths = {
   linux: path.resolve(__dirname, '../plugins/yt-dlp/yt-dlp'),
@@ -28,7 +30,7 @@ const getFfmpegPath = () => {
   return ffmpegPaths[platform] || ffmpegPaths.linux;
 };
 
-const downloadFromYoutube = async (command, args) => {
+const downloadFromYoutube = async (command: string, args: string[]): Promise<{ stdout: string; stderr: string }> => {
   return new Promise((resolve, reject) => {
     execFile(command, args, (error, stdout, stderr) => {
       if (error) {
@@ -40,8 +42,8 @@ const downloadFromYoutube = async (command, args) => {
   });
 };
 
-const getApproxSize = async (command, videoUrl) => {
-  let args = [];
+const getApproxSize = async (command: string, videoUrl: string): Promise<number> => {
+  let args: string[] = [];
   if (fs.existsSync(path.resolve(__dirname, "../props/cookies.txt"))) {
     args = [videoUrl, '--compat-opt', 'manifest-filesize-approx', '-O', 'filesize_approx', '--cookies', path.resolve(__dirname, "../props/cookies.txt")];
   } else {
@@ -60,7 +62,7 @@ const getApproxSize = async (command, videoUrl) => {
   }
 };
 
-module.exports = (bot) => {
+export default (bot) => {
   bot.command(['yt', 'ytdl', 'sdl', 'video', 'dl'], spamwatchMiddleware, async (ctx) => {
     const Strings = getStrings(ctx.from.language_code);
     const ytDlpPath = getYtDlpPath();
@@ -198,11 +200,8 @@ module.exports = (bot) => {
       }
     } catch (error) {
       const errMsg = Strings.ytDownload.uploadErr.replace("{error}", error)
-      await ctx.telegram.editMessageText(
-        ctx.chat.id,
-        downloadingMessage.message_id,
-        null,
-        errMsg, {
+      // will no longer edit the message as the message context is not outside the try block
+      await ctx.reply(errMsg, {
         parse_mode: 'Markdown',
         reply_to_message_id: ctx.message.message_id,
       },

@@ -27,7 +27,7 @@ First, clone the repo with Git:
 git clone --recurse-submodules https://github.com/ABOCN/TelegramBot
 ```
 
-Next, inside the repository directory, create a `config.env` file with some content, which you can see the [example .env file](config.env.example) to fill info with. To see the meaning of each one, see [the Functions section](#configenv-functions).
+Next, inside the repository directory, create an `.env` file with some content, which you can see the [example .env file](.env.example) to fill info with. To see the meaning of each one, see [the Functions section](#env-functions).
 
 After editing the file, save all changes and run the bot with ``bun start``.
 
@@ -48,7 +48,7 @@ You can also run Kowalski using Docker, which simplifies the setup process. Make
 
 ### Using Docker Compose
 
-1. **Make sure to setup your `config.env` file first!**
+1. **Make sure to setup your `.env` file first!**
 
 2. **Run the container**
 
@@ -60,7 +60,7 @@ You can also run Kowalski using Docker, which simplifies the setup process. Make
 
 If you prefer to use Docker directly, you can use these instructions instead.
 
-1. **Make sure to setup your `config.env` file first!**
+1. **Make sure to setup your `.env` file first!**
 
 2. **Build the image**
 
@@ -71,13 +71,13 @@ If you prefer to use Docker directly, you can use these instructions instead.
 3. **Run the container**
 
    ```bash
-   docker run -d --name kowalski --restart unless-stopped -v $(pwd)/config.env:/usr/src/app/config.env:ro kowalski
+   docker run -d --name kowalski --restart unless-stopped -v $(pwd)/.env:/usr/src/app/.env:ro kowalski
    ```
 
-## config.env Functions
+## .env Functions
 
 > [!IMPORTANT]
-> Take care of your ``config.env`` file, as it is so much important and needs to be secret (like your passwords), as anyone can do whatever they want to the bot with this token!
+> Take care of your ``.env`` file, as it is so much important and needs to be secret (like your passwords), as anyone can do whatever they want to the bot with this token!
 
 - **botSource**: Put the link to your bot source code.
 - **botPrivacy**: Put the link to your bot privacy policy.
