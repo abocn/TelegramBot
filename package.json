@@ -3,11 +3,11 @@
     "start": "nodemon src/bot.js"
   },
   "dependencies": {
-    "@dotenvx/dotenvx": "^1.28.0",
+    "@dotenvx/dotenvx": "^1.41.0",
     "@types/node": "^22.15.0",
-    "axios": "^1.7.9",
+    "axios": "^1.9.0",
     "node-html-parser": "^7.0.1",
-    "nodemon": "^3.1.7",
+    "nodemon": "^3.1.10",
     "telegraf": "^4.16.3",
     "winston": "^3.17.0"
   }
