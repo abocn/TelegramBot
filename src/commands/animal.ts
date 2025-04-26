@@ -3,11 +3,11 @@ import { getStrings } from '../plugins/checklang';
 import { isOnSpamWatch } from '../spamwatch/spamwatch';
 import spamwatchMiddlewareModule from '../spamwatch/Middleware';
 import axios from 'axios';
-import { Context } from 'telegraf';
+import { Context, Telegraf } from 'telegraf';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 
-export default (bot) => {
+export default (bot: Telegraf<Context>) => {
   bot.command("duck", spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
     const Strings = getStrings(ctx.from?.language_code);
     try {
