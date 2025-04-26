@@ -1,10 +1,10 @@
 {
   "scripts": {
-    "start": "nodemon src/bot.js"
+    "start": "nodemon src/bot.ts"
   },
   "dependencies": {
     "@dotenvx/dotenvx": "^1.41.0",
-    "@types/node": "^22.15.0",
+    "@types/node": "^22.15.2",
     "axios": "^1.9.0",
     "node-html-parser": "^7.0.1",
     "nodemon": "^3.1.10",
