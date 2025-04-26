@@ -112,5 +112,7 @@
     "notFound": "Celular não encontrado.",
     "resultMsg": "*Nome:* `{name}`\n*Marca:* `{brand}`\n*Modelo:* `{model}`\n*Codinome:* `{codename}`",
     "apiErr": "Ocorreu um erro ao buscar os dados da API.\n\n`{err}`"
-  }
+  },
+  "chatNotFound": "Chat não encontrado.",
+  "noFileProvided": "Por favor, forneça um arquivo para enviar."
 }
