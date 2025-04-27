@@ -44,7 +44,7 @@
         "apiErr": "*Erro ao recuperar dados para o usuário do Last.fm* {lastfmUser}.\n\n`{err}`"
     },
     "gitCurrentCommit": "*Commit atual:* `{commitHash}`",
-    "gitErrRetrievingCommit": "*Erro ao obter o commit:*\n\n`{error}`",
+    "gitErrRetrievingCommit": "*Erro ao obter o commit:* {error}",
     "weatherStatus": {
         "provideLocation": "*Por favor, forneça uma localização.*",
         "invalidLocation": "*Localização inválida. Tente novamente.*",
