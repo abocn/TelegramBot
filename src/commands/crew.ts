@@ -1,9 +1,12 @@
-const { getStrings } = require('../plugins/checkLang.js');
-const { isOnSpamWatch } = require('../spamwatch/spamwatch.js');
-const spamwatchMiddleware = require('../spamwatch/Middleware.js')(isOnSpamWatch);
-const os = require('os');
-const { exec } = require('child_process');
-const { error } = require('console');
+import { getStrings } from '../plugins/checklang';
+import { isOnSpamWatch } from '../spamwatch/spamwatch';
+import spamwatchMiddlewareModule from '../spamwatch/Middleware';
+import os from 'os';
+import { exec } from 'child_process';
+import { error } from 'console';
+import { Context, Telegraf } from 'telegraf';
+
+const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 
 function getGitCommitHash() {
   return new Promise((resolve, reject) => {
@@ -29,7 +32,7 @@ function updateBot() {
   });
 }
 
-function formatUptime(uptime) {
+function formatUptime(uptime: number) {
   const hours = Math.floor(uptime / 3600);
   const minutes = Math.floor((uptime % 3600) / 60);
   const seconds = Math.floor(uptime % 60);
@@ -50,152 +53,190 @@ function getSystemInfo() {
     `*Uptime:* \`${formatUptime(uptime())}\`\n\n`;
 }
 
-async function handleAdminCommand(ctx, action, successMessage, errorMessage) {
-  const Strings = getStrings(ctx.from.language_code);
-  const userId = ctx.from.id;
-  const adminArray = JSON.parse("[" + process.env.botAdmins + "]");
-  if (adminArray.includes(userId)) {
+async function handleAdminCommand(ctx: Context & { message: { text: string } }, action: () => Promise<void>, successMessage: string, errorMessage: string) {
+  const Strings = getStrings(ctx.from?.language_code);
+  const userId = ctx.from?.id;
+  const adminArray = process.env.botAdmins ? process.env.botAdmins.split(',').map(id => parseInt(id.trim())) : [];
+  if (userId && adminArray.includes(userId)) {
     try {
       await action();
-      ctx.reply(successMessage, {
-        parse_mode: 'Markdown',
-        reply_to_message_id: ctx.message.message_id
-      });
+      if (successMessage) {
+        ctx.reply(successMessage, {
+          parse_mode: 'Markdown',
+          // @ts-ignore
+          reply_to_message_id: ctx.message.message_id
+        });
+      }
     } catch (error) {
       ctx.reply(errorMessage.replace(/{error}/g, error.message), {
         parse_mode: 'Markdown',
+        // @ts-ignore
         reply_to_message_id: ctx.message.message_id
       });
     }
   } else {
     ctx.reply(Strings.noPermission, {
+      // @ts-ignore
       reply_to_message_id: ctx.message.message_id
     });
   }
 }
 
-module.exports = (bot) => {
-  bot.command('getbotstats', spamwatchMiddleware, async (ctx) => {
-    const Strings = getStrings(ctx.from.language_code);
+export default (bot: Telegraf<Context>) => {
+  bot.command('getbotstats', spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
+    const Strings = getStrings(ctx.from?.language_code);
     handleAdminCommand(ctx, async () => {
       const stats = getSystemInfo();
       await ctx.reply(stats, {
         parse_mode: 'Markdown',
+        // @ts-ignore
         reply_to_message_id: ctx.message.message_id
       });
     }, '', Strings.errorRetrievingStats);
   });
 
-  bot.command('getbotcommit', spamwatchMiddleware, async (ctx) => {
-    const Strings = getStrings(ctx.from.language_code);
+  bot.command('getbotcommit', spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
+    const Strings = getStrings(ctx.from?.language_code);
     handleAdminCommand(ctx, async () => {
       try {
         const commitHash = await getGitCommitHash();
         await ctx.reply(Strings.gitCurrentCommit.replace(/{commitHash}/g, commitHash), {
           parse_mode: 'Markdown',
+          // @ts-ignore
           reply_to_message_id: ctx.message.message_id
         });
       } catch (error) {
         ctx.reply(Strings.gitErrRetrievingCommit.replace(/{error}/g, error), {
           parse_mode: 'Markdown',
+          // @ts-ignore
           reply_to_message_id: ctx.message.message_id
         });
       }
     }, '', Strings.gitErrRetrievingCommit);
   });
 
-  bot.command('updatebot', spamwatchMiddleware, async (ctx) => {
-    const Strings = getStrings(ctx.from.language_code);
+  bot.command('updatebot', spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
+    const Strings = getStrings(ctx.from?.language_code);
     handleAdminCommand(ctx, async () => {
       try {
         const result = await updateBot();
         await ctx.reply(Strings.botUpdated.replace(/{result}/g, result), {
           parse_mode: 'Markdown',
+          // @ts-ignore
           reply_to_message_id: ctx.message.message_id
         });
       } catch (error) {
         ctx.reply(Strings.errorUpdatingBot.replace(/{error}/g, error), {
           parse_mode: 'Markdown',
+          // @ts-ignore
           reply_to_message_id: ctx.message.message_id
         });
       }
     }, '', Strings.errorUpdatingBot);
   });
 
-  bot.command('setbotname', spamwatchMiddleware, async (ctx) => {
-    const Strings = getStrings(ctx.from.language_code);
+  bot.command('setbotname', spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
+    const Strings = getStrings(ctx.from?.language_code);
     const botName = ctx.message.text.split(' ').slice(1).join(' ');
     handleAdminCommand(ctx, async () => {
       await ctx.telegram.setMyName(botName);
     }, Strings.botNameChanged.replace(/{botName}/g, botName), Strings.botNameErr.replace(/{error}/g, error));
   });
 
-  bot.command('setbotdesc', spamwatchMiddleware, async (ctx) => {
-    const Strings = getStrings(ctx.from.language_code);
+  bot.command('setbotdesc', spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
+    const Strings = getStrings(ctx.from?.language_code);
     const botDesc = ctx.message.text.split(' ').slice(1).join(' ');
     handleAdminCommand(ctx, async () => {
       await ctx.telegram.setMyDescription(botDesc);
     }, Strings.botDescChanged.replace(/{botDesc}/g, botDesc), Strings.botDescErr.replace(/{error}/g, error));
   });
 
-  bot.command('botkickme', spamwatchMiddleware, async (ctx) => {
-    const Strings = getStrings(ctx.from.language_code);
+  bot.command('botkickme', spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
+    const Strings = getStrings(ctx.from?.language_code);
     handleAdminCommand(ctx, async () => {
+      if (!ctx.chat) {
+        ctx.reply(Strings.chatNotFound, {
+          parse_mode: 'Markdown',
+          // @ts-ignore
+          reply_to_message_id: ctx.message.message_id
+        });
+        return;
+      }
       ctx.reply(Strings.kickingMyself, {
         parse_mode: 'Markdown',
+        // @ts-ignore
         reply_to_message_id: ctx.message.message_id
       });
       await ctx.telegram.leaveChat(ctx.chat.id);
     }, '', Strings.kickingMyselfErr);
   });
 
-  bot.command('getfile', spamwatchMiddleware, async (ctx) => {
-    const Strings = getStrings(ctx.from.language_code);
+  bot.command('getfile', spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
+    const Strings = getStrings(ctx.from?.language_code);
     const botFile = ctx.message.text.split(' ').slice(1).join(' ');
+
+    if (!botFile) {
+      ctx.reply(Strings.noFileProvided, {
+        parse_mode: 'Markdown',
+        // @ts-ignore
+        reply_to_message_id: ctx.message.message_id
+      });
+      return;
+    }
+
     handleAdminCommand(ctx, async () => {
       try {
         await ctx.replyWithDocument({
+          // @ts-ignore
           source: botFile,
           caption: botFile
+        }, {
+          // @ts-ignore
+          reply_to_message_id: ctx.message.message_id
         });
       } catch (error) {
         ctx.reply(Strings.unexpectedErr.replace(/{error}/g, error.message), {
           parse_mode: 'Markdown',
+          // @ts-ignore
           reply_to_message_id: ctx.message.message_id
         });
       }
     }, '', Strings.unexpectedErr);
   });
 
-  bot.command('run', spamwatchMiddleware, async (ctx) => {
+  bot.command('run', spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
     const command = ctx.message.text.split(' ').slice(1).join(' ');
     handleAdminCommand(ctx, async () => {
       if (!command) {
-        return ctx.reply('Por favor, forneça um comando para executar.');
+        ctx.reply('Por favor, forneça um comando para executar.');
+        return;
       }
 
       exec(command, (error, stdout, stderr) => {
         if (error) {
           return ctx.reply(`\`${error.message}\``, {
             parse_mode: 'Markdown',
+            // @ts-ignore
             reply_to_message_id: ctx.message.message_id
           });
         }
         if (stderr) {
           return ctx.reply(`\`${stderr}\``, {
             parse_mode: 'Markdown',
+            // @ts-ignore
             reply_to_message_id: ctx.message.message_id
           });
         }
         ctx.reply(`\`${stdout}\``, {
           parse_mode: 'Markdown',
+          // @ts-ignore
           reply_to_message_id: ctx.message.message_id
         });
       });
     }, '', "Nope!");
   });
 
-  bot.command('eval', spamwatchMiddleware, async (ctx) => {
+  bot.command('eval', spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
     const code = ctx.message.text.split(' ').slice(1).join(' ');
     if (!code) {
       return ctx.reply('Por favor, forneça um código para avaliar.');
@@ -205,19 +246,21 @@ module.exports = (bot) => {
       const result = eval(code);
       ctx.reply(`Result: ${result}`, {
         parse_mode: 'Markdown',
+        // @ts-ignore
         reply_to_message_id: ctx.message.message_id
       });
     } catch (error) {
       ctx.reply(`Error: ${error.message}`, {
         parse_mode: 'Markdown',
+        // @ts-ignore
         reply_to_message_id: ctx.message.message_id
       });
     }
   });
 
-  bot.command('crash', spamwatchMiddleware, async (ctx) => {
+  bot.command('crash', spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
     handleAdminCommand(ctx, async () => {
-      ctx.reply(null);
+      ctx.reply('Crashed!');
     }, '', "Nope!");
   });
 };

@@ -136,11 +136,12 @@ dist
 lastfm.json
 sw-blocklist.txt
 package-lock.json
-bun.lock
-bun.lockb
 tmp/
 
 # Executables
 *.exe
 yt-dlp
 ffmpeg
+
+# Bun
+bun.lock*

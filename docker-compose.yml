@@ -4,6 +4,6 @@ services:
     container_name: kowalski
     restart: unless-stopped
     volumes:
-      - ./config.env:/usr/src/app/config.env:ro
+      - ./.env:/usr/src/app/.env:ro
     environment:
       - NODE_ENV=production 

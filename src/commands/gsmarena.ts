@@ -4,18 +4,23 @@
 // With some help from GPT (I don't really like AI but whatever)
 // If this were a kang, I would not be giving credits to him!
 
-const { isOnSpamWatch } = require('../spamwatch/spamwatch.js');
-const spamwatchMiddleware = require('../spamwatch/Middleware.js')(isOnSpamWatch);
+import { isOnSpamWatch } from '../spamwatch/spamwatch';
+import spamwatchMiddlewareModule from '../spamwatch/Middleware';
+import axios from 'axios';
+import { parse } from 'node-html-parser';
 
-const axios = require('axios');
-const { parse } = require('node-html-parser');
+const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 
-class PhoneSearchResult {
-  constructor(name, url) {
-    this.name = name;
-    this.url = url;
-    Object.freeze(this);
-  }
+interface PhoneSearchResult {
+  name: string;
+  url: string;
+}
+
+interface PhoneDetails {
+  specs: Record<string, Record<string, string>>;
+  name?: string;
+  url?: string;
+  picture?: string;
 }
 
 const HEADERS = {
@@ -32,7 +37,7 @@ function getDataFromSpecs(specsData, category, attributes) {
     .join("\n");
 }
 
-function parseSpecs(specsData) {
+function parseSpecs(specsData: PhoneDetails): PhoneDetails {
   const categories = {
     "status": ["Launch", ["Status"]],
     "network": ["Network", ["Technology"]],
@@ -69,7 +74,7 @@ function parseSpecs(specsData) {
     const [cat, attrs] = categories[key];
     acc[key] = getDataFromSpecs(specsData, cat, attrs) || "";
     return acc;
-  }, {});
+  }, { specs: {} } as PhoneDetails);
 
   parsedData["name"] = specsData.name || "";
   parsedData["url"] = specsData.url || "";
@@ -77,7 +82,7 @@ function parseSpecs(specsData) {
   return parsedData;
 }
 
-function formatPhone(phone) {
+function formatPhone(phone: PhoneDetails) {
   const formattedPhone = parseSpecs(phone);
   const attributesDict = {
     "Status": "status",
@@ -132,7 +137,7 @@ async function fetchHtml(url) {
   }
 }
 
-async function searchPhone(phone) {
+async function searchPhone(phone: string): Promise<PhoneSearchResult[]> {
   try {
     const searchUrl = `https://m.gsmarena.com/results.php3?sQuickSearch=yes&sName=${encodeURIComponent(phone)}`;
     const htmlContent = await fetchHtml(searchUrl);
@@ -142,7 +147,7 @@ async function searchPhone(phone) {
     return foundPhones.map((phoneTag) => {
       const name = phoneTag.querySelector('img')?.getAttribute('title') || "";
       const url = phoneTag.querySelector('a')?.getAttribute('href') || "";
-      return new PhoneSearchResult(name, url);
+      return { name, url };
     });
   } catch (error) {
     console.error("Error searching for phone:", error);
@@ -164,7 +169,7 @@ async function checkPhoneDetails(url) {
     return { ...specsData, name, picture, url: `https://www.gsmarena.com/${url}` };
   } catch (error) {
     console.error("Error fetching phone details:", error);
-    return {};
+    return { specs: {}, name: "", url: "", picture: "" };
   }
 }
 
@@ -201,7 +206,7 @@ function getUsername(ctx){
   return userName;
 }
 
-module.exports = (bot) => {
+export default (bot) => {
   bot.command(['d', 'device'], spamwatchMiddleware, async (ctx) => {
     const userId = ctx.from.id;
     const userName = getUsername(ctx);

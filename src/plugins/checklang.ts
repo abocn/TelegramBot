@@ -17,6 +17,4 @@ function getStrings(languageCode) {
   }
 }
 
-module.exports = {
-  getStrings
-};
+export { getStrings };

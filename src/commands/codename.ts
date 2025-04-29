@@ -1,11 +1,14 @@
-const Resources = require('../props/resources.json');
-const { getStrings } = require('../plugins/checkLang.js');
-const { isOnSpamWatch } = require('../spamwatch/spamwatch.js');
-const spamwatchMiddleware = require('../spamwatch/Middleware.js')(isOnSpamWatch);
-const axios = require('axios');
-const { verifyInput } = require('../plugins/verifyInput.js');
+import Resources from '../props/resources.json';
+import { getStrings } from '../plugins/checklang';
+import { isOnSpamWatch } from '../spamwatch/spamwatch';
+import spamwatchMiddlewareModule from '../spamwatch/Middleware';
+import axios from 'axios';
+import verifyInput from '../plugins/verifyInput';
+import { Context, Telegraf } from 'telegraf';
 
-async function getDeviceList() {
+const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
+
+async function getDeviceList({ Strings, ctx }: { Strings: any, ctx: Context & { message: { text: string } } }) {
   try {
     const response = await axios.get(Resources.codenameApi);
     return response.data
@@ -15,27 +18,29 @@ async function getDeviceList() {
 
     return ctx.reply(message, {
       parse_mode: "Markdown",
+      // @ts-ignore
       reply_to_message_id: ctx.message.message_id
     });
   }
 }
 
-module.exports = (bot) => {
-  bot.command(['codename', 'whatis'], spamwatchMiddleware, async (ctx) => {
+export default (bot: Telegraf<Context>) => {
+  bot.command(['codename', 'whatis'], spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
     const userInput = ctx.message.text.split(" ").slice(1).join(" ");
-    const Strings = getStrings(ctx.from.language_code);
+    const Strings = getStrings(ctx.from?.language_code);
     const { noCodename } = Strings.codenameCheck
   
     if(verifyInput(ctx, userInput, noCodename)){
       return;
     }
 
-    const jsonRes = await getDeviceList()
+    const jsonRes = await getDeviceList({ Strings, ctx })
     const phoneSearch = Object.keys(jsonRes).find((codename) => codename === userInput);
 
     if (!phoneSearch) {
       return ctx.reply(Strings.codenameCheck.notFound, {
         parse_mode: "Markdown",
+        // @ts-ignore
         reply_to_message_id: ctx.message.message_id
       });
     }
@@ -50,6 +55,7 @@ module.exports = (bot) => {
 
     return ctx.reply(message, {
       parse_mode: 'Markdown',
+      // @ts-ignore
       reply_to_message_id: ctx.message.message_id
     });
   })

@@ -1,12 +1,19 @@
-const Resources = require('../props/resources.json');
-const axios = require('axios');
-const fs = require('fs');
-const path = require('path');
-const { getStrings } = require('../plugins/checkLang.js');
-const { isOnSpamWatch } = require('../spamwatch/spamwatch.js');
-const spamwatchMiddleware = require('../spamwatch/Middleware.js')(isOnSpamWatch);
+import Resources from '../props/resources.json';
+import axios from 'axios';
+import fs from 'fs';
+import path from 'path';
+import { getStrings } from '../plugins/checklang';
+import { isOnSpamWatch } from '../spamwatch/spamwatch';
+import spamwatchMiddlewareModule from '../spamwatch/Middleware';
 
-async function downloadModule(moduleId) {
+const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
+
+interface ModuleResult {
+  filePath: string;
+  fileName: string;
+}
+
+async function downloadModule(moduleId: string): Promise<ModuleResult | null> {
   try {
     const downloadUrl = `${Resources.modArchiveApi}${moduleId}`;
     const response = await axios({
@@ -39,12 +46,12 @@ async function downloadModule(moduleId) {
   }
 }
 
-module.exports = (bot) => {
+export default (bot) => {
   bot.command(['modarchive', 'tma'], spamwatchMiddleware, async (ctx) => {
     const Strings = getStrings(ctx.from.language_code);
     const moduleId = ctx.message.text.split(' ')[1];
 
-    if (moduleId == NaN || null) {
+    if (Number.isNaN(moduleId) || null) {
       return ctx.reply(Strings.maInvalidModule, {
         parse_mode: "Markdown",
         reply_to_message_id: ctx.message.message_id

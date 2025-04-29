@@ -110,5 +110,7 @@
     "notFound": "Phone not found.",
     "resultMsg": "*Name:* `{name}`\n*Brand:* `{brand}`\n*Model:* `{model}`\n*Codename:* `{codename}`",
     "apiErr": "An error occurred while fetching data from the API.\n\n`{err}`"
-  }
+  },
+  "chatNotFound": "Chat not found.",
+  "noFileProvided": "Please provide a file to send."
 }

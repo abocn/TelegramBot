@@ -1,6 +1,17 @@
-const { getStrings } = require('../plugins/checkLang.js');
-const { isOnSpamWatch } = require('../spamwatch/spamwatch.js');
-const spamwatchMiddleware = require('../spamwatch/Middleware.js')(isOnSpamWatch);
+import { getStrings } from '../plugins/checklang';
+import { isOnSpamWatch } from '../spamwatch/spamwatch';
+import spamwatchMiddlewareModule from '../spamwatch/Middleware';
+
+const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
+
+interface MessageOptions {
+  parse_mode: string;
+  disable_web_page_preview: boolean;
+  reply_markup: {
+    inline_keyboard: { text: any; callback_data: string; }[][];
+  };
+  reply_to_message_id?: number;
+}
 
 async function sendHelpMessage(ctx, isEditing) {
   const Strings = getStrings(ctx.from.language_code);
@@ -11,8 +22,8 @@ async function sendHelpMessage(ctx, isEditing) {
   function getMessageId(ctx) {
     return ctx.message?.message_id || ctx.callbackQuery?.message?.message_id;
   };
-  const createOptions = (ctx, includeReplyTo = false) => {
-    const options = {
+  const createOptions = (ctx, includeReplyTo = false): MessageOptions => {
+    const options: MessageOptions = {
       parse_mode: 'Markdown',
       disable_web_page_preview: true,
       reply_markup: {
@@ -39,9 +50,9 @@ async function sendHelpMessage(ctx, isEditing) {
   };
 }
 
-module.exports = (bot) => {
+export default (bot) => {
   bot.help(spamwatchMiddleware, async (ctx) => {
-    await sendHelpMessage(ctx);
+    await sendHelpMessage(ctx, false);
   });
 
   bot.command("about", spamwatchMiddleware, async (ctx) => {
