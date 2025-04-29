@@ -75,7 +75,8 @@
     "uploadErr": "Error uploading file. Please try again later.\n\n{error}",
     "uploadLimit": "*This video exceeds the 50 MB upload limit imposed by Telegram on our bot. Please try another video. We're doing our best to increase this limit.*",
     "sizeLimitWarn": "*This video had its quality reduced because it exceeded the 50MB limit for uploads imposed by Telegram.*",
-    "noLink": "Please provide a link to a video to download."
+    "noLink": "Please provide a link to a video to download.",
+    "notYtLink": "Please provide a valid YouTube link to download."
   },
   "botUpdated": "Bot updated with success.\n\n```{result}```",
   "errorUpdatingBot": "Error updating bot\n\n{error}",

@@ -5,6 +5,7 @@ import { execFile } from 'child_process';
 import os from 'os';
 import fs from 'fs';
 import path from 'path';
+import * as ytUrl from 'youtube-url';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 
@@ -66,15 +67,19 @@ export default (bot) => {
   bot.command(['yt', 'ytdl', 'sdl', 'video', 'dl'], spamwatchMiddleware, async (ctx) => {
     const Strings = getStrings(ctx.from.language_code);
     const ytDlpPath = getYtDlpPath();
-    const userId = ctx.from.id;
-    const videoUrl = ctx.message.text.split(' ').slice(1).join(' ');
-    const mp4File = `tmp/${userId}.mp4`;
-    const tempMp4File = `tmp/${userId}.f137.mp4`;
-    const tempWebmFile = `tmp/${userId}.f251.webm`;
-    let cmdArgs = "";
-    const dlpCommand = ytDlpPath;
-    const ffmpegPath = getFfmpegPath();
-    const ffmpegArgs = ['-i', tempMp4File, '-i', tempWebmFile, '-c:v copy -c:a copy -strict -2', mp4File];
+    const userId: number = ctx.from.id;
+    const videoUrl: string = ctx.message.text.split(' ').slice(1).join(' ');
+    const videoUrlSafe: boolean = ytUrl.valid(videoUrl);
+    const randId: string = Math.random().toString(36).substring(2, 15);
+    const mp4File: string = `tmp/${userId}-${randId}.mp4`;
+    const tempMp4File: string = `tmp/${userId}-${randId}.f137.mp4`;
+    const tempWebmFile: string = `tmp/${userId}-${randId}.f251.webm`;
+    let cmdArgs: string = "";
+    const dlpCommand: string = ytDlpPath;
+    const ffmpegPath: string = getFfmpegPath();
+    const ffmpegArgs: string[] = ['-i', tempMp4File, '-i', tempWebmFile, '-c:v copy -c:a copy -strict -2', mp4File];
+    
+    console.log(`DOWNLOADING: ${videoUrl}\nSAFE: ${videoUrlSafe}\n`)
 
     if (!videoUrl) {
       return ctx.reply(Strings.ytDownload.noLink, {
@@ -82,7 +87,13 @@ export default (bot) => {
         disable_web_page_preview: true,
         reply_to_message_id: ctx.message.message_id
       });
-    };
+    } else if (!videoUrlSafe) {
+      return ctx.reply(Strings.ytDownload.notYtLink, {
+        parse_mode: "Markdown",
+        disable_web_page_preview: true,
+        reply_to_message_id: ctx.message.message_id
+      });
+    }
 
     if (fs.existsSync(path.resolve(__dirname, "../props/cookies.txt"))) {
       cmdArgs = "--max-filesize 2G --no-playlist --cookies src/props/cookies.txt --merge-output-format mp4 -o";
