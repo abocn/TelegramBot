@@ -60,7 +60,7 @@
     "interactiveEmojis": "Emojis interativos",
     "interactiveEmojisDesc": "*Emojis interativos*\n\n- /dice: Jogue um dado\n- /idice: Role infinitamente um dado colorido\n- /slot: Tente combinar as figuras!\n- /ball: Tente chutar a bola no gol!\n- /bowling: Tente derrubar os pinos!\n- /dart: Tente acertar o alvo!",
     "animalCommands": "Animais",
-    "animalCommandsDesc": "*Animais*\n\n- /soggy | /soggycat `<1 | 2 | 3 | 4 | orig | thumb | sticker | alt>`: Envia o [meme do gato encharcado](https://knowyourmeme.com/memes/soggy-cat)\n- /cat `<tags>` - Envia uma foto aleatória de um gato. Você pode especificar algumas tags em inglês, separando cada uma por uma vírgula. Exemplo: `/cat orange, cute`\n- /dog - Envia uma imagem aleatória de um cachorro.\n- /httpcat `<código http>`: Envia memes de gato do http.cat com o código HTTP especificado. Exemplo: `/httpcat 404`",
+    "animalCommandsDesc": "*Animais*\n\n- /soggy | /soggycat `<1 | 2 | 3 | 4 | orig | thumb | sticker | alt>`: Envia o [meme do gato encharcado](https://knowyourmeme.com/memes/soggy-cat)\n- /cat - Envia uma foto aleatória de um gato.\n- /fox - Envia uma foto aleatória de uma raposa.\n- /duck - Envia uma foto aleatória de um pato.\n- /dog - Envia uma imagem aleatória de um cachorro.\n- /httpcat `<código http>`: Envia memes de gato do http.cat com o código HTTP especificado. Exemplo: `/httpcat 404`",
     "maInvalidModule": "Por favor, forneça um ID de módulo válido do The Mod Archive.\nExemplo: `/modarchive 81574`",
     "maDownloadError": "Erro ao baixar o arquivo. Verifique o ID do módulo e tente novamente.",
     "ytDownload": {
