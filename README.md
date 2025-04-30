@@ -10,6 +10,12 @@ Kowalski is a a simple Telegram bot made in Node.js.
 
 - You can find Kowalski at [@KowalskiNodeBot](https://t.me/KowalskiNodeBot) on Telegram.
 
+## Translations
+
+<a href="https://weblate.librecloud.cc/engage/kowalski/">
+<img src="https://weblate.librecloud.cc/widget/kowalski/multi-auto.svg" alt="Translation status" />
+</a>
+
 ## Self-host requirements
 
 > [!IMPORTANT]
