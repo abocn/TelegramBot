@@ -21,10 +21,10 @@ const statusEmojis = {
   43: '❄️', 44: 'n/a', 45: '🌧', 46: '🌨', 47: '🌩'
 };
 
-const getStatusEmoji = (statusCode) => statusEmojis[statusCode] || 'n/a';
+const getStatusEmoji = (statusCode: number) => statusEmojis[statusCode] || 'n/a';
 
-function getLocaleUnit(countryCode) {
-  const fahrenheitCountries = ['US', 'BS', 'BZ', 'KY', 'LR'];
+function getLocaleUnit(countryCode: string) {
+  const fahrenheitCountries: string[] = ['US', 'BS', 'BZ', 'KY', 'LR'];
 
   if (fahrenheitCountries.includes(countryCode)) {
     return { temperatureUnit: 'F', speedUnit: 'mph', apiUnit: 'e' };
@@ -44,10 +44,18 @@ export default (bot) => {
       return;
     }
 
-    const location = userInput;
-    const apiKey = process.env.weatherKey;
+    const location: string = userInput;
+    const apiKey: string = process.env.weatherKey || '';
+
+    if (!apiKey || apiKey === "InsertYourWeatherDotComApiKeyHere") {
+      return ctx.reply(Strings.weatherStatus.apiKeyErr, {
+        parse_mode: "Markdown",
+        reply_to_message_id: ctx.message.message_id
+      });
+    }
 
     try {
+      // TODO: this also needs to be sanitized and validated
       const locationResponse = await axios.get(`${Resources.weatherApi}/location/search`, {
         params: {
           apiKey: apiKey,

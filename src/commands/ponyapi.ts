@@ -4,6 +4,7 @@ import { isOnSpamWatch } from '../spamwatch/spamwatch';
 import spamwatchMiddlewareModule from '../spamwatch/Middleware';
 import axios from 'axios';
 import verifyInput from '../plugins/verifyInput';
+import { Telegraf, Context } from 'telegraf';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 
@@ -50,19 +51,20 @@ function capitalizeFirstLetter(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-export default (bot) => {
-  bot.command("mlp", spamwatchMiddleware, async (ctx) => {
-    const Strings = getStrings(ctx.from.language_code);
+export default (bot: Telegraf<Context>) => {
+  bot.command("mlp", spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
+    const Strings = getStrings(ctx.from?.language_code || 'en');
 
     ctx.reply(Strings.ponyApi.helpDesc, {
       parse_mode: 'Markdown',
+      // @ts-ignore
       disable_web_page_preview: true,
       reply_to_message_id: ctx.message.message_id
     });
   });
 
-  bot.command("mlpchar", spamwatchMiddleware, async (ctx) => {
-    const Strings = getStrings(ctx.from.language_code);
+  bot.command("mlpchar", spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
+    const Strings = getStrings(ctx.from?.language_code || 'en');
     const userInput = ctx.message.text.split(' ').slice(1).join(' ').replace(" ", "+");
     const { noCharName } = Strings.ponyApi
 
@@ -116,12 +118,14 @@ export default (bot) => {
         ctx.replyWithPhoto(charactersArray[0].image[0], {
           caption: `${result}`,
           parse_mode: 'Markdown',
+          // @ts-ignore
           disable_web_page_preview: true,
           reply_to_message_id: ctx.message.message_id
         });
       } else {
         ctx.reply(Strings.ponyApi.noCharFound, {
           parse_mode: 'Markdown',
+          // @ts-ignore
           reply_to_message_id: ctx.message.message_id
         });
       };
@@ -129,13 +133,14 @@ export default (bot) => {
       const message = Strings.ponyApi.apiErr.replace('{error}', error.message);
       ctx.reply(message, {
         parse_mode: 'Markdown',
+        // @ts-ignore
         reply_to_message_id: ctx.message.message_id
       });
     };
   });
 
-  bot.command("mlpep", spamwatchMiddleware, async (ctx) => {
-    const Strings = getStrings(ctx.from.language_code);
+  bot.command("mlpep", spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
+    const Strings = getStrings(ctx.from?.language_code || 'en');
     const userInput = ctx.message.text.split(' ').slice(1).join(' ').replace(" ", "+");
 
     const { noEpisodeNum } = Strings.ponyApi
@@ -184,12 +189,14 @@ export default (bot) => {
         ctx.replyWithPhoto(episodeArray[0].image, {
           caption: `${result}`,
           parse_mode: 'Markdown',
+          // @ts-ignore
           disable_web_page_preview: true,
           reply_to_message_id: ctx.message.message_id
         });
       } else {
         ctx.reply(Strings.ponyApi.noEpisodeFound, {
           parse_mode: 'Markdown',
+          // @ts-ignore
           reply_to_message_id: ctx.message.message_id
         });
       };
@@ -197,13 +204,14 @@ export default (bot) => {
       const message = Strings.ponyApi.apiErr.replace('{error}', error.message);
       ctx.reply(message, {
         parse_mode: 'Markdown',
+        // @ts-ignore
         reply_to_message_id: ctx.message.message_id
       });
     };
   });
 
-  bot.command("mlpcomic", spamwatchMiddleware, async (ctx) => {
-    const Strings = getStrings(ctx.from.language_code);
+  bot.command("mlpcomic", spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
+    const Strings = getStrings(ctx.from?.language_code || 'en');
     const userInput = ctx.message.text.split(' ').slice(1).join(' ').replace(" ", "+");
 
     const { noComicName } = Strings.ponyApi
@@ -257,12 +265,14 @@ export default (bot) => {
         ctx.replyWithPhoto(comicArray[0].image, {
           caption: `${result}`,
           parse_mode: 'Markdown',
+          // @ts-ignore
           disable_web_page_preview: true,
           reply_to_message_id: ctx.message.message_id
         });
       } else {
         ctx.reply(Strings.ponyApi.noComicFound, {
           parse_mode: 'Markdown',
+          // @ts-ignore
           reply_to_message_id: ctx.message.message_id
         });
       };
@@ -270,6 +280,7 @@ export default (bot) => {
       const message = Strings.ponyApi.apiErr.replace('{error}', error.message);
       ctx.reply(message, {
         parse_mode: 'Markdown',
+        // @ts-ignore
         reply_to_message_id: ctx.message.message_id
       });
     };

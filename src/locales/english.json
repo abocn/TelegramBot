@@ -49,7 +49,8 @@
     "provideLocation": "*Please provide a location.*",
     "invalidLocation": "*Invalid location. Try again.*",
     "resultMsg": "*Weather in {addressFirst}:*\n\n*Status:* `{getStatusEmoji(iconCode)} {wxPhraseLong}`\n*Temperature:* `{temperature} °{temperatureUnit}`\n*Feels like:* `{temperatureFeelsLike} °{temperatureUnit2}`\n*Humidity:* `{relativeHumidity}%`\n*Wind speed:* `{windSpeed} {speedUnit}`",
-    "apiErr": "*An error occurred while retrieving the weather. Please try again later.*\n\n`{error}`"
+    "apiErr": "*An error occurred while retrieving the weather. Please try again later.*\n\n`{error}`",
+    "apiKeyErr": "*An API key was not set by the bot owner. Please try again later.*"
   },
   "mainCommands": "Main commands",
   "mainCommandsDesc": "*Main commands*\n\n- /help: Show bot's help\n- /start: Start the bot\n- /privacy: Read the bot's Privacy Policy",

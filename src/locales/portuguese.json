@@ -49,7 +49,8 @@
         "provideLocation": "*Por favor, forneça uma localização.*",
         "invalidLocation": "*Localização inválida. Tente novamente.*",
         "resultMsg": "*Clima em {addressFirst}:*\n\n*Estado:* `{getStatusEmoji(iconCode)} {wxPhraseLong}`\n*Temperatura:* `{temperature} °{temperatureUnit}`\n*Sensação térmica:* `{temperatureFeelsLike} °{temperatureUnit2}`\n*Umidade:* `{relativeHumidity}%`\n*Velocidade do vento:* `{windSpeed} {speedUnit}`",
-        "apiErr": "*Ocorreu um erro ao obter o clima. Tente novamente mais tarde.*\n\n`{error}`"
+        "apiErr": "*Ocorreu um erro ao obter o clima. Tente novamente mais tarde.*\n\n`{error}`",
+        "apiKeyErr": "*Uma chave de API não foi definida pelo proprietário do bot. Tente novamente mais tarde.*"
     },
     "mainCommands": "Comandos principais",
     "mainCommandsDesc": "*Comandos principais*\n\n- /help: Exibe a ajuda do bot\n- /start: Inicia o bot\n- /privacy: Leia a política de privacidade do bot",
