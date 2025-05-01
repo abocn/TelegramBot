@@ -37,12 +37,7 @@ async function getChatInfo(ctx: Context & { message: { text: string } }) {
     
     return chatInfo;
   } else {
-    return ctx.reply(
-      Strings.groupOnly, {
-      parse_mode: 'Markdown',
-      // @ts-ignore
-      reply_to_message_id: ctx.message.message_id
-    });
+    return Strings.groupOnly
   }
 }
 
