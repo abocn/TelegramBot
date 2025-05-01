@@ -1,5 +1,7 @@
 /*
 import axios from "axios";
+import { Context, Telegraf } from "telegraf";
+import { replyToMessageId } from "../utils/reply-to-message-id";
 
 function capitalizeFirstLetter(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
@@ -23,7 +25,7 @@ function mediaWikiToMarkdown(input: string) {
   return input;
 }
 
-export default (bot) => {
+export default (bot: Telegraf<Context>) => {
   bot.command("wiki", async (ctx) => {
     const userInput = capitalizeFirstLetter(ctx.message.text.split(' ')[1]);
     const apiUrl = `https://en.wikipedia.org/w/index.php?title=${userInput}&action=raw`;
@@ -31,8 +33,9 @@ export default (bot) => {
     const convertedResponse = response.data.replace(/<\/?div>/g, "").replace(/{{Infobox.*?}}/s, "");
 
     const result = mediaWikiToMarkdown(convertedResponse).slice(0, 2048);
+    const reply_to_message_id = replyToMessageId(ctx);
 
-    ctx.reply(result, { parse_mode: 'Markdown', disable_web_page_preview: true, reply_to_message_id: ctx.message.message_id });
+    ctx.reply(result, { parse_mode: 'Markdown', ...({ reply_to_message_id, disable_web_page_preview: true }) });
   });
 };
 */

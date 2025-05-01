@@ -8,6 +8,7 @@ import { getStrings } from '../plugins/checklang';
 import { isOnSpamWatch } from '../spamwatch/spamwatch';
 import spamwatchMiddlewareModule from '../spamwatch/Middleware';
 import verifyInput from '../plugins/verifyInput';
+import { Context, Telegraf } from 'telegraf';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 
@@ -33,8 +34,9 @@ function getLocaleUnit(countryCode: string) {
   }
 }
 
-export default (bot) => {
+export default (bot: Telegraf<Context>) => {
   bot.command(['clima', 'weather'], spamwatchMiddleware, async (ctx) => {
+    const reply_to_message_id = ctx.message.message_id;
     const userLang = ctx.from.language_code || "en-US";
     const Strings = getStrings(userLang);
     const userInput = ctx.message.text.split(' ').slice(1).join(' ');
@@ -50,7 +52,7 @@ export default (bot) => {
     if (!apiKey || apiKey === "InsertYourWeatherDotComApiKeyHere") {
       return ctx.reply(Strings.weatherStatus.apiKeyErr, {
         parse_mode: "Markdown",
-        reply_to_message_id: ctx.message.message_id
+        ...({ reply_to_message_id })
       });
     }
 
@@ -69,7 +71,7 @@ export default (bot) => {
       if (!locationData || !locationData.address) {
         return ctx.reply(Strings.weatherStatus.invalidLocation, {
           parse_mode: "Markdown",
-          reply_to_message_id: ctx.message.message_id
+          ...({ reply_to_message_id })
         });
       }
 
@@ -106,13 +108,13 @@ export default (bot) => {
 
       ctx.reply(weatherMessage, {
         parse_mode: "Markdown",
-        reply_to_message_id: ctx.message.message_id
+        ...({ reply_to_message_id })
       });
     } catch (error) {
       const message = Strings.weatherStatus.apiErr.replace('{error}', error.message);
       ctx.reply(message, {
         parse_mode: "Markdown",
-        reply_to_message_id: ctx.message.message_id
+        ...({ reply_to_message_id })
       });
     }
   });

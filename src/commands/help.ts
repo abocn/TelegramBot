@@ -1,6 +1,7 @@
 import { getStrings } from '../plugins/checklang';
 import { isOnSpamWatch } from '../spamwatch/spamwatch';
 import spamwatchMiddlewareModule from '../spamwatch/Middleware';
+import { languageCode } from '../utils/language-code';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 
@@ -14,7 +15,7 @@ interface MessageOptions {
 }
 
 async function sendHelpMessage(ctx, isEditing) {
-  const Strings = getStrings(ctx.from.language_code);
+  const Strings = getStrings(languageCode(ctx));
   const botInfo = await ctx.telegram.getMe();
   const helpText = Strings.botHelp
     .replace(/{botName}/g, botInfo.first_name)
@@ -56,7 +57,7 @@ export default (bot) => {
   });
 
   bot.command("about", spamwatchMiddleware, async (ctx) => {
-    const Strings = getStrings(ctx.from.language_code);
+    const Strings = getStrings(languageCode(ctx));
     const aboutMsg = Strings.botAbout.replace(/{sourceLink}/g, `${process.env.botSource}`);
     ctx.reply(aboutMsg, {
       parse_mode: 'Markdown',
@@ -67,7 +68,7 @@ export default (bot) => {
 
   bot.on('callback_query', async (ctx) => {
     const callbackData = ctx.callbackQuery.data;
-    const Strings = getStrings(ctx.from.language_code);
+    const Strings = getStrings(languageCode(ctx));
     const options = {
       parse_mode: 'Markdown',
       disable_web_page_preview: true,

@@ -5,6 +5,9 @@ import path from 'path';
 import { getStrings } from '../plugins/checklang';
 import { isOnSpamWatch } from '../spamwatch/spamwatch';
 import spamwatchMiddlewareModule from '../spamwatch/Middleware';
+import { languageCode } from '../utils/language-code';
+import { Context, Telegraf } from 'telegraf';
+import { replyToMessageId } from '../utils/reply-to-message-id';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 
@@ -46,15 +49,16 @@ async function downloadModule(moduleId: string): Promise<ModuleResult | null> {
   }
 }
 
-export default (bot) => {
+export default (bot: Telegraf<Context>) => {
   bot.command(['modarchive', 'tma'], spamwatchMiddleware, async (ctx) => {
-    const Strings = getStrings(ctx.from.language_code);
-    const moduleId = ctx.message.text.split(' ')[1];
+    const Strings = getStrings(languageCode(ctx));
+    const reply_to_message_id = replyToMessageId(ctx);
+    const moduleId = ctx.message?.text.split(' ')[1];
 
     if (Number.isNaN(moduleId) || null) {
       return ctx.reply(Strings.maInvalidModule, {
         parse_mode: "Markdown",
-        reply_to_message_id: ctx.message.message_id
+        ...({ reply_to_message_id })
       });
     }
 
@@ -65,14 +69,14 @@ export default (bot) => {
 
       await ctx.replyWithDocument({ source: filePath }, {
         caption: fileName,
-        reply_to_message_id: ctx.message.message_id
+        ...({ reply_to_message_id })
       });
 
       fs.unlinkSync(filePath);
     } else {
       ctx.reply(Strings.maDownloadError, {
         parse_mode: "Markdown",
-        reply_to_message_id: ctx.message.message_id
+        ...({ reply_to_message_id })
       });
     }
   });
