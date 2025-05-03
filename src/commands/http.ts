@@ -5,12 +5,14 @@ import spamwatchMiddlewareModule from '../spamwatch/Middleware';
 import axios from 'axios';
 import verifyInput from '../plugins/verifyInput';
 import { Context, Telegraf } from 'telegraf';
+import { languageCode } from '../utils/language-code';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 
 export default (bot: Telegraf<Context>) => {
   bot.command("http", spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
-    const Strings = getStrings(ctx.from?.language_code || 'en');
+    const reply_to_message_id = ctx.message.message_id;
+    const Strings = getStrings(languageCode(ctx));
     const userInput = ctx.message.text.split(' ')[1];
     const apiUrl = Resources.httpApi;
     const { invalidCode } = Strings.httpCodes
@@ -32,28 +34,26 @@ export default (bot: Telegraf<Context>) => {
           .replace("{description}", codeInfo.description);
         await ctx.reply(message, {
           parse_mode: 'Markdown',
-          // @ts-ignore
-          reply_to_message_id: ctx.message.message_id
+          ...({ reply_to_message_id })
         });
       } else {
         await ctx.reply(Strings.httpCodes.notFound, {
           parse_mode: 'Markdown',
-          // @ts-ignore
-          reply_to_message_id: ctx.message.message_id
+          ...({ reply_to_message_id })
         });
       };
     } catch (error) {
       const message = Strings.httpCodes.fetchErr.replace("{error}", error);
       ctx.reply(message, {
         parse_mode: 'Markdown',
-        // @ts-ignore
-        reply_to_message_id: ctx.message.message_id
+        ...({ reply_to_message_id })
       });
     };
   });
 
   bot.command("httpcat", spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
-    const Strings = getStrings(ctx.from?.language_code || 'en');
+    const Strings = getStrings(languageCode(ctx));
+    const reply_to_message_id = ctx.message.message_id;
     const userInput = ctx.message.text.split(' ').slice(1).join(' ').replace(/\s+/g, '');
     const { invalidCode } = Strings.httpCodes
 
@@ -67,14 +67,12 @@ export default (bot: Telegraf<Context>) => {
       await ctx.replyWithPhoto(apiUrl, {
         caption: `🐱 ${apiUrl}`,
         parse_mode: 'Markdown',
-        // @ts-ignore
-        reply_to_message_id: ctx.message.message_id
+        ...({ reply_to_message_id })
       });
     } catch (error) {
       ctx.reply(Strings.catImgErr, {
         parse_mode: 'Markdown',
-        // @ts-ignore
-        reply_to_message_id: ctx.message.message_id
+        ...({ reply_to_message_id })
       });
     }
   });

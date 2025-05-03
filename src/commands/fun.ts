@@ -3,11 +3,12 @@ import { getStrings } from '../plugins/checklang';
 import { isOnSpamWatch } from '../spamwatch/spamwatch';
 import spamwatchMiddlewareModule from '../spamwatch/Middleware';
 import { Context, Telegraf } from 'telegraf';
+import { languageCode } from '../utils/language-code';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 
 function sendRandomReply(ctx: Context & { message: { text: string } }, gifUrl: string, textKey: string) {
-  const Strings = getStrings(ctx.from?.language_code);
+  const Strings = getStrings(languageCode(ctx));
   const randomNumber = Math.floor(Math.random() * 100);
   const shouldSendGif = randomNumber > 50;
 
@@ -38,7 +39,7 @@ function sendRandomReply(ctx: Context & { message: { text: string } }, gifUrl: s
 
 
 async function handleDiceCommand(ctx: Context & { message: { text: string } }, emoji: string, delay: number) {
-  const Strings = getStrings(ctx.from?.language_code);
+  const Strings = getStrings(languageCode(ctx));
 
   // @ts-ignore
   const result = await ctx.sendDice({ emoji, reply_to_message_id: ctx.message.message_id });
@@ -55,13 +56,13 @@ async function handleDiceCommand(ctx: Context & { message: { text: string } }, e
   }, delay);
 }
 
-function getRandomInt(max) {
+function getRandomInt(max: number) {
   return Math.floor(Math.random() * (max + 1));
 }
 
 export default (bot: Telegraf<Context>) => {
   bot.command('random', spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
-    const Strings = getStrings(ctx.from?.language_code);
+    const Strings = getStrings(languageCode(ctx));
     const randomValue = getRandomInt(11);
     const randomVStr = Strings.randomNum.replace('{number}', randomValue);
 

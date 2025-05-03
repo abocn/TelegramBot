@@ -7,7 +7,10 @@ const languageFiles = {
   'en-gb': '../locales/english.json'
 };
 
-function getStrings(languageCode: string) {
+function getStrings(languageCode?: string) {
+  if (!languageCode) {
+    return require(languageFiles['en']);
+  }
   const filePath: string = languageFiles[languageCode] || languageFiles['en'];
   try {
     return require(filePath);

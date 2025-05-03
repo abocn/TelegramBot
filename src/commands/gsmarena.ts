@@ -127,7 +127,7 @@ function formatPhone(phone: PhoneDetails) {
   return `<b>\n\nName: </b><code>${formattedPhone.name}</code>\n\n${attributes}\n\n${deviceImage}\n\n${deviceUrl}`;
 }
 
-async function fetchHtml(url) {
+async function fetchHtml(url: string) {
   try {
     const response = await axios.get(url, { headers: HEADERS });
     return response.data;

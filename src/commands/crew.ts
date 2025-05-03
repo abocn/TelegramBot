@@ -5,6 +5,7 @@ import os from 'os';
 import { exec } from 'child_process';
 import { error } from 'console';
 import { Context, Telegraf } from 'telegraf';
+import { languageCode } from '../utils/language-code';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 
@@ -54,7 +55,7 @@ function getSystemInfo() {
 }
 
 async function handleAdminCommand(ctx: Context & { message: { text: string } }, action: () => Promise<void>, successMessage: string, errorMessage: string) {
-  const Strings = getStrings(ctx.from?.language_code);
+  const Strings = getStrings(languageCode(ctx));
   const userId = ctx.from?.id;
   const adminArray = process.env.botAdmins ? process.env.botAdmins.split(',').map(id => parseInt(id.trim())) : [];
   if (userId && adminArray.includes(userId)) {
@@ -84,7 +85,7 @@ async function handleAdminCommand(ctx: Context & { message: { text: string } }, 
 
 export default (bot: Telegraf<Context>) => {
   bot.command('getbotstats', spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
-    const Strings = getStrings(ctx.from?.language_code);
+    const Strings = getStrings(languageCode(ctx));
     handleAdminCommand(ctx, async () => {
       const stats = getSystemInfo();
       await ctx.reply(stats, {
@@ -96,7 +97,7 @@ export default (bot: Telegraf<Context>) => {
   });
 
   bot.command('getbotcommit', spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
-    const Strings = getStrings(ctx.from?.language_code);
+    const Strings = getStrings(languageCode(ctx));
     handleAdminCommand(ctx, async () => {
       try {
         const commitHash = await getGitCommitHash();
@@ -116,7 +117,7 @@ export default (bot: Telegraf<Context>) => {
   });
 
   bot.command('updatebot', spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
-    const Strings = getStrings(ctx.from?.language_code);
+    const Strings = getStrings(languageCode(ctx));
     handleAdminCommand(ctx, async () => {
       try {
         const result = await updateBot();
@@ -136,7 +137,7 @@ export default (bot: Telegraf<Context>) => {
   });
 
   bot.command('setbotname', spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
-    const Strings = getStrings(ctx.from?.language_code);
+    const Strings = getStrings(languageCode(ctx));
     const botName = ctx.message.text.split(' ').slice(1).join(' ');
     handleAdminCommand(ctx, async () => {
       await ctx.telegram.setMyName(botName);
@@ -144,7 +145,7 @@ export default (bot: Telegraf<Context>) => {
   });
 
   bot.command('setbotdesc', spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
-    const Strings = getStrings(ctx.from?.language_code);
+    const Strings = getStrings(languageCode(ctx));
     const botDesc = ctx.message.text.split(' ').slice(1).join(' ');
     handleAdminCommand(ctx, async () => {
       await ctx.telegram.setMyDescription(botDesc);
@@ -152,7 +153,7 @@ export default (bot: Telegraf<Context>) => {
   });
 
   bot.command('botkickme', spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
-    const Strings = getStrings(ctx.from?.language_code);
+    const Strings = getStrings(languageCode(ctx));
     handleAdminCommand(ctx, async () => {
       if (!ctx.chat) {
         ctx.reply(Strings.chatNotFound, {
@@ -172,7 +173,7 @@ export default (bot: Telegraf<Context>) => {
   });
 
   bot.command('getfile', spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
-    const Strings = getStrings(ctx.from?.language_code);
+    const Strings = getStrings(languageCode(ctx));
     const botFile = ctx.message.text.split(' ').slice(1).join(' ');
 
     if (!botFile) {

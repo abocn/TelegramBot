@@ -5,10 +5,19 @@ import spamwatchMiddlewareModule from '../spamwatch/Middleware';
 import axios from 'axios';
 import verifyInput from '../plugins/verifyInput';
 import { Context, Telegraf } from 'telegraf';
+import { languageCode } from '../utils/language-code';
+import { replyToMessageId } from '../utils/reply-to-message-id';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 
+interface Device {
+  brand: string;
+  codename: string;
+  model: string;
+}
+
 async function getDeviceList({ Strings, ctx }: { Strings: any, ctx: Context & { message: { text: string } } }) {
+  const reply_to_message_id = replyToMessageId(ctx);
   try {
     const response = await axios.get(Resources.codenameApi);
     return response.data
@@ -18,8 +27,7 @@ async function getDeviceList({ Strings, ctx }: { Strings: any, ctx: Context & { 
 
     return ctx.reply(message, {
       parse_mode: "Markdown",
-      // @ts-ignore
-      reply_to_message_id: ctx.message.message_id
+      ...({ reply_to_message_id })
     });
   }
 }
@@ -27,10 +35,11 @@ async function getDeviceList({ Strings, ctx }: { Strings: any, ctx: Context & { 
 export default (bot: Telegraf<Context>) => {
   bot.command(['codename', 'whatis'], spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
     const userInput = ctx.message.text.split(" ").slice(1).join(" ");
-    const Strings = getStrings(ctx.from?.language_code);
-    const { noCodename } = Strings.codenameCheck
-  
-    if(verifyInput(ctx, userInput, noCodename)){
+    const Strings = getStrings(languageCode(ctx));
+    const { noCodename } = Strings.codenameCheck;
+    const reply_to_message_id = replyToMessageId(ctx);
+
+    if (verifyInput(ctx, userInput, noCodename)) {
       return;
     }
 
@@ -40,13 +49,12 @@ export default (bot: Telegraf<Context>) => {
     if (!phoneSearch) {
       return ctx.reply(Strings.codenameCheck.notFound, {
         parse_mode: "Markdown",
-        // @ts-ignore
-        reply_to_message_id: ctx.message.message_id
+        ...({ reply_to_message_id })
       });
     }
-    
+
     const deviceDetails = jsonRes[phoneSearch];
-    const device = deviceDetails.find((item) => item.brand) || deviceDetails[0];
+    const device = deviceDetails.find((item: Device) => item.brand) || deviceDetails[0];
     const message = Strings.codenameCheck.resultMsg
       .replace('{brand}', device.brand)
       .replace('{codename}', userInput)
@@ -55,8 +63,7 @@ export default (bot: Telegraf<Context>) => {
 
     return ctx.reply(message, {
       parse_mode: 'Markdown',
-      // @ts-ignore
-      reply_to_message_id: ctx.message.message_id
+      ...({ reply_to_message_id })
     });
   })
 }
