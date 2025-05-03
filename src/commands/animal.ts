@@ -105,9 +105,9 @@ export default (bot: Telegraf<Context>) => {
 
       case (userInput === "3" || userInput === "sticker"):
         ctx.replyWithSticker(
-          Resources.soggyCatSticker, {
-          // ...({ reply_to_message_id }) // to-do: fix this
-        });
+          Resources.soggyCatSticker,
+          reply_to_message_id ? { reply_parameters: { message_id: reply_to_message_id } } : undefined
+        );
         break;
 
       case (userInput === "4" || userInput === "alt"):
