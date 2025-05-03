@@ -3,13 +3,12 @@
     "start": "nodemon src/bot.ts"
   },
   "dependencies": {
-    "@dotenvx/dotenvx": "^1.41.0",
-    "@types/node": "^22.15.2",
+    "@dotenvx/dotenvx": "^1.42.2",
+    "@types/bun": "^1.2.11",
     "axios": "^1.9.0",
     "node-html-parser": "^7.0.1",
     "nodemon": "^3.1.10",
     "telegraf": "^4.16.3",
-    "winston": "^3.17.0",
     "youtube-url": "^0.5.0"
   }
 }
