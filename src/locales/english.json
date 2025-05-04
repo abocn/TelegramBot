@@ -114,5 +114,7 @@
     "apiErr": "An error occurred while fetching data from the API.\n\n`{err}`"
   },
   "chatNotFound": "Chat not found.",
-  "noFileProvided": "Please provide a file to send."
+  "noFileProvided": "Please provide a file to send.",
+  "askGenerating": "✨ _{model} is working..._",
+  "aiDisabled": "AI features are currently disabled"
 }

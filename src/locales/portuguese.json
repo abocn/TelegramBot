@@ -112,5 +112,8 @@
         "notFound": "Celular não encontrado.",
         "resultMsg": "*Nome:* `{name}`\n*Marca:* `{brand}`\n*Modelo:* `{model}`\n*Codinome:* `{codename}`",
         "apiErr": "Ocorreu um erro ao buscar os dados da API.\n\n`{err}`"
-    }
+    },
+    "noFileProvided": "Por favor, forneça um arquivo para envio.",
+    "askGenerating": "✨ _{modelo} está funcionando..._",
+    "aiDisabled": "Os recursos de IA estão desativados no momento"
 }
