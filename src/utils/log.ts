@@ -41,27 +41,25 @@ class Logger {
     return Logger.instance
   }
 
+  logCmdStart(user: string): void {
+    console.log(`[START] Received /ask from ${user}`)
+  }
+
+  logThinking(thinking: boolean): void {
+    if (thinking) {
+      console.log("[THINKING] Started")
+    } else {
+      console.log("[THINKING] Ended")
+    }
+  }
+
   logChunk(chatId: number, messageId: number, text: string, isOverflow: boolean = false): void {
-    const prefix = isOverflow ? '[OVERFLOW]' : '[CHUNK]'
-    console.log(`${prefix} [${chatId}:${messageId}] ${text.length} chars: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`)
+    const prefix = isOverflow ? "[OVERFLOW]" : "[CHUNK]"
+    console.log(`${prefix} [${chatId}:${messageId}] ${text.length} chars`)
   }
 
   logPrompt(prompt: string): void {
-    console.log(`[PROMPT] ${prompt.length} chars: ${prompt.substring(0, 50)}${prompt.length > 50 ? '...' : ''}`)
-  }
-
-  logThinkingStart(): void {
-    if (!this.thinking) {
-      console.log('[THINKING] started')
-      this.thinking = true
-    }
-  }
-
-  logThinkingEnd(): void {
-    if (this.thinking) {
-      console.log('[THINKING] ended')
-      this.thinking = false
-    }
+    console.log(`[PROMPT] ${prompt.length} chars: ${prompt.substring(0, 50)}${prompt.length > 50 ? "..." : ""}`)
   }
 
   logError(error: any): void {
@@ -69,14 +67,14 @@ class Logger {
       const retryAfter = error.response.parameters?.retry_after || 1
       console.error(`[RATE_LIMIT] Too Many Requests - retry after ${retryAfter}s`)
     } else if (error.response?.error_code === 400 && error.response?.description?.includes("can't parse entities")) {
-      console.error('[PARSE_ERROR] Markdown parsing failed, retrying with plain text')
+      console.error("[PARSE_ERROR] Markdown parsing failed, retrying with plain text")
     } else {
       const errorDetails = {
         code: error.response?.error_code,
         description: error.response?.description,
         method: error.on?.method
       }
-      console.error('[ERROR]', JSON.stringify(errorDetails, null, 2))
+      console.error("[ERROR]", JSON.stringify(errorDetails, null, 2))
     }
   }
 }

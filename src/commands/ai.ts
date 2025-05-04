@@ -37,6 +37,7 @@ import { getStrings } from "../plugins/checklang"
 import { languageCode } from "../utils/language-code"
 import axios from "axios"
 import { rateLimiter } from "../utils/rate-limiter"
+import { logger } from "../utils/log"
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch)
 //const model = "qwen3:0.6b"
@@ -55,7 +56,7 @@ export function sanitizeForJson(text: string): string {
 
 async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Message) {
   const Strings = getStrings(languageCode(ctx))
-  
+
   if (!ctx.chat) return {
     "success": false,
     "error": Strings.unexpectedErr.replace("{error}", "No chat found"),
@@ -72,43 +73,24 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
 
     let fullResponse = ""
     let thoughts = ""
-    let thinking = false
     let lastUpdate = Date.now()
     
     for await (const chunk of aiResponse.data) {
       const lines = chunk.toString().split('\n')
       for (const line of lines) {
         if (!line.trim()) continue
-        if (line.includes("\u003cthink\u003e")) {
-          // intercept thoughts
-          console.log("thinking started")
-          thinking = true
-          thoughts += line
-          continue
-        } else if (line.includes("\u003c/think\u003e")) {
-          // thinking finished
-          thinking = false
-          console.log("thinking finished")
-          continue
-        }
+        let ln = JSON.parse(line)
+        
+        if (ln.response.includes("<think>")) { logger.logThinking(true) } else if (ln.response.includes("</think>")) { logger.logThinking(false) }
 
         try {
           const now = Date.now()
-          let data = JSON.parse(line)
           
-          if (data.response && !thinking) {
-            fullResponse += data.response
-            if (now - lastUpdate >= 1000) {
-              await rateLimiter.editMessageWithRetry(
-                ctx,
-                ctx.chat.id,
-                replyGenerating.message_id,
-                fullResponse,
-                { parse_mode: 'Markdown' }
-              )
-              lastUpdate = now
-            }
-          } else if (data.response && thinking) {
+          if (ln.response) {
+            const patchedThoughts = ln.response.replace("<think>", "`Thinking...`").replace("</think>", "`Finished thinking`")
+            thoughts += patchedThoughts
+            fullResponse += patchedThoughts
+
             if (now - lastUpdate >= 1000) {
               await rateLimiter.editMessageWithRetry(
                 ctx,
@@ -201,6 +183,9 @@ export default (bot: Telegraf<Context>) => {
     const reply_to_message_id = replyToMessageId(textCtx)
     const Strings = getStrings(languageCode(textCtx))
     const message = textCtx.message.text
+    const author = ("@" + ctx.from?.username) || ctx.from?.first_name
+
+    logger.logCmdStart(author)
 
     if (!process.env.ollamaApi) {
       await ctx.reply(Strings.aiDisabled, {
@@ -215,12 +200,23 @@ export default (bot: Telegraf<Context>) => {
       ...({ reply_to_message_id })
     })
 
+    const fixedMsg = message.replace(/\/ask /, "")
+    if (fixedMsg.length < 1) {
+      await ctx.reply(Strings.askNoMessage, {
+        parse_mode: 'Markdown',
+        ...({ reply_to_message_id })
+      })
+      return
+    }
+
+    logger.logPrompt(fixedMsg)
+
     const prompt = sanitizeForJson(
 `You are a helpful assistant named Kowalski, who has been given a message from a user.
 
 The message is:
 
-${message}`)
+${fixedMsg}`)
     const aiResponse = await getResponse(prompt, textCtx, replyGenerating)
     if (!aiResponse) return
 
@@ -243,6 +239,7 @@ ${message}`)
         error,
         { parse_mode: 'Markdown' }
       )
+      console.error("[!] Error sending response:", aiResponse.error)
     }
   })
 }
