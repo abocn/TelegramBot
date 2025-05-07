@@ -6,4 +6,4 @@ services:
     volumes:
       - ./.env:/usr/src/app/.env:ro
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=production 
