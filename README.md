@@ -26,6 +26,8 @@ Kowalski is a a simple Telegram bot made in Node.js.
 - FFmpeg (only for the `/yt` command)
 - Docker and Docker Compose (only required for Docker setup)
 
+_AI features require a higher-end system with a CPU/GPU_
+
 ## Running locally (non-Docker setup)
 
 First, clone the repo with Git:
@@ -55,9 +57,23 @@ You can also run Kowalski using Docker, which simplifies the setup process. Make
 
 ### Using Docker Compose
 
-1. **Make sure to setup your `.env` file first!**
+1. **Copy compose file**
 
-2. **Run the container**
+   _Without AI (Ollama)_
+   
+   ```bash
+   mv docker-compose.yml.example docker-compose.yml
+   ```
+
+   _With AI (Ollama)_
+
+   ```bash
+   mv docker-compose.yml.ai.example docker-compose.yml
+   ```
+ 
+2. **Make sure to setup your `.env` file first!**
+
+3. **Run the container**
 
    ```bash
    docker compose up -d
@@ -81,6 +97,9 @@ If you prefer to use Docker directly, you can use these instructions instead.
    docker run -d --name kowalski --restart unless-stopped -v $(pwd)/.env:/usr/src/app/.env:ro kowalski
    ```
 
+> [!NOTE]
+> You must setup Ollama on your own if you would like to use AI features.
+
 ## .env Functions
 
 > [!IMPORTANT]
@@ -90,6 +109,7 @@ If you prefer to use Docker directly, you can use these instructions instead.
 - **botPrivacy**: Put the link to your bot privacy policy.
 - **maxRetries**: Maximum number of retries for a failing command on Kowalski. Default is 5. If the limit is hit, the bot will crash past this number.
 - **botToken**: Put your bot token that you created at [@BotFather](https://t.me/botfather).
+- **ollamaApi** (optional): Ollama API endpoint for various AI features, will be disabled if not set
 - **botAdmins**: Put the ID of the people responsible for managing the bot. They can use some administrative + exclusive commands on any group.
 - **lastKey**: Last.fm API key, for use on `lastfm.js` functions, like see who is listening to what song and etc.
 - **weatherKey**: Weather.com API key, used for the `/weather` command.
@@ -105,6 +125,12 @@ If you prefer to use Docker directly, you can use these instructions instead.
 ```bash
 chmod +x src/plugins/yt-dlp/yt-dlp
 ```
+
+### AI
+
+**Q:** How can I disable AI features?
+
+**A:** AI features are disabled by default, unless you have set `ollamaApi` in your `.env` file. Please remove or comment out this line to disable all AI functionality.
 
 ## Contributors
 
