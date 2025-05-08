@@ -62,6 +62,8 @@
     "interactiveEmojisDesc": "*Emojis interativos*\n\n- /dice: Jogue um dado\n- /idice: Role infinitamente um dado colorido\n- /slot: Tente combinar as figuras!\n- /ball: Tente chutar a bola no gol!\n- /bowling: Tente derrubar os pinos!\n- /dart: Tente acertar o alvo!",
     "animalCommands": "Animais",
     "animalCommandsDesc": "*Animais*\n\n- /soggy | /soggycat `<1 | 2 | 3 | 4 | orig | thumb | sticker | alt>`: Envia o [meme do gato encharcado](https://knowyourmeme.com/memes/soggy-cat)\n- /cat - Envia uma foto aleatória de um gato.\n- /fox - Envia uma foto aleatória de uma raposa.\n- /duck - Envia uma foto aleatória de um pato.\n- /dog - Envia uma imagem aleatória de um cachorro.\n- /httpcat `<código http>`: Envia memes de gato do http.cat com o código HTTP especificado. Exemplo: `/httpcat 404`",
+    "aiCmds": "Comandos de IA",
+  "aiCmdsDesc": "*Comandos de IA*\n\n- /ask `<prompt>`: Fazer uma pergunta a uma IA",
     "maInvalidModule": "Por favor, forneça um ID de módulo válido do The Mod Archive.\nExemplo: `/modarchive 81574`",
     "maDownloadError": "Erro ao baixar o arquivo. Verifique o ID do módulo e tente novamente.",
     "ytDownload": {
@@ -112,5 +114,8 @@
         "notFound": "Celular não encontrado.",
         "resultMsg": "*Nome:* `{name}`\n*Marca:* `{brand}`\n*Modelo:* `{model}`\n*Codinome:* `{codename}`",
         "apiErr": "Ocorreu um erro ao buscar os dados da API.\n\n`{err}`"
-    }
+    },
+    "noFileProvided": "Por favor, forneça um arquivo para envio.",
+    "askGenerating": "✨ _{modelo} está funcionando..._",
+    "aiDisabled": "Os recursos de IA estão desativados no momento"
 }
