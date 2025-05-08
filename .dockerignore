@@ -4,5 +4,4 @@ npm-debug.log
 .gitignore
 .env
 *.md
-!README.md
-ollama/
+!README.md 
