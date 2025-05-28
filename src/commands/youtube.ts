@@ -69,7 +69,7 @@ export default (bot) => {
     const ytDlpPath = getYtDlpPath();
     const userId: number = ctx.from.id;
     const videoUrl: string = ctx.message.text.split(' ').slice(1).join(' ');
-    const videoUrlSafe: boolean = ytUrl.valid(videoUrl);
+    const videoIsYoutube: boolean = ytUrl.valid(videoUrl);
     const randId: string = Math.random().toString(36).substring(2, 15);
     const mp4File: string = `tmp/${userId}-${randId}.mp4`;
     const tempMp4File: string = `tmp/${userId}-${randId}.f137.mp4`;
@@ -79,16 +79,14 @@ export default (bot) => {
     const ffmpegPath: string = getFfmpegPath();
     const ffmpegArgs: string[] = ['-i', tempMp4File, '-i', tempWebmFile, '-c:v copy -c:a copy -strict -2', mp4File];
     
-    console.log(`DOWNLOADING: ${videoUrl}\nSAFE: ${videoUrlSafe}\n`)
+    console.log(`DOWNLOADING: ${videoUrl}\nYOUTUBE: ${videoIsYoutube}\n`)
 
+    /*
+    for now, no checking is done for the video url
+    yt-dlp should handle the validation, though it supports too many sites to hard-code
+    */
     if (!videoUrl) {
       return ctx.reply(Strings.ytDownload.noLink, {
-        parse_mode: "Markdown",
-        disable_web_page_preview: true,
-        reply_to_message_id: ctx.message.message_id
-      });
-    } else if (!videoUrlSafe) {
-      return ctx.reply(Strings.ytDownload.notYtLink, {
         parse_mode: "Markdown",
         disable_web_page_preview: true,
         reply_to_message_id: ctx.message.message_id
