@@ -63,7 +63,7 @@ function getRandomInt(max: number) {
 export default (bot: Telegraf<Context>) => {
   bot.command('random', spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
     const Strings = getStrings(languageCode(ctx));
-    const randomValue = getRandomInt(11);
+    const randomValue = getRandomInt(10);
     const randomVStr = Strings.randomNum.replace('{number}', randomValue);
 
     ctx.reply(
