@@ -1,0 +1,15 @@
+services:
+  kowalski:
+    build: .
+    container_name: kowalski
+    restart: unless-stopped
+    volumes:
+      - ./.env:/usr/src/app/.env:ro
+    environment:
+      - NODE_ENV=production
+  ollama:
+    image: ollama/ollama
+    container_name: kowalski-ollama
+    restart: unless-stopped
+    volumes:
+      - ./ollama:/root/.ollama
