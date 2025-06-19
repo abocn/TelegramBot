@@ -14,6 +14,10 @@ export default (bot: Telegraf<Context>) => {
   bot.command(["rpony", "randompony", "mlpart"], spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
     const Strings = getStrings(languageCode(ctx));
     const reply_to_message_id = replyToMessageId(ctx);
+    ctx.reply(Strings.ponyApi.searching, {
+      parse_mode: 'Markdown',
+      ...({ reply_to_message_id })
+    });
     try {
       const response = await axios(Resources.randomPonyApi);
       let tags: string[] = [];
