@@ -63,6 +63,15 @@ const getApproxSize = async (command: string, videoUrl: string): Promise<number>
   }
 };
 
+const isValidUrl = (url: string): boolean => {
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 export default (bot) => {
   bot.command(['yt', 'ytdl', 'sdl', 'video', 'dl'], spamwatchMiddleware, async (ctx) => {
     const Strings = getStrings(ctx.from.language_code);
@@ -78,8 +87,6 @@ export default (bot) => {
     const dlpCommand: string = ytDlpPath;
     const ffmpegPath: string = getFfmpegPath();
     const ffmpegArgs: string[] = ['-i', tempMp4File, '-i', tempWebmFile, '-c:v copy -c:a copy -strict -2', mp4File];
-    
-    console.log(`DOWNLOADING: ${videoUrl}\nYOUTUBE: ${videoIsYoutube}\n`)
 
     /*
     for now, no checking is done for the video url
@@ -92,6 +99,18 @@ export default (bot) => {
         reply_to_message_id: ctx.message.message_id
       });
     }
+
+    // make sure its a valid url
+    if (!isValidUrl(videoUrl)) {
+      console.log("[!] Invalid URL:", videoUrl)
+      return ctx.reply(Strings.ytDownload.noLink, {
+        parse_mode: "Markdown",
+        disable_web_page_preview: true,
+        reply_to_message_id: ctx.message.message_id
+      });
+    }
+
+    console.log(`\nDownload Request:\nURL: ${videoUrl}\nYOUTUBE: ${videoIsYoutube}\n`)
 
     if (fs.existsSync(path.resolve(__dirname, "../props/cookies.txt"))) {
       cmdArgs = "--max-filesize 2G --no-playlist --cookies src/props/cookies.txt --merge-output-format mp4 -o";
@@ -111,6 +130,7 @@ export default (bot) => {
         ]);
 
         if (approxSizeInMB > 50) {
+          console.log("[!] Video size exceeds 50MB:", approxSizeInMB)
           await ctx.telegram.editMessageText(
             ctx.chat.id,
             downloadingMessage.message_id,
@@ -124,6 +144,7 @@ export default (bot) => {
           return;
         }
 
+        console.log("[i] Downloading video...")
         await ctx.telegram.editMessageText(
           ctx.chat.id,
           downloadingMessage.message_id,
@@ -137,6 +158,7 @@ export default (bot) => {
         const dlpArgs = [videoUrl, ...cmdArgs.split(' '), mp4File];
         await downloadFromYoutube(dlpCommand, dlpArgs);
 
+        console.log("[i] Uploading video...")
         await ctx.telegram.editMessageText(
           ctx.chat.id,
           downloadingMessage.message_id,
@@ -207,14 +229,15 @@ export default (bot) => {
         },
         );
       }
+      console.log("[i] Request completed\n")
     } catch (error) {
-      const errMsg = Strings.ytDownload.uploadErr.replace("{error}", error)
+      console.log("[!]", error.stderr)
+      const errMsg = Strings.ytDownload.uploadErr
       // will no longer edit the message as the message context is not outside the try block
       await ctx.reply(errMsg, {
         parse_mode: 'Markdown',
         reply_to_message_id: ctx.message.message_id,
-      },
-      );
+      });
     }
   });
 };
