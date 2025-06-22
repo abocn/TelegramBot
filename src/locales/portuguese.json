@@ -103,6 +103,7 @@
         "noEpisodeFound": "Nenhum episódio encontrado.",
         "noComicName": "Por favor, forneça o nome da comic.",
         "noComicFound": "Nenhuma comic foi encontrada.",
+        "searching": "Procurando por um personagem…",
         "apiErr": "Ocorreu um erro ao buscar dados da API.\n\n`{error}`"
     },
     "codenameCheck": {
