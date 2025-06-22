@@ -3,9 +3,9 @@
     "start": "nodemon src/bot.ts"
   },
   "dependencies": {
-    "@dotenvx/dotenvx": "^1.44.1",
-    "@types/bun": "^1.2.14",
-    "axios": "^1.9.0",
+    "@dotenvx/dotenvx": "^1.45.1",
+    "@types/bun": "^1.2.17",
+    "axios": "^1.10.0",
     "node-html-parser": "^7.0.1",
     "nodemon": "^3.1.10",
     "telegraf": "^4.16.3",
