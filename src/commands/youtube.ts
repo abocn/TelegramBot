@@ -231,8 +231,18 @@ export default (bot) => {
       }
       console.log("[i] Request completed\n")
     } catch (error) {
-      console.log("[!]", error.stderr)
-      const errMsg = Strings.ytDownload.uploadErr
+      let errMsg = Strings.ytDownload.uploadErr
+
+      if (error.stderr.includes("--cookies-from-browser")) {
+        console.log("[!] Ratelimited by video provider:", error.stderr)
+        errMsg = Strings.ytDownload.botDetection
+        if (error.stderr.includes("youtube")) {
+          errMsg = Strings.ytDownload.botDetection.replace("video provider", "YouTube")
+        }
+      } else {
+        console.log("[!]", error.stderr)
+      }
+
       // will no longer edit the message as the message context is not outside the try block
       await ctx.reply(errMsg, {
         parse_mode: 'Markdown',

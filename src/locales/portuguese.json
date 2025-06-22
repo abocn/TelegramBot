@@ -76,7 +76,8 @@
         "uploadErr": "Erro ao enviar o arquivo. Tente novamente mais tarde.",
         "uploadLimit": "*Este vídeo excede o limite de carregamento de 50 MB imposto pelo Telegram ao nosso bot. Por favor, tente outro vídeo. Estamos fazendo o possível para aumentar esse limite.*",
         "sizeLimitWarn": "*Esse vídeo teve a qualidade reduzida por estar excedendo o limite de 50MB para uploads imposto pelo Telegram.*",
-        "noLink": "*Por favor, forneça um link de um vídeo para download.*"
+        "noLink": "*Por favor, forneça um link de um vídeo para download.*",
+        "botDetection": "Meu servidor está com a taxa limitada pelo provedor de vídeo! Tente novamente mais tarde ou peça ao proprietário do bot para adicionar seus cookies/conta."
     },
     "botUpdated": "Bot atualizado com sucesso.\n\n```{result}```",
     "errorUpdatingBot": "Erro ao atualizar o bot\n\n{error}",
