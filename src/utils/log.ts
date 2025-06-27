@@ -28,6 +28,8 @@
 //
 // For more information, please refer to <https://unlicense.org/>
 
+import { flash_model, thinking_model } from "../commands/ai"
+
 class Logger {
   private static instance: Logger
   private thinking: boolean = false
@@ -41,42 +43,42 @@ class Logger {
     return Logger.instance
   }
 
-  logCmdStart(user: string): void {
-    console.log(`[START] Received /ask from ${user}`)
+  logCmdStart(user: string, type: "ask" | "think"): void {
+    console.log(`\n[✨ AI | START] Received /${type} for model ${type === "ask" ? flash_model : thinking_model} from ${user}`)
   }
 
-  logThinking(thinking: boolean): void {
+  logThinking(chatId: number, messageId: number, thinking: boolean): void {
     if (thinking) {
-      console.log("[THINKING] Started")
+      console.log(`[✨ AI | THINKING | ${chatId}:${messageId}] Model started thinking`)
     } else {
-      console.log("[THINKING] Ended")
+      console.log(`[✨ AI | THINKING | ${chatId}:${messageId}] Model stopped thinking`)
     }
   }
 
   logChunk(chatId: number, messageId: number, text: string, isOverflow: boolean = false): void {
-    const prefix = isOverflow ? "[OVERFLOW]" : "[CHUNK]"
-    console.log(`${prefix} [${chatId}:${messageId}] ${text.length} chars`)
+    const prefix = isOverflow ? "[✨ AI | OVERFLOW]" : "[✨ AI | CHUNK]"
+    console.log(`${prefix} [${chatId}:${messageId}] ${text.length} chars pushed to Telegram`)
   }
 
   logPrompt(prompt: string): void {
-    console.log(`[PROMPT] ${prompt.length} chars: ${prompt.substring(0, 50)}${prompt.length > 50 ? "..." : ""}`)
+    console.log(`[✨ AI | PROMPT] ${prompt.length} chars: ${prompt.substring(0, 50)}${prompt.length > 50 ? "..." : ""}`)
   }
 
   logError(error: any): void {
     if (error.response?.error_code === 429) {
       const retryAfter = error.response.parameters?.retry_after || 1
-      console.error(`[RATE_LIMIT] Too Many Requests - retry after ${retryAfter}s`)
+      console.error(`[✨ AI | RATE_LIMIT] Too Many Requests - retry after ${retryAfter}s`)
     } else if (error.response?.error_code === 400 && error.response?.description?.includes("can't parse entities")) {
-      console.error("[PARSE_ERROR] Markdown parsing failed, retrying with plain text")
+      console.error("[✨ AI | PARSE_ERROR] Markdown parsing failed, retrying with plain text")
     } else {
       const errorDetails = {
         code: error.response?.error_code,
         description: error.response?.description,
         method: error.on?.method
       }
-      console.error("[ERROR]", JSON.stringify(errorDetails, null, 2))
+      console.error("[✨ AI | ERROR]", JSON.stringify(errorDetails, null, 2))
     }
   }
 }
 
-export const logger = Logger.getInstance() 
+export const logger = Logger.getInstance()

@@ -80,7 +80,7 @@ class RateLimiter {
       const timeout = setTimeout(() => {
         this.processUpdate(ctx, chatId, messageId, options)
       }, this.minInterval - timeSinceLastEdit)
-      
+
       this.updateQueue.set(messageKey, timeout)
       return
     }
@@ -124,7 +124,7 @@ class RateLimiter {
 
         const firstChunk = chunks[0]
         logger.logChunk(chatId, messageId, firstChunk)
-        
+
         try {
           await ctx.telegram.editMessageText(chatId, messageId, undefined, firstChunk, options)
         } catch (error: any) {
@@ -136,11 +136,11 @@ class RateLimiter {
         for (let i = 1; i < chunks.length; i++) {
           const chunk = chunks[i]
           const overflowMessageId = this.overflowMessages.get(messageKey)
-          
+
           if (overflowMessageId) {
-            logger.logChunk(chatId, overflowMessageId, chunk, true)
             try {
               await ctx.telegram.editMessageText(chatId, overflowMessageId, undefined, chunk, options)
+              logger.logChunk(chatId, overflowMessageId, chunk, true)
             } catch (error: any) {
               if (!error.response?.description?.includes("message is not modified")) {
                 throw error
@@ -166,7 +166,7 @@ class RateLimiter {
       } else {
         const sanitizedText = latestText
         logger.logChunk(chatId, messageId, sanitizedText)
-        
+
         try {
           await ctx.telegram.editMessageText(chatId, messageId, undefined, sanitizedText, options)
         } catch (error: any) {
@@ -184,7 +184,7 @@ class RateLimiter {
         const retryAfter = error.response.parameters?.retry_after || 1
         this.isRateLimited = true
         this.rateLimitEndTime = Date.now() + (retryAfter * 1000)
-        
+
         const existingTimeout = this.updateQueue.get(messageKey)
         if (existingTimeout) {
           clearTimeout(existingTimeout)
@@ -193,7 +193,7 @@ class RateLimiter {
         const timeout = setTimeout(() => {
           this.processUpdate(ctx, chatId, messageId, options)
         }, retryAfter * 1000)
-        
+
         this.updateQueue.set(messageKey, timeout)
       } else if (error.response?.error_code === 400) {
         if (error.response?.description?.includes("can't parse entities")) {

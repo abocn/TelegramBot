@@ -40,8 +40,8 @@ import { rateLimiter } from "../utils/rate-limiter"
 import { logger } from "../utils/log"
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch)
-//const model = "qwen3:0.6b"
-const model = "deepseek-r1:1.5b"
+export const flash_model = "gemma3:4b"
+export const thinking_model = "deepseek-r1:1.5b"
 
 type TextContext = Context & { message: Message.TextMessage }
 
@@ -54,7 +54,22 @@ export function sanitizeForJson(text: string): string {
     .replace(/\t/g, '\\t')
 }
 
-async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Message) {
+export async function preChecks() {
+  const envs = [
+    "ollamaApi",
+  ]
+
+  for (const env of envs) {
+    if (!process.env[env]) {
+      console.error(`[✨ AI | !] ❌ ${env} not set!`)
+      return false
+    }
+  }
+  console.log("[✨ AI] Pre-checks passed\n")
+  return true
+}
+
+async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Message, model: string) {
   const Strings = getStrings(languageCode(ctx))
 
   if (!ctx.chat) return {
@@ -74,23 +89,50 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
     let fullResponse = ""
     let thoughts = ""
     let lastUpdate = Date.now()
-    
+
     for await (const chunk of aiResponse.data) {
       const lines = chunk.toString().split('\n')
       for (const line of lines) {
         if (!line.trim()) continue
         let ln = JSON.parse(line)
-        
-        if (ln.response.includes("<think>")) { logger.logThinking(true) } else if (ln.response.includes("</think>")) { logger.logThinking(false) }
+
+        if (model === thinking_model && ln.response.includes('<think>')) {
+          const thinkMatch = ln.response.match(/<think>([\s\S]*?)<\/think>/)
+          if (thinkMatch) {
+            const innerContent = thinkMatch[1]
+            if (innerContent.trim().length > 0) {
+              logger.logThinking(ctx.chat.id, replyGenerating.message_id, true)
+            }
+          } else {
+            logger.logThinking(ctx.chat.id, replyGenerating.message_id, true)
+          }
+        } else if (model === thinking_model && ln.response.includes('</think>')) {
+          logger.logThinking(ctx.chat.id, replyGenerating.message_id, false)
+        }
 
         try {
           const now = Date.now()
-          
-          if (ln.response) {
-            const patchedThoughts = ln.response.replace("<think>", "`Thinking...`").replace("</think>", "`Finished thinking`")
-            thoughts += patchedThoughts
-            fullResponse += patchedThoughts
 
+          if (ln.response) {
+            if (model === thinking_model) {
+              let patchedThoughts = ln.response
+              // TODO: hide blank thinking chunks
+              const thinkTagRx = /<think>([\s\S]*?)<\/think>/g
+              patchedThoughts = patchedThoughts.replace(thinkTagRx, (match, p1) => {
+                if (p1.trim().length > 0) {
+                  console.log(p1)
+                  return '`Thinking...`' + p1 + '`Finished thinking`'
+                } else {
+                  return ''
+                }
+              })
+              patchedThoughts = patchedThoughts.replace(/<think>/g, '`Thinking...`')
+              patchedThoughts = patchedThoughts.replace(/<\/think>/g, '`Finished thinking`')
+              thoughts += patchedThoughts
+              fullResponse += patchedThoughts
+            } else {
+              fullResponse += ln.response
+            }
             if (now - lastUpdate >= 1000) {
               await rateLimiter.editMessageWithRetry(
                 ctx,
@@ -103,7 +145,7 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
             }
           }
         } catch (e) {
-          console.error("Error parsing chunk:", e)
+          console.error("[✨ AI | !] Error parsing chunk:", e)
         }
       }
     }
@@ -119,7 +161,7 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
       if (error.response.data.error.includes(`model '${model}' not found`) || error.status === 404) {
         shouldPullModel = true
       } else {
-        console.error("[!] 1", error.response.data.error)
+        console.error("[✨ AI | !] Error zone 1:", error.response.data.error)
         return {
           "success": false,
           "error": error.response.data.error,
@@ -130,23 +172,25 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
     }
 
     if (shouldPullModel) {
-      ctx.telegram.editMessageText(ctx.chat.id, replyGenerating.message_id, undefined, `🔄 Pulling ${model} from ollama...`)
-      console.log(`[i] Pulling ${model} from ollama...`)
+      ctx.telegram.editMessageText(ctx.chat.id, replyGenerating.message_id, undefined, `🔄 Pulling ${model} from ollama...\n\nThis may take a few minutes...`)
+      console.log(`[✨ AI | i] Pulling ${model} from ollama...`)
+      let pullModelStream: any
 
-      const pullModelStream = await axios.post(`${process.env.ollamaApi}/api/pull`, {
-        model: model,
-        stream: false,
-      })
-
-      if (pullModelStream.data.status !== ("success")) {
-        console.error("[!] Something went wrong:", pullModelStream.data)
+      try {
+        pullModelStream = await axios.post(`${process.env.ollamaApi}/api/pull`, {
+          model: model,
+          stream: false,
+          timeout: process.env.ollamaApiTimeout || 10000,
+        })
+      } catch (e: any) {
+        console.error("[✨ AI | !] Something went wrong:", e.response.data.error)
         return {
           "success": false,
           "error": `❌ Something went wrong while pulling ${model}, please try your command again!`,
         }
       }
 
-      console.log("[i] Model pulled successfully")
+      console.log(`[✨ AI | i] ${model} pulled successfully`)
       return {
         "success": true,
         "response": `✅ Pulled ${model} successfully, please retry the command.`,
@@ -154,7 +198,7 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
     }
 
     if (error.response) {
-      console.error("[!] 2", error.response)
+      console.error("[✨ AI | !] Error zone 2:", error.response)
       return {
         "success": false,
         "error": error.response,
@@ -162,7 +206,7 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
     }
 
     if (error.statusText) {
-      console.error("[!] 3", error.statusText)
+      console.error("[✨ AI | !] Error zone 3:", error.statusText)
       return {
         "success": false,
         "error": error.statusText,
@@ -177,15 +221,24 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
 }
 
 export default (bot: Telegraf<Context>) => {
-  bot.command("ask", spamwatchMiddleware, async (ctx) => {
+  const botName = bot.botInfo?.first_name && bot.botInfo?.last_name ? `${bot.botInfo.first_name} ${bot.botInfo.last_name}` : "Kowalski"
+
+  bot.command(["ask", "think"], spamwatchMiddleware, async (ctx) => {
     if (!ctx.message || !('text' in ctx.message)) return;
+    const isAsk = ctx.message.text.startsWith("/ask")
+    const model = isAsk ? flash_model : thinking_model
+    console.log(model)
+    console.log(ctx.message.text)
     const textCtx = ctx as TextContext;
     const reply_to_message_id = replyToMessageId(textCtx)
     const Strings = getStrings(languageCode(textCtx))
     const message = textCtx.message.text
     const author = ("@" + ctx.from?.username) || ctx.from?.first_name
 
-    logger.logCmdStart(author)
+    logger.logCmdStart(
+      author,
+      model === flash_model ? "ask" : "think"
+    )
 
     if (!process.env.ollamaApi) {
       await ctx.reply(Strings.aiDisabled, {
@@ -212,12 +265,14 @@ export default (bot: Telegraf<Context>) => {
     logger.logPrompt(fixedMsg)
 
     const prompt = sanitizeForJson(
-`You are a helpful assistant named Kowalski, who has been given a message from a user.
+`You are a helpful assistant called ${botName}.
+Current Date/Time (UTC): ${new Date().toLocaleString()}
 
-The message is:
+---
 
+Respond to the user's message:
 ${fixedMsg}`)
-    const aiResponse = await getResponse(prompt, textCtx, replyGenerating)
+    const aiResponse = await getResponse(prompt, textCtx, replyGenerating, model)
     if (!aiResponse) return
 
     if (aiResponse.success && aiResponse.response) {
@@ -239,7 +294,6 @@ ${fixedMsg}`)
         error,
         { parse_mode: 'Markdown' }
       )
-      console.error("[!] Error sending response:", aiResponse.error)
     }
   })
 }

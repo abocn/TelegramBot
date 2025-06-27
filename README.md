@@ -10,12 +10,6 @@ Kowalski is a a simple Telegram bot made in Node.js.
 
 - You can find Kowalski at [@KowalskiNodeBot](https://t.me/KowalskiNodeBot) on Telegram.
 
-## Translations
-
-<a href="https://weblate.librecloud.cc/engage/kowalski/">
-<img src="https://weblate.librecloud.cc/widget/kowalski/multi-auto.svg" alt="Translation status" />
-</a>
-
 ## Self-host requirements
 
 > [!IMPORTANT]
@@ -26,7 +20,10 @@ Kowalski is a a simple Telegram bot made in Node.js.
 - FFmpeg (only for the `/yt` command)
 - Docker and Docker Compose (only required for Docker setup)
 
-_AI features require a higher-end system with a CPU/GPU_
+### AI Requirements
+
+- High-end CPU *or* GPU (~ 6GB vRAM)
+- If using CPU, enough RAM to load the models (~6GB w/ defaults)
 
 ## Running locally (non-Docker setup)
 
@@ -60,7 +57,7 @@ You can also run Kowalski using Docker, which simplifies the setup process. Make
 1. **Copy compose file**
 
    _Without AI (Ollama)_
-   
+
    ```bash
    mv docker-compose.yml.example docker-compose.yml
    ```
@@ -70,7 +67,7 @@ You can also run Kowalski using Docker, which simplifies the setup process. Make
    ```bash
    mv docker-compose.yml.ai.example docker-compose.yml
    ```
- 
+
 2. **Make sure to setup your `.env` file first!**
 
 3. **Run the container**
@@ -109,7 +106,9 @@ If you prefer to use Docker directly, you can use these instructions instead.
 - **botPrivacy**: Put the link to your bot privacy policy.
 - **maxRetries**: Maximum number of retries for a failing command on Kowalski. Default is 5. If the limit is hit, the bot will crash past this number.
 - **botToken**: Put your bot token that you created at [@BotFather](https://t.me/botfather).
+- **ollamaEnabled** (optional): Enables/disables AI features
 - **ollamaApi** (optional): Ollama API endpoint for various AI features, will be disabled if not set
+- **handlerTimeout** (default: `600_000`): How long handlers will wait before timing out. Set this high if using large AI models.
 - **botAdmins**: Put the ID of the people responsible for managing the bot. They can use some administrative + exclusive commands on any group.
 - **lastKey**: Last.fm API key, for use on `lastfm.js` functions, like see who is listening to what song and etc.
 - **weatherKey**: Weather.com API key, used for the `/weather` command.

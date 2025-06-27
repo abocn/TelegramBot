@@ -4,6 +4,7 @@ import fs from 'fs';
 import { isOnSpamWatch } from './spamwatch/spamwatch';
 import '@dotenvx/dotenvx';
 import './plugins/ytDlpWrapper';
+import { preChecks } from './commands/ai';
 
 // Ensures bot token is set, and not default value
 if (!process.env.botToken || process.env.botToken === 'InsertYourBotTokenHere') {
@@ -11,7 +12,17 @@ if (!process.env.botToken || process.env.botToken === 'InsertYourBotTokenHere') 
   process.exit(1)
 }
 
-const bot = new Telegraf(process.env.botToken);
+// Detect AI and run pre-checks
+if (process.env.ollamaEnabled === "true") {
+  if (!(await preChecks())) {
+    process.exit(1)
+  }
+}
+
+const bot = new Telegraf(
+  process.env.botToken,
+  { handlerTimeout: Number(process.env.handlerTimeout) || 600_000 }
+);
 const maxRetries = process.env.maxRetries || 5;
 let restartCount = 0;
 
@@ -21,7 +32,7 @@ const loadCommands = () => {
   try {
     const files = fs.readdirSync(commandsPath)
       .filter(file => file.endsWith('.ts') || file.endsWith('.js'));
-    
+
     files.forEach((file) => {
       try {
         const commandPath = path.join(commandsPath, file);
