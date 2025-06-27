@@ -14,21 +14,18 @@ interface Device {
   brand: string;
   codename: string;
   model: string;
+  name: string;
 }
 
-async function getDeviceList({ Strings, ctx }: { Strings: any, ctx: Context & { message: { text: string } } }) {
-  const reply_to_message_id = replyToMessageId(ctx);
+export async function getDeviceByCodename(codename: string): Promise<Device | null> {
   try {
     const response = await axios.get(Resources.codenameApi);
-    return response.data
+    const jsonRes = response.data;
+    const deviceDetails = jsonRes[codename];
+    if (!deviceDetails) return null;
+    return deviceDetails.find((item: Device) => item.brand) || deviceDetails[0];
   } catch (error) {
-    const message = Strings.codenameCheck.apiErr
-      .replace('{error}', error.message);
-
-    return ctx.reply(message, {
-      parse_mode: "Markdown",
-      ...({ reply_to_message_id })
-    });
+    return null;
   }
 }
 
@@ -43,18 +40,15 @@ export default (bot: Telegraf<Context>) => {
       return;
     }
 
-    const jsonRes = await getDeviceList({ Strings, ctx })
-    const phoneSearch = Object.keys(jsonRes).find((codename) => codename === userInput);
+    const device = await getDeviceByCodename(userInput);
 
-    if (!phoneSearch) {
+    if (!device) {
       return ctx.reply(Strings.codenameCheck.notFound, {
         parse_mode: "Markdown",
         ...({ reply_to_message_id })
       });
     }
 
-    const deviceDetails = jsonRes[phoneSearch];
-    const device = deviceDetails.find((item: Device) => item.brand) || deviceDetails[0];
     const message = Strings.codenameCheck.resultMsg
       .replace('{brand}', device.brand)
       .replace('{codename}', userInput)

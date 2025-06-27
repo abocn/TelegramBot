@@ -8,6 +8,7 @@ import { isOnSpamWatch } from '../spamwatch/spamwatch';
 import spamwatchMiddlewareModule from '../spamwatch/Middleware';
 import axios from 'axios';
 import { parse } from 'node-html-parser';
+import { getDeviceByCodename } from './codename';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 
@@ -216,12 +217,27 @@ export default (bot) => {
       return ctx.reply("Please provide the phone name.", { reply_to_message_id: ctx.message.message_id });
     }
 
-    const results = await searchPhone(phone);
+    console.log("[GSMArena] Searching for", phone);
+    const statusMsg = await ctx.reply(`Searching for \`${phone}\`...`, { reply_to_message_id: ctx.message.message_id, parse_mode: 'Markdown' });
+
+    let results = await searchPhone(phone);
     if (results.length === 0) {
-      return ctx.reply("No phones found.", { reply_to_message_id: ctx.message.message_id });
+      const codenameResults = await getDeviceByCodename(phone.split(" ")[0]);
+      if (!codenameResults) {
+        await ctx.telegram.editMessageText(ctx.chat.id, statusMsg.message_id, undefined, `No phones found for \`${phone}\`.`, { parse_mode: 'Markdown' });
+        return;
+      }
+
+      await ctx.telegram.editMessageText(ctx.chat.id, statusMsg.message_id, undefined, `Searching for ${codenameResults.name}...`, { parse_mode: 'Markdown' });
+      const nameResults = await searchPhone(codenameResults.name);
+      if (nameResults.length === 0) {
+        await ctx.telegram.editMessageText(ctx.chat.id, statusMsg.message_id, undefined, `No phones found for \`${codenameResults.name}\` and \`${phone}\`.`, { parse_mode: 'Markdown' });
+        return;
+      }
+      results = nameResults;
     }
 
-    const testUser = `<a href="tg://user?id=${userId}">${userName}</a>, please select your device:`;
+    const testUser = `<a href=\"tg://user?id=${userId}\">${userName}</a>, please select your device:`;
     const options = {
       parse_mode: 'HTML',
       reply_to_message_id: ctx.message.message_id,
@@ -230,8 +246,7 @@ export default (bot) => {
         inline_keyboard: results.map(result => [{ text: result.name, callback_data: `details:${result.url}:${ctx.from.id}` }])
       }
     };
-    ctx.reply(testUser, options);
-
+    await ctx.telegram.editMessageText(ctx.chat.id, statusMsg.message_id, undefined, testUser, options);
   });
 
   bot.action(/details:(.+):(.+)/, async (ctx) => {

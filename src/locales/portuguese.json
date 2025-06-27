@@ -86,6 +86,8 @@
     "catImgErr": "Desculpe, mas não consegui obter a foto do gato que você queria.",
     "catGifErr": "Desculpe, mas não consegui obter o GIF do gato que você queria.",
     "dogImgErr": "Desculpe, mas não consegui obter a foto do cacbhorro que você queria.",
+    "mlpInvalidCharacter": "Por favor, forneça um nome de personagem válido.",
+    "mlpInvalidEpisode": "Por favor, forneça um número de episódio válido.",
     "foxApiErr": "Ocorreu um erro ao buscar dados da API.\n\n`{error}`",
     "duckApiErr": "Ocorreu um erro ao buscar dados da API.\n\n`{error}`",
     "httpCodes": {

@@ -74,6 +74,15 @@ export default (bot: Telegraf<Context>) => {
       return;
     }
 
+    // if special characters or numbers (max 30 characters)
+    if (/[^a-zA-Z\s]/.test(userInput) || userInput.length > 30) {
+      ctx.reply(Strings.mlpInvalidCharacter, {
+        parse_mode: 'Markdown',
+        ...({ reply_to_message_id })
+      });
+      return;
+    }
+
     const capitalizedInput = capitalizeFirstLetter(userInput);
     const apiUrl = `${Resources.ponyApi}/character/${capitalizedInput}`;
 
@@ -148,6 +157,14 @@ export default (bot: Telegraf<Context>) => {
       return;
     }
 
+    if (Number(userInput) > 100) {
+      ctx.reply(Strings.mlpInvalidEpisode, {
+        parse_mode: 'Markdown',
+        ...({ reply_to_message_id })
+      });
+      return;
+    }
+
     const apiUrl = `${Resources.ponyApi}/episode/by-overall/${userInput}`;
 
     try {
@@ -217,6 +234,15 @@ export default (bot: Telegraf<Context>) => {
     if (verifyInput(ctx, userInput, noComicName)) {
       return;
     };
+
+    // if special characters or numbers (max 30 characters)
+    if (/[^a-zA-Z\s]/.test(userInput) || userInput.length > 30) {
+      ctx.reply(Strings.mlpInvalidCharacter, {
+        parse_mode: 'Markdown',
+        ...({ reply_to_message_id })
+      });
+      return;
+    }
 
     const apiUrl = `${Resources.ponyApi}/comics-story/${userInput}`;
 
