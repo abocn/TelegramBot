@@ -75,11 +75,11 @@
     "uploadingVid": "⬆️ *Uploading video...*",
     "msgDesc": "{userMention}*, there is your downloaded video.*",
     "downloadErr": "*Error during YT video download:*\n\n`{err}`",
-    "uploadErr": "Error uploading file. Please try again later.\n\n{error}",
+    "uploadErr": "Error uploading file. Please try again later.",
     "uploadLimit": "*This video exceeds the 50 MB upload limit imposed by Telegram on our bot. Please try another video. We're doing our best to increase this limit.*",
     "sizeLimitWarn": "*This video had its quality reduced because it exceeded the 50MB limit for uploads imposed by Telegram.*",
     "noLink": "Please provide a link to a video to download.",
-    "notYtLink": "Please provide a valid YouTube link to download."
+    "botDetection": "My server is being rate limited by the video provider! Please try again later, or ask the bot owner to add their cookies/account."
   },
   "botUpdated": "Bot updated with success.\n\n```{result}```",
   "errorUpdatingBot": "Error updating bot\n\n{error}",
@@ -106,6 +106,7 @@
     "noEpisodeFound": "No episode found.",
     "noComicName": "Please provide the comic's name.",
     "noComicFound": "No comic found.",
+    "searching": "Searching for a character…",
     "apiErr": "An error occurred while fetching data from the API.\n\n`{error}`"
   },
   "codenameCheck": {

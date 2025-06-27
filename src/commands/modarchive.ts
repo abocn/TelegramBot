@@ -61,23 +61,27 @@ export default (bot: Telegraf<Context>) => {
         ...({ reply_to_message_id })
       });
     }
-
-    const result = await downloadModule(moduleId);
-
-    if (result) {
-      const { filePath, fileName } = result;
-
-      await ctx.replyWithDocument({ source: filePath }, {
-        caption: fileName,
-        ...({ reply_to_message_id })
-      });
-
-      fs.unlinkSync(filePath);
-    } else {
-      ctx.reply(Strings.maDownloadError, {
-        parse_mode: "Markdown",
-        ...({ reply_to_message_id })
-      });
+    const numberRegex = /^\d+$/;
+    const isNumber = numberRegex.test(moduleId);
+    if (isNumber) {
+      const result = await downloadModule(moduleId);
+      if (result) {
+        const { filePath, fileName } = result;
+        const regexExtension = /\.\w+$/i;
+        const hasExtension = regexExtension.test(fileName);
+        if (hasExtension) {
+          await ctx.replyWithDocument({ source: filePath }, {
+            caption: fileName,
+            ...({ reply_to_message_id })
+          });
+          fs.unlinkSync(filePath);
+          return;
+        }
+      }
     }
+    return ctx.reply(Strings.maInvalidModule, {
+      parse_mode: "Markdown",
+      ...({ reply_to_message_id })
+    });
   });
 };

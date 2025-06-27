@@ -60,6 +60,13 @@ export default (bot: Telegraf<Context>) => {
     if (verifyInput(ctx, userInput, invalidCode, true)) {
       return;
     }
+    if (userInput.length !== 3) {
+      ctx.reply(Strings.httpCodes.invalidCode, {
+        parse_mode: 'Markdown',
+        ...({ reply_to_message_id })
+      })
+      return
+    }
 
     const apiUrl = `${Resources.httpCatApi}${userInput}`;
 
