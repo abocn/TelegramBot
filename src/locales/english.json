@@ -84,6 +84,8 @@
   "catImgErr": "Sorry, but I couldn't get the cat photo you wanted.",
   "catGifErr": "Sorry, but I couldn't get the cat GIF you wanted.",
   "dogImgErr": "Sorry, but I couldn't get the dog photo you wanted.",
+  "mlpInvalidCharacter": "Please provide a valid character name.",
+  "mlpInvalidEpisode": "Please provide a valid episode number.",
   "foxApiErr": "An error occurred while fetching data from the API.\n\n`{error}`",
   "duckApiErr": "An error occurred while fetching data from the API.\n\n`{error}`",
   "httpCodes": {
