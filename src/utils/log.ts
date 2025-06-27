@@ -32,7 +32,6 @@ import { flash_model, thinking_model } from "../commands/ai"
 
 class Logger {
   private static instance: Logger
-  private thinking: boolean = false
 
   private constructor() {}
 
@@ -44,7 +43,7 @@ class Logger {
   }
 
   logCmdStart(user: string, type: "ask" | "think"): void {
-    console.log(`\n[✨ AI | START] Received /${type} for model ${type === "ask" ? flash_model : thinking_model} from ${user}`)
+    console.log(`\n[✨ AI | START] Received /${type} for model ${type === "ask" ? flash_model : thinking_model}`)
   }
 
   logThinking(chatId: number, messageId: number, thinking: boolean): void {
@@ -61,7 +60,7 @@ class Logger {
   }
 
   logPrompt(prompt: string): void {
-    console.log(`[✨ AI | PROMPT] ${prompt.length} chars: ${prompt.substring(0, 50)}${prompt.length > 50 ? "..." : ""}`)
+    console.log(`[✨ AI | PROMPT] ${prompt.length} chars input`)
   }
 
   logError(error: any): void {

@@ -227,8 +227,6 @@ export default (bot: Telegraf<Context>) => {
     if (!ctx.message || !('text' in ctx.message)) return;
     const isAsk = ctx.message.text.startsWith("/ask")
     const model = isAsk ? flash_model : thinking_model
-    console.log(model)
-    console.log(ctx.message.text)
     const textCtx = ctx as TextContext;
     const reply_to_message_id = replyToMessageId(textCtx)
     const Strings = getStrings(languageCode(textCtx))

@@ -70,6 +70,11 @@ You can also run Kowalski using Docker, which simplifies the setup process. Make
 
 2. **Make sure to setup your `.env` file first!**
 
+   > [!TIP]
+   > If you intend to setup AI, the defaults for Docker are already included (just uncomment) and don't need to be changed.
+   >
+   > Further setup may be needed for GPUs. See the Ollama documentation for more.
+
 3. **Run the container**
 
    ```bash
@@ -129,7 +134,7 @@ chmod +x src/plugins/yt-dlp/yt-dlp
 
 **Q:** How can I disable AI features?
 
-**A:** AI features are disabled by default, unless you have set `ollamaApi` in your `.env` file. Please remove or comment out this line to disable all AI functionality.
+**A:** AI features are disabled by default, unless you have set `ollamaEnabled` to `true` in your `.env` file. Set it back to `false` to disable.
 
 ## Contributors
 
