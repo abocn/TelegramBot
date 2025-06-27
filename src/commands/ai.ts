@@ -251,7 +251,7 @@ export default (bot: Telegraf<Context>) => {
       ...({ reply_to_message_id })
     })
 
-    const fixedMsg = message.replace(/\/ask /, "")
+    const fixedMsg = message.replace(/\/ask /, "").replace(/\/think /, "")
     if (fixedMsg.length < 1) {
       await ctx.reply(Strings.askNoMessage, {
         parse_mode: 'Markdown',
@@ -263,7 +263,7 @@ export default (bot: Telegraf<Context>) => {
     logger.logPrompt(fixedMsg)
 
     const prompt = sanitizeForJson(
-`You are a helpful assistant called ${botName}.
+`You are a plaintext-only, helpful assistant called ${botName}.
 Current Date/Time (UTC): ${new Date().toLocaleString()}
 
 ---
