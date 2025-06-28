@@ -40,8 +40,8 @@ import { rateLimiter } from "../utils/rate-limiter"
 import { logger } from "../utils/log"
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch)
-export const flash_model = "gemma3:4b"
-export const thinking_model = "deepseek-r1:1.5b"
+export const flash_model = process.env.flashModel || "gemma3:4b"
+export const thinking_model = process.env.thinkingModel || "qwen3:4b"
 
 type TextContext = Context & { message: Message.TextMessage }
 
@@ -57,15 +57,19 @@ export function sanitizeForJson(text: string): string {
 export async function preChecks() {
   const envs = [
     "ollamaApi",
+    "flashModel",
+    "thinkingModel",
   ]
 
+  let checked = 0;
   for (const env of envs) {
     if (!process.env[env]) {
       console.error(`[✨ AI | !] ❌ ${env} not set!`)
       return false
     }
+    checked++;
   }
-  console.log("[✨ AI] Pre-checks passed\n")
+  console.log(`[✨ AI] Pre-checks passed [${checked}/${envs.length}]\n`)
   return true
 }
 

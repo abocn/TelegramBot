@@ -113,7 +113,9 @@ If you prefer to use Docker directly, you can use these instructions instead.
 - **botToken**: Put your bot token that you created at [@BotFather](https://t.me/botfather).
 - **ollamaEnabled** (optional): Enables/disables AI features
 - **ollamaApi** (optional): Ollama API endpoint for various AI features, will be disabled if not set
-- **handlerTimeout** (default: `600_000`): How long handlers will wait before timing out. Set this high if using large AI models.
+- **handlerTimeout** (optional): How long handlers will wait before timing out. Set this high if using large AI models.
+- **flashModel** (optional): Which model will be used for /ask
+- **thinkingModel** (optional): Which model will be used for /think
 - **botAdmins**: Put the ID of the people responsible for managing the bot. They can use some administrative + exclusive commands on any group.
 - **lastKey**: Last.fm API key, for use on `lastfm.js` functions, like see who is listening to what song and etc.
 - **weatherKey**: Weather.com API key, used for the `/weather` command.
