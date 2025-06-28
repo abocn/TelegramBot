@@ -145,3 +145,9 @@ ffmpeg
 
 # Bun
 bun.lock*
+
+# Ollama
+ollama/
+
+# Docker
+docker-compose.yml

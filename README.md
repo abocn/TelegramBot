@@ -10,12 +10,6 @@ Kowalski is a a simple Telegram bot made in Node.js.
 
 - You can find Kowalski at [@KowalskiNodeBot](https://t.me/KowalskiNodeBot) on Telegram.
 
-## Translations
-
-<a href="https://weblate.librecloud.cc/engage/kowalski/">
-<img src="https://weblate.librecloud.cc/widget/kowalski/multi-auto.svg" alt="Translation status" />
-</a>
-
 ## Self-host requirements
 
 > [!IMPORTANT]
@@ -25,6 +19,11 @@ Kowalski is a a simple Telegram bot made in Node.js.
 - A Telegram bot (create one at [@BotFather](https://t.me/botfather))
 - FFmpeg (only for the `/yt` command)
 - Docker and Docker Compose (only required for Docker setup)
+
+### AI Requirements
+
+- High-end CPU *or* GPU (~ 6GB vRAM)
+- If using CPU, enough RAM to load the models (~6GB w/ defaults)
 
 ## Running locally (non-Docker setup)
 
@@ -55,9 +54,28 @@ You can also run Kowalski using Docker, which simplifies the setup process. Make
 
 ### Using Docker Compose
 
-1. **Make sure to setup your `.env` file first!**
+1. **Copy compose file**
 
-2. **Run the container**
+   _Without AI (Ollama)_
+
+   ```bash
+   mv docker-compose.yml.example docker-compose.yml
+   ```
+
+   _With AI (Ollama)_
+
+   ```bash
+   mv docker-compose.yml.ai.example docker-compose.yml
+   ```
+
+2. **Make sure to setup your `.env` file first!**
+
+   > [!TIP]
+   > If you intend to setup AI, the defaults for Docker are already included (just uncomment) and don't need to be changed.
+   >
+   > Further setup may be needed for GPUs. See the Ollama documentation for more.
+
+3. **Run the container**
 
    ```bash
    docker compose up -d
@@ -81,6 +99,9 @@ If you prefer to use Docker directly, you can use these instructions instead.
    docker run -d --name kowalski --restart unless-stopped -v $(pwd)/.env:/usr/src/app/.env:ro kowalski
    ```
 
+> [!NOTE]
+> You must setup Ollama on your own if you would like to use AI features.
+
 ## .env Functions
 
 > [!IMPORTANT]
@@ -90,6 +111,9 @@ If you prefer to use Docker directly, you can use these instructions instead.
 - **botPrivacy**: Put the link to your bot privacy policy.
 - **maxRetries**: Maximum number of retries for a failing command on Kowalski. Default is 5. If the limit is hit, the bot will crash past this number.
 - **botToken**: Put your bot token that you created at [@BotFather](https://t.me/botfather).
+- **ollamaEnabled** (optional): Enables/disables AI features
+- **ollamaApi** (optional): Ollama API endpoint for various AI features, will be disabled if not set
+- **handlerTimeout** (default: `600_000`): How long handlers will wait before timing out. Set this high if using large AI models.
 - **botAdmins**: Put the ID of the people responsible for managing the bot. They can use some administrative + exclusive commands on any group.
 - **lastKey**: Last.fm API key, for use on `lastfm.js` functions, like see who is listening to what song and etc.
 - **weatherKey**: Weather.com API key, used for the `/weather` command.
@@ -105,6 +129,12 @@ If you prefer to use Docker directly, you can use these instructions instead.
 ```bash
 chmod +x src/plugins/yt-dlp/yt-dlp
 ```
+
+### AI
+
+**Q:** How can I disable AI features?
+
+**A:** AI features are disabled by default, unless you have set `ollamaEnabled` to `true` in your `.env` file. Set it back to `false` to disable.
 
 ## Contributors
 
