@@ -69,6 +69,35 @@ export async function preChecks() {
   return true
 }
 
+function isAxiosError(error: unknown): error is { response?: { data?: { error?: string }, status?: number }, request?: unknown, message?: string } {
+  return typeof error === 'object' && error !== null && (
+    'response' in error || 'request' in error || 'message' in error
+  )
+}
+
+function extractAxiosErrorMessage(error: unknown): string {
+  if (isAxiosError(error)) {
+    const err = error as Record<string, unknown>;
+    if (err.response && typeof err.response === 'object') {
+      const resp = err.response as Record<string, unknown>;
+      if (resp.data && typeof resp.data === 'object' && 'error' in resp.data) {
+        return String((resp.data as Record<string, unknown>).error);
+      }
+      if ('status' in resp && 'statusText' in resp) {
+        return `HTTP ${resp.status}: ${resp.statusText}`;
+      }
+      return JSON.stringify(resp.data ?? resp);
+    }
+    if (err.request) {
+      return 'No response received from server.';
+    }
+    if (typeof err.message === 'string') {
+      return err.message;
+    }
+  }
+  return 'An unexpected error occurred.';
+}
+
 async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Message, model: string) {
   const Strings = getStrings(languageCode(ctx))
 
@@ -153,63 +182,51 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
       success: true,
       response: fullResponse,
     }
-  } catch (error: any) {
-    let shouldPullModel = false
-    if (error.response) {
-      const errData = error.response.data?.error
-      const errStatus = error.response.status
-      if (errData && (errData.includes(`model '${model}' not found`) || errStatus === 404)) {
-        shouldPullModel = true
-      } else {
-        console.error("[✨ AI | !] Error zone 1:", errData)
-        return { success: false, error: errData }
-      }
-    } else if (error.request) {
-      console.error("[✨ AI | !] No response received:", error.request)
-      return { success: false, error: "No response received from server" }
-    } else {
-      console.error("[✨ AI | !] Error zone 3:", error.message)
-      return { success: false, error: error.message }
-    }
+  } catch (error: unknown) {
+    const errorMsg = extractAxiosErrorMessage(error)
+    console.error("[✨ AI | !] Error:", errorMsg)
 
-    if (shouldPullModel) {
-      ctx.telegram.editMessageText(ctx.chat.id, replyGenerating.message_id, undefined, `🔄 Pulling ${model} from ollama...\n\nThis may take a few minutes...`)
-      console.log(`[✨ AI | i] Pulling ${model} from ollama...`)
-      try {
-        await axios.post(
-          `${process.env.ollamaApi}/api/pull`,
-          {
-            model,
-            stream: false,
-            timeout: process.env.ollamaApiTimeout || 10000,
-          }
+    // model not found or 404
+    if (isAxiosError(error) && error.response && typeof error.response === 'object') {
+      const resp = error.response as Record<string, unknown>;
+      const errData = resp.data && typeof resp.data === 'object' && 'error' in resp.data ? (resp.data as Record<string, unknown>).error : undefined;
+      const errStatus = 'status' in resp ? resp.status : undefined;
+      if ((typeof errData === 'string' && errData.includes(`model '${model}' not found`)) || errStatus === 404) {
+        ctx.telegram.editMessageText(
+          ctx.chat.id,
+          replyGenerating.message_id,
+          undefined,
+          `🔄 *Pulling ${model} from Ollama...*\n\nThis may take a few minutes...`,
+          { parse_mode: 'Markdown' }
         )
-      } catch (e: any) {
-        if (e.response) {
-          console.error("[✨ AI | !] Something went wrong:", e.response.data?.error)
+        console.log(`[✨ AI | i] Pulling ${model} from ollama...`)
+        try {
+          await axios.post(
+            `${process.env.ollamaApi}/api/pull`,
+            {
+              model,
+              stream: false,
+              timeout: process.env.ollamaApiTimeout || 10000,
+            }
+          )
+        } catch (e: unknown) {
+          const pullMsg = extractAxiosErrorMessage(e)
+          console.error("[✨ AI | !] Pull error:", pullMsg)
           return {
             success: false,
-            error: `❌ Something went wrong while pulling ${model}, please try your command again!`,
-          }
-        } else if (e.request) {
-          console.error("[✨ AI | !] No response received while pulling:", e.request)
-          return {
-            success: false,
-            error: `❌ No response received while pulling ${model}, please try again!`,
-          }
-        } else {
-          console.error("[✨ AI | !] Error while pulling:", e.message)
-          return {
-            success: false,
-            error: `❌ Error while pulling ${model}: ${e.message}`,
+            error: `❌ Something went wrong while pulling ${model}: ${pullMsg}`,
           }
         }
+        console.log(`[✨ AI | i] ${model} pulled successfully`)
+        return {
+          success: true,
+          response: `✅ Pulled ${model} successfully, please retry the command.`,
+        }
       }
-      console.log(`[✨ AI | i] ${model} pulled successfully`)
-      return {
-        success: true,
-        response: `✅ Pulled ${model} successfully, please retry the command.`,
-      }
+    }
+    return {
+      success: false,
+      error: errorMsg,
     }
   }
 }
