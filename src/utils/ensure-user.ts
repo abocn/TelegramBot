@@ -52,7 +52,6 @@ export async function ensureUserInDb(ctx, db) {
       aiRequests: 0,
       aiCharacters: 0,
     };
-    console.log('[💽 DB] Inserting user with values:', userToInsert);
     try {
       await db.insert(usersTable).values(userToInsert);
       console.log(`[💽 DB] Added new user: ${username || firstName} (${telegramId})`);
