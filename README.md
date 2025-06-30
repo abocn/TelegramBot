@@ -19,6 +19,7 @@ Kowalski is a a simple Telegram bot made in Node.js.
 - A Telegram bot (create one at [@BotFather](https://t.me/botfather))
 - FFmpeg (only for the `/yt` command)
 - Docker and Docker Compose (only required for Docker setup)
+- Postgres
 
 ### AI Requirements
 
@@ -116,6 +117,7 @@ If you prefer to use Docker directly, you can use these instructions instead.
 - **handlerTimeout** (optional): How long handlers will wait before timing out. Set this high if using large AI models.
 - **flashModel** (optional): Which model will be used for /ask
 - **thinkingModel** (optional): Which model will be used for /think
+- **databaseUrl**: Database server configuration (see `.env.example`)
 - **botAdmins**: Put the ID of the people responsible for managing the bot. They can use some administrative + exclusive commands on any group.
 - **lastKey**: Last.fm API key, for use on `lastfm.js` functions, like see who is listening to what song and etc.
 - **weatherKey**: Weather.com API key, used for the `/weather` command.
@@ -149,3 +151,5 @@ Made with [contrib.rocks](https://contrib.rocks).
 ## About/License
 
 BSD-3-Clause - 2024 Lucas Gabriel (lucmsilva).
+
+Featuring some components under Unlicense.

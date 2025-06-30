@@ -72,7 +72,7 @@ export default (bot) => {
       return ctx.reply(Strings.lastFm.noUser, {
         parse_mode: "Markdown",
         disable_web_page_preview: true,
-        reply_to_message_id: ctx.message.message_id
+        ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
       });
     };
 
@@ -84,7 +84,7 @@ export default (bot) => {
     ctx.reply(message, {
       parse_mode: "Markdown",
       disable_web_page_preview: true,
-      reply_to_message_id: ctx.message.message_id
+      ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
     });
   });
 
@@ -94,12 +94,12 @@ export default (bot) => {
     const lastfmUser = users[userId];
     const genericImg = Resources.lastFmGenericImg;
     const botInfo = await ctx.telegram.getMe();
-    
+
     if (!lastfmUser) {
       return ctx.reply(Strings.lastFm.noUserSet, {
         parse_mode: "Markdown",
         disable_web_page_preview: true,
-        reply_to_message_id: ctx.message.message_id
+        ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
       });
     };
 
@@ -124,7 +124,7 @@ export default (bot) => {
         return ctx.reply(noRecent, {
           parse_mode: "Markdown",
           disable_web_page_preview: true,
-          reply_to_message_id: ctx.message.message_id
+          ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
         });
       };
 
@@ -137,8 +137,8 @@ export default (bot) => {
 
       if (albumMbid) {
         imageUrl = await getFromMusicBrainz(albumMbid);
-      } 
-      
+      }
+
       if (!imageUrl) {
         imageUrl = getFromLast(track);
       }
@@ -166,7 +166,7 @@ export default (bot) => {
             'User-Agent': `@${botInfo.username}-node-telegram-bot`
           }
         });
-        
+
         num_plays = response_plays.data.track.userplaycount;
       } catch (err) {
         console.log(err)
@@ -176,7 +176,7 @@ export default (bot) => {
         ctx.reply(message, {
           parse_mode: "Markdown",
           disable_web_page_preview: true,
-          reply_to_message_id: ctx.message.message_id
+          ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
         });
       };
 
@@ -200,13 +200,13 @@ export default (bot) => {
           caption: message,
           parse_mode: "Markdown",
           disable_web_page_preview: true,
-          reply_to_message_id: ctx.message.message_id
+          ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
         });
       } else {
         ctx.reply(message, {
           parse_mode: "Markdown",
           disable_web_page_preview: true,
-          reply_to_message_id: ctx.message.message_id
+          ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
         });
       };
     } catch (err) {
@@ -217,7 +217,7 @@ export default (bot) => {
       ctx.reply(message, {
         parse_mode: "Markdown",
         disable_web_page_preview: true,
-        reply_to_message_id: ctx.message.message_id
+        ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
       });
     };
   });

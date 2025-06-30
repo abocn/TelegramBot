@@ -90,7 +90,14 @@ class RateLimiter {
     return chunks
   }
 
-  private handleTelegramError(error: unknown, messageKey: string, options: any, ctx: Context, chatId: number, messageId: number): boolean {
+  private handleTelegramError(
+    error: unknown,
+    messageKey: string,
+    options: Record<string, unknown>,
+    ctx: Context,
+    chatId: number,
+    messageId: number
+  ): boolean {
     if (!isTelegramError(error)) return false
     if (error.response.error_code === 429) {
       const retryAfter = error.response.parameters?.retry_after || 1
@@ -130,7 +137,7 @@ class RateLimiter {
     ctx: Context,
     chatId: number,
     messageId: number,
-    options: any
+    options: Record<string, unknown>
   ): Promise<void> {
     const messageKey = this.getMessageKey(chatId, messageId)
     const latestText = this.pendingUpdates.get(messageKey)
@@ -184,7 +191,7 @@ class RateLimiter {
             const newMessage = await ctx.telegram.sendMessage(chatId, chunk, {
               ...options,
               reply_to_message_id: messageId
-            })
+            } as any)
             logger.logChunk(chatId, newMessage.message_id, chunk, true)
             this.overflowMessages.set(messageKey, newMessage.message_id)
           }
@@ -226,7 +233,7 @@ class RateLimiter {
     chatId: number,
     messageId: number,
     text: string,
-    options: any
+    options: Record<string, unknown>
   ): Promise<void> {
     const messageKey = this.getMessageKey(chatId, messageId)
     this.pendingUpdates.set(messageKey, text)

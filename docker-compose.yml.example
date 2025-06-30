@@ -7,3 +7,15 @@ services:
       - ./.env:/usr/src/app/.env:ro
     environment:
       - NODE_ENV=production
+  postgres:
+    image: postgres:17
+    container_name: kowalski-postgres
+    restart: unless-stopped
+    ports:
+      - 5433:5432
+    volumes:
+      - ./db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=kowalski
+      - POSTGRES_PASSWORD=kowalski
+      - POSTGRES_DB=kowalski

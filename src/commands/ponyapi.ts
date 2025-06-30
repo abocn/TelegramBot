@@ -53,34 +53,38 @@ function capitalizeFirstLetter(letter: string) {
   return letter.charAt(0).toUpperCase() + letter.slice(1);
 }
 
+function sendReply(ctx: Context, text: string, reply_to_message_id?: number) {
+  return ctx.reply(text, {
+    parse_mode: 'Markdown',
+    ...(reply_to_message_id ? { reply_parameters: { message_id: reply_to_message_id } } : {})
+  });
+}
+
+function sendPhoto(ctx: Context, photo: string, caption: string, reply_to_message_id?: number) {
+  return ctx.replyWithPhoto(photo, {
+    caption,
+    parse_mode: 'Markdown',
+    ...(reply_to_message_id ? { reply_parameters: { message_id: reply_to_message_id } } : {})
+  });
+}
+
 export default (bot: Telegraf<Context>) => {
   bot.command("mlp", spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
     const Strings = getStrings(languageCode(ctx));
     const reply_to_message_id = replyToMessageId(ctx);
-
-    ctx.reply(Strings.ponyApi.helpDesc, {
-      parse_mode: 'Markdown',
-      ...({ reply_to_message_id, disable_web_page_preview: true })
-    });
+    sendReply(ctx, Strings.ponyApi.helpDesc, reply_to_message_id);
   });
 
   bot.command("mlpchar", spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
+    const { message } = ctx;
     const reply_to_message_id = replyToMessageId(ctx);
     const Strings = getStrings(languageCode(ctx) || 'en');
-    const userInput = ctx.message.text.split(' ').slice(1).join(' ').replace(" ", "+");
-    const { noCharName } = Strings.ponyApi
+    const userInput = message.text.split(' ').slice(1).join(' ').trim().replace(/\s+/g, '+');
+    const { noCharName } = Strings.ponyApi;
 
-    if (verifyInput(ctx, userInput, noCharName)) {
-      return;
-    }
-
-    // if special characters or numbers (max 30 characters)
-    if (/[^a-zA-Z\s]/.test(userInput) || userInput.length > 30) {
-      ctx.reply(Strings.mlpInvalidCharacter, {
-        parse_mode: 'Markdown',
-        ...({ reply_to_message_id })
-      });
-      return;
+    if (verifyInput(ctx, userInput, noCharName)) return;
+    if (!userInput || /[^a-zA-Z\s]/.test(userInput) || userInput.length > 30) {
+      return sendReply(ctx, Strings.mlpInvalidCharacter, reply_to_message_id);
     }
 
     const capitalizedInput = capitalizeFirstLetter(userInput);
@@ -88,62 +92,29 @@ export default (bot: Telegraf<Context>) => {
 
     try {
       const response = await axios(apiUrl);
-      const charactersArray: Character[] = [];
-
-      if (Array.isArray(response.data.data)) {
-        response.data.data.forEach(character => {
-          let aliases: string[] = [];
-          if (character.alias) {
-            if (typeof character.alias === 'string') {
-              aliases.push(character.alias);
-            } else if (Array.isArray(character.alias)) {
-              aliases = aliases.concat(character.alias);
-            }
-          }
-
-          charactersArray.push({
-            id: character.id,
-            name: character.name,
-            alias: aliases.length > 0 ? aliases.join(', ') : Strings.varStrings.varNone,
-            url: character.url,
-            sex: character.sex,
-            residence: character.residence ? character.residence.replace(/\n/g, ' / ') : Strings.varStrings.varNone,
-            occupation: character.occupation ? character.occupation.replace(/\n/g, ' / ') : Strings.varStrings.varNone,
-            kind: character.kind ? character.kind.join(', ') : Strings.varStrings.varNone,
-            image: character.image
-          });
-        });
-      };
-
-      if (charactersArray.length > 0) {
+      const data = response.data.data;
+      if (Array.isArray(data) && data.length > 0) {
+        const character = data[0];
+        const aliases = Array.isArray(character.alias)
+          ? character.alias.join(', ')
+          : character.alias || Strings.varStrings.varNone;
         const result = Strings.ponyApi.charRes
-          .replace("{id}", charactersArray[0].id)
-          .replace("{name}", charactersArray[0].name)
-          .replace("{alias}", charactersArray[0].alias)
-          .replace("{url}", charactersArray[0].url)
-          .replace("{sex}", charactersArray[0].sex)
-          .replace("{residence}", charactersArray[0].residence)
-          .replace("{occupation}", charactersArray[0].occupation)
-          .replace("{kind}", charactersArray[0].kind);
-
-        ctx.replyWithPhoto(charactersArray[0].image[0], {
-          caption: `${result}`,
-          parse_mode: 'Markdown',
-          ...({ reply_to_message_id, disable_web_page_preview: true })
-        });
+          .replace("{id}", character.id)
+          .replace("{name}", character.name)
+          .replace("{alias}", aliases)
+          .replace("{url}", character.url)
+          .replace("{sex}", character.sex)
+          .replace("{residence}", character.residence ? character.residence.replace(/\n/g, ' / ') : Strings.varStrings.varNone)
+          .replace("{occupation}", character.occupation ? character.occupation.replace(/\n/g, ' / ') : Strings.varStrings.varNone)
+          .replace("{kind}", Array.isArray(character.kind) ? character.kind.join(', ') : Strings.varStrings.varNone);
+        sendPhoto(ctx, character.image[0], result, reply_to_message_id);
       } else {
-        ctx.reply(Strings.ponyApi.noCharFound, {
-          parse_mode: 'Markdown',
-          ...({ reply_to_message_id })
-        });
-      };
-    } catch (error) {
-      const message = Strings.ponyApi.apiErr.replace('{error}', error.message);
-      ctx.reply(message, {
-        parse_mode: 'Markdown',
-        ...({ reply_to_message_id })
-      });
-    };
+        sendReply(ctx, Strings.ponyApi.noCharFound, reply_to_message_id);
+      }
+    } catch (error: any) {
+      const message = Strings.ponyApi.apiErr.replace('{error}', error.message || 'Unknown error');
+      sendReply(ctx, message, reply_to_message_id);
+    }
   });
 
   bot.command("mlpep", spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
@@ -157,10 +128,10 @@ export default (bot: Telegraf<Context>) => {
       return;
     }
 
-    if (Number(userInput) > 100) {
+    if (Number(userInput) > 10000) {
       ctx.reply(Strings.mlpInvalidEpisode, {
         parse_mode: 'Markdown',
-        ...({ reply_to_message_id })
+        ...(reply_to_message_id ? { reply_parameters: { message_id: reply_to_message_id } } : {})
       });
       return;
     }
@@ -205,21 +176,19 @@ export default (bot: Telegraf<Context>) => {
         ctx.replyWithPhoto(episodeArray[0].image, {
           caption: `${result}`,
           parse_mode: 'Markdown',
-          ...({ reply_to_message_id, disable_web_page_preview: true })
+          ...(reply_to_message_id ? { reply_parameters: { message_id: reply_to_message_id } } : {})
         });
       } else {
         ctx.reply(Strings.ponyApi.noEpisodeFound, {
           parse_mode: 'Markdown',
-
-          ...({ reply_to_message_id })
+          ...(reply_to_message_id ? { reply_parameters: { message_id: reply_to_message_id } } : {})
         });
       };
     } catch (error) {
       const message = Strings.ponyApi.apiErr.replace('{error}', error.message);
       ctx.reply(message, {
         parse_mode: 'Markdown',
-
-        ...({ reply_to_message_id })
+        ...(reply_to_message_id ? { reply_parameters: { message_id: reply_to_message_id } } : {})
       });
     };
   });
@@ -239,7 +208,7 @@ export default (bot: Telegraf<Context>) => {
     if (/[^a-zA-Z\s]/.test(userInput) || userInput.length > 30) {
       ctx.reply(Strings.mlpInvalidCharacter, {
         parse_mode: 'Markdown',
-        ...({ reply_to_message_id })
+        ...(reply_to_message_id ? { reply_parameters: { message_id: reply_to_message_id } } : {})
       });
       return;
     }
@@ -289,21 +258,19 @@ export default (bot: Telegraf<Context>) => {
         ctx.replyWithPhoto(comicArray[0].image, {
           caption: `${result}`,
           parse_mode: 'Markdown',
-          ...({ reply_to_message_id, disable_web_page_preview: true })
+          ...(reply_to_message_id ? { reply_parameters: { message_id: reply_to_message_id } } : {})
         });
       } else {
         ctx.reply(Strings.ponyApi.noComicFound, {
           parse_mode: 'Markdown',
-
-          ...({ reply_to_message_id })
+          ...(reply_to_message_id ? { reply_parameters: { message_id: reply_to_message_id } } : {})
         });
       };
     } catch (error) {
       const message = Strings.ponyApi.apiErr.replace('{error}', error.message);
       ctx.reply(message, {
         parse_mode: 'Markdown',
-
-        ...({ reply_to_message_id })
+        ...(reply_to_message_id ? { reply_parameters: { message_id: reply_to_message_id } } : {})
       });
     };
   });

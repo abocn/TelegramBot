@@ -1,21 +1,38 @@
 import { getStrings } from '../plugins/checklang';
 import { isOnSpamWatch } from '../spamwatch/spamwatch';
 import spamwatchMiddlewareModule from '../spamwatch/Middleware';
-import { languageCode } from '../utils/language-code';
+import type { Context } from 'telegraf';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
+
+async function getUserAndStrings(ctx: Context, db?: any): Promise<{ Strings: any, languageCode: string }> {
+  let languageCode = 'en';
+  if (!ctx.from) {
+    const Strings = getStrings(languageCode);
+    return { Strings, languageCode };
+  }
+  const from = ctx.from;
+  if (db && from.id) {
+    const dbUser = await db.query.usersTable.findMany({ where: (fields, { eq }) => eq(fields.telegramId, String(from.id)), limit: 1 });
+    if (dbUser.length > 0) {
+      languageCode = dbUser[0].languageCode;
+    }
+  }
+  const Strings = getStrings(languageCode);
+  return { Strings, languageCode };
+}
 
 interface MessageOptions {
   parse_mode: string;
   disable_web_page_preview: boolean;
   reply_markup: {
-    inline_keyboard: { text: any; callback_data: string; }[][];
+    inline_keyboard: { text: string; callback_data: string; }[][];
   };
   reply_to_message_id?: number;
 }
 
-async function sendHelpMessage(ctx, isEditing) {
-  const Strings = getStrings(languageCode(ctx));
+async function sendHelpMessage(ctx, isEditing, db) {
+  const { Strings } = await getUserAndStrings(ctx, db);
   const botInfo = await ctx.telegram.getMe();
   const helpText = Strings.botHelp
     .replace(/{botName}/g, botInfo.first_name)
@@ -33,14 +50,14 @@ async function sendHelpMessage(ctx, isEditing) {
           [{ text: Strings.interactiveEmojis, callback_data: 'helpInteractive' }, { text: Strings.funnyCommands, callback_data: 'helpFunny' }],
           [{ text: Strings.lastFm.helpEntry, callback_data: 'helpLast' }, { text: Strings.animalCommands, callback_data: 'helpAnimals' }],
           [{ text: Strings.ytDownload.helpEntry, callback_data: 'helpYouTube' }, { text: Strings.ponyApi.helpEntry, callback_data: 'helpMLP' }],
-          [{ text: Strings.aiCmds, callback_data: 'helpAi' }]
+          [{ text: Strings.ai.helpEntry, callback_data: 'helpAi' }]
         ]
       }
     };
     if (includeReplyTo) {
       const messageId = getMessageId(ctx);
       if (messageId) {
-        options.reply_to_message_id = messageId;
+        (options as any).reply_parameters = { message_id: messageId };
       };
     };
     return options;
@@ -52,78 +69,78 @@ async function sendHelpMessage(ctx, isEditing) {
   };
 }
 
-export default (bot) => {
+export default (bot, db) => {
   bot.help(spamwatchMiddleware, async (ctx) => {
-    await sendHelpMessage(ctx, false);
+    await sendHelpMessage(ctx, false, db);
   });
 
   bot.command("about", spamwatchMiddleware, async (ctx) => {
-    const Strings = getStrings(languageCode(ctx));
+    const { Strings } = await getUserAndStrings(ctx, db);
     const aboutMsg = Strings.botAbout.replace(/{sourceLink}/g, `${process.env.botSource}`);
     ctx.reply(aboutMsg, {
       parse_mode: 'Markdown',
       disable_web_page_preview: true,
-      reply_to_message_id: ctx.message.message_id
+      ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
     });
-  })
+  });
 
-  bot.on('callback_query', async (ctx) => {
-    const callbackData = ctx.callbackQuery.data;
-    const Strings = getStrings(languageCode(ctx));
-    const options = {
-      parse_mode: 'Markdown',
-      disable_web_page_preview: true,
-      reply_markup: JSON.stringify({
-        inline_keyboard: [
-          [{ text: Strings.varStrings.varBack, callback_data: 'helpBack' }],
-        ]
-      })
-    };
+  const options = (Strings) => ({
+    parse_mode: 'Markdown',
+    disable_web_page_preview: true,
+    reply_markup: JSON.stringify({
+      inline_keyboard: [
+        [{ text: Strings.varStrings.varBack, callback_data: 'helpBack' }],
+      ]
+    })
+  });
 
-    switch (callbackData) {
-      case 'helpMain':
-        await ctx.answerCbQuery();
-        await ctx.editMessageText(Strings.mainCommandsDesc, options);
-        break;
-      case 'helpUseful':
-        await ctx.answerCbQuery();
-        await ctx.editMessageText(Strings.usefulCommandsDesc, options);
-        break;
-      case 'helpInteractive':
-        await ctx.answerCbQuery();
-        await ctx.editMessageText(Strings.interactiveEmojisDesc, options);
-        break;
-      case 'helpFunny':
-        await ctx.answerCbQuery();
-        await ctx.editMessageText(Strings.funnyCommandsDesc, options);
-        break;
-      case 'helpLast':
-        await ctx.answerCbQuery();
-        await ctx.editMessageText(Strings.lastFm.helpDesc, options);
-        break;
-      case 'helpYouTube':
-        await ctx.answerCbQuery();
-        await ctx.editMessageText(Strings.ytDownload.helpDesc, options);
-        break;
-      case 'helpAnimals':
-        await ctx.answerCbQuery();
-        await ctx.editMessageText(Strings.animalCommandsDesc, options);
-        break;
-      case 'helpMLP':
-        await ctx.answerCbQuery();
-        await ctx.editMessageText(Strings.ponyApi.helpDesc, options);
-        break;
-      case 'helpAi':
-        await ctx.answerCbQuery();
-        await ctx.editMessageText(Strings.aiCmdsDesc, options);
-        break;
-      case 'helpBack':
-        await ctx.answerCbQuery();
-        await sendHelpMessage(ctx, true);
-        break;
-      default:
-        await ctx.answerCbQuery(Strings.errInvalidOption);
-        break;
-    }
+  bot.action('helpMain', async (ctx) => {
+    const { Strings } = await getUserAndStrings(ctx, db);
+    await ctx.editMessageText(Strings.mainCommandsDesc, options(Strings));
+    await ctx.answerCbQuery();
+  });
+  bot.action('helpUseful', async (ctx) => {
+    const { Strings } = await getUserAndStrings(ctx, db);
+    await ctx.editMessageText(Strings.usefulCommandsDesc, options(Strings));
+    await ctx.answerCbQuery();
+  });
+  bot.action('helpInteractive', async (ctx) => {
+    const { Strings } = await getUserAndStrings(ctx, db);
+    await ctx.editMessageText(Strings.interactiveEmojisDesc, options(Strings));
+    await ctx.answerCbQuery();
+  });
+  bot.action('helpFunny', async (ctx) => {
+    const { Strings } = await getUserAndStrings(ctx, db);
+    await ctx.editMessageText(Strings.funnyCommandsDesc, options(Strings));
+    await ctx.answerCbQuery();
+  });
+  bot.action('helpLast', async (ctx) => {
+    const { Strings } = await getUserAndStrings(ctx, db);
+    await ctx.editMessageText(Strings.lastFm.helpDesc, options(Strings));
+    await ctx.answerCbQuery();
+  });
+  bot.action('helpYouTube', async (ctx) => {
+    const { Strings } = await getUserAndStrings(ctx, db);
+    await ctx.editMessageText(Strings.ytDownload.helpDesc, options(Strings));
+    await ctx.answerCbQuery();
+  });
+  bot.action('helpAnimals', async (ctx) => {
+    const { Strings } = await getUserAndStrings(ctx, db);
+    await ctx.editMessageText(Strings.animalCommandsDesc, options(Strings));
+    await ctx.answerCbQuery();
+  });
+  bot.action('helpMLP', async (ctx) => {
+    const { Strings } = await getUserAndStrings(ctx, db);
+    await ctx.editMessageText(Strings.ponyApi.helpDesc, options(Strings));
+    await ctx.answerCbQuery();
+  });
+  bot.action('helpAi', async (ctx) => {
+    const { Strings } = await getUserAndStrings(ctx, db);
+    await ctx.editMessageText(Strings.ai.helpDesc, options(Strings));
+    await ctx.answerCbQuery();
+  });
+  bot.action('helpBack', async (ctx) => {
+    await sendHelpMessage(ctx, true, db);
+    await ctx.answerCbQuery();
   });
 }

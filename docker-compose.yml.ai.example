@@ -13,3 +13,15 @@ services:
     restart: unless-stopped
     volumes:
       - ./ollama:/root/.ollama
+  postgres:
+    image: postgres:17
+    container_name: kowalski-postgres
+    restart: unless-stopped
+    ports:
+      - 5433:5432
+    volumes:
+      - ./db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=kowalski
+      - POSTGRES_PASSWORD=kowalski
+      - POSTGRES_DB=kowalski

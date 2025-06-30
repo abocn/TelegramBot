@@ -1,4 +1,5 @@
 {
+  "userNotFound": "User not found.",
   "botWelcome": "*Hello! I'm {botName}!*\nI was made with love by some nerds who really love programming!\n\n*By using {botName}, you affirm that you have read to and agree with the privacy policy (/privacy). This helps you understand where your data goes when using this bot.*\n\nAlso, you can use /help to see the bot commands!",
   "botHelp": "*Hey, I'm {botName}, a simple bot made entirely from scratch in Telegraf and Node.js by some nerds who really love programming.*\n\nCheck out the source code: [Click here to go to GitHub]({sourceLink})\n\nClick on the buttons below to see which commands you can use!\n",
   "botPrivacy": "Check out [this link]({botPrivacy}) to read the bot's privacy policy.",
@@ -53,7 +54,7 @@
     "apiKeyErr": "*An API key was not set by the bot owner. Please try again later.*"
   },
   "mainCommands": "ℹ️ Main Commands",
-  "mainCommandsDesc": "ℹ️ *Main Commands*\n\n- /help: Show bot's help\n- /start: Start the bot\n- /privacy: Read the bot's Privacy Policy",
+  "mainCommandsDesc": "ℹ️ *Main Commands*\n\n- /help: Show bot's help\n- /start: Start the bot\n- /privacy: Read the bot's Privacy Policy\n- /settings: Show your user settings",
   "usefulCommands": "🛠️ Useful Commands",
   "usefulCommandsDesc": "🛠️ *Useful commands*\n\n- /chatinfo: Send information about the group\n- /userinfo: Send information about yourself\n- /d | /device `<model>`: Search for a device on GSMArena and show its specs.\n/codename | /whatis `<device codename>`: Shows what device is based on the codename. Example: `/codename begonia`\n- /weather | /clima `<city>`: See weather status for a specific location.\n- /modarchive | /tma `<module id>`: Download a module from The Mod Archive.\n- /http `<HTTP code>`: Send details about a specific HTTP code. Example: `/http 404`",
   "funnyCommands": "😂 Funny Commands",
@@ -62,8 +63,15 @@
   "interactiveEmojisDesc": "🎲 *Interactive emojis*\n\n- /dice: Roll a dice\n- /idice: Infinitely roll a colored dice\n- /slot: Try to combine the figures!\n- /ball: Try to kick the ball into the goal!\n- /bowling: Try to hit the pins!\n- /dart: Try to hit the target!",
   "animalCommands": "🐱 Animals",
   "animalCommandsDesc": "🐱 *Animals*\n\n- /soggy | /soggycat `<1 | 2 | 3 | 4 | orig | thumb | sticker | alt>`: Sends the [Soggy cat meme](https://knowyourmeme.com/memes/soggy-cat)\n- /cat: Sends a random picture of a cat.\n- /fox: Sends a random picture of a fox.\n- /duck: Sends a random picture of a duck.\n- /dog: Sends a random picture of a dog.\n- /httpcat `<http code>`: Send cat memes from http.cat with your specified HTTP code. Example: `/httpcat 404`",
-  "aiCmds": "✨ AI Commands",
-  "aiCmdsDesc": "✨ *AI Commands*\n\n- /ask `<prompt>`: Ask a question to an AI",
+  "ai": {
+    "helpEntry": "✨ AI Commands",
+    "helpDesc": "✨ *AI Commands*\n\n- /ask `<prompt>`: Ask a question to an AI\n- /think `<prompt>`: Ask a thinking model about a question",
+    "disabled": "✨ AI features are currently disabled",
+    "pulling": "🔄 *Pulling {model} from Ollama...*\n\nThis may take a few minutes...",
+    "askGenerating": "✨ _{model} is working..._",
+    "askNoMessage": "Please provide a message to ask the model.",
+    "languageCode": "Language"
+  },
   "maInvalidModule": "Please provide a valid module ID from The Mod Archive.\nExample: `/modarchive 81574`",
   "maDownloadError": "Error downloading the file. Check the module ID and try again.",
   "ytDownload": {
@@ -80,6 +88,33 @@
     "sizeLimitWarn": "*This video had its quality reduced because it exceeded the 50MB limit for uploads imposed by Telegram.*",
     "noLink": "Please provide a link to a video to download.",
     "botDetection": "My server is being rate limited by the video provider! Please try again later, or ask the bot owner to add their cookies/account."
+  },
+  "settings": {
+    "helpEntry": "🔧 Settings",
+    "helpDesc": "🔧 *Settings*\n\n- /settings: Show your settings",
+    "mainSettings": "🔧 *Settings*\n\n- AI Enabled: {aiEnabled}\n- /ai Custom Model: {aiModel}\n- AI Temperature: {aiTemperature}\n- Total AI Requests: {aiRequests}\n- Total AI Characters Sent/Recieved: {aiCharacters}\n- Language: {languageCode}",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "selectSetting": "Please select a setting to modify or view.",
+    "ai": {
+      "aiEnabled": "AI Enabled",
+      "aiModel": "AI Model",
+      "aiTemperature": "AI Temperature",
+      "aiRequests": "Total AI Requests",
+      "aiCharacters": "Total AI Characters Sent/Recieved",
+      "languageCode": "Language",
+      "aiEnabledSetTo": "AI Enabled set to {aiEnabled}",
+      "aiModelSetTo": "AI Model set to {aiModel}",
+      "aiTemperatureSetTo": "AI Temperature set to {aiTemperature}",
+      "back": "Back",
+      "selectSeries": "Please select a model series.",
+      "seriesDescription": "{seriesDescription}",
+      "selectParameterSize": "Please select a parameter size for {seriesLabel}.",
+      "parameterSizeExplanation": "Parameter size (e.g. 2B, 4B) refers to the number of parameters in the model. Larger models may be more capable but require more resources.",
+      "modelSetTo": "Model set to {aiModel} ({parameterSize})"
+    },
+    "languageCodeSetTo": "Language set to {languageCode}",
+    "unknownAction": "Unknown action."
   },
   "botUpdated": "Bot updated with success.\n\n```{result}```",
   "errorUpdatingBot": "Error updating bot\n\n{error}",
@@ -120,6 +155,13 @@
   },
   "chatNotFound": "Chat not found.",
   "noFileProvided": "Please provide a file to send.",
-  "askGenerating": "✨ _{model} is working..._",
-  "aiDisabled": "AI features are currently disabled"
+  "gsmarenaProvidePhoneName": "Please provide the phone name.",
+  "gsmarenaSearchingFor": "Searching for `{phone}`...",
+  "gsmarenaNoPhonesFound": "No phones found for `{phone}`.",
+  "gsmarenaNoPhonesFoundBoth": "No phones found for `{name}` and `{phone}`.",
+  "gsmarenaSelectDevice": "Please select your device:",
+  "gsmarenaNotAllowed": "you are not allowed to interact with this.",
+  "gsmarenaInvalidOrExpired": "Whoops, invalid or expired option. Please try again.",
+  "gsmarenaDeviceDetails": "these are the details of your device:",
+  "gsmarenaErrorFetchingDetails": "Error fetching phone details."
 }

@@ -63,19 +63,24 @@ class Logger {
     console.log(`[✨ AI | PROMPT] ${prompt.length} chars input`)
   }
 
-  logError(error: any): void {
-    if (error.response?.error_code === 429) {
-      const retryAfter = error.response.parameters?.retry_after || 1
-      console.error(`[✨ AI | RATE_LIMIT] Too Many Requests - retry after ${retryAfter}s`)
-    } else if (error.response?.error_code === 400 && error.response?.description?.includes("can't parse entities")) {
-      console.error("[✨ AI | PARSE_ERROR] Markdown parsing failed, retrying with plain text")
-    } else {
-      const errorDetails = {
-        code: error.response?.error_code,
-        description: error.response?.description,
-        method: error.on?.method
+  logError(error: unknown): void {
+    if (typeof error === 'object' && error !== null && 'response' in error) {
+      const err = error as { response?: { error_code?: number, parameters?: { retry_after?: number }, description?: string }, on?: { method?: string } };
+      if (err.response?.error_code === 429) {
+        const retryAfter = err.response.parameters?.retry_after || 1;
+        console.error(`[✨ AI | RATE_LIMIT] Too Many Requests - retry after ${retryAfter}s`);
+      } else if (err.response?.error_code === 400 && err.response?.description?.includes("can't parse entities")) {
+        console.error("[✨ AI | PARSE_ERROR] Markdown parsing failed, retrying with plain text");
+      } else {
+        const errorDetails = {
+          code: err.response?.error_code,
+          description: err.response?.description,
+          method: err.on?.method
+        };
+        console.error("[✨ AI | ERROR]", JSON.stringify(errorDetails, null, 2));
       }
-      console.error("[✨ AI | ERROR]", JSON.stringify(errorDetails, null, 2))
+    } else {
+      console.error("[✨ AI | ERROR]", error);
     }
   }
 }

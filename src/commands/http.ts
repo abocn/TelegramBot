@@ -5,14 +5,37 @@ import spamwatchMiddlewareModule from '../spamwatch/Middleware';
 import axios from 'axios';
 import verifyInput from '../plugins/verifyInput';
 import { Context, Telegraf } from 'telegraf';
+import * as schema from '../db/schema';
 import { languageCode } from '../utils/language-code';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 
-export default (bot: Telegraf<Context>) => {
+async function getUserAndStrings(ctx: Context, db?: NodePgDatabase<typeof schema>): Promise<{ Strings: any, languageCode: string }> {
+  let languageCode = 'en';
+  if (!ctx.from) {
+    const Strings = getStrings(languageCode);
+    return { Strings, languageCode };
+  }
+  const from = ctx.from;
+  if (db && from.id) {
+    const dbUser = await db.query.usersTable.findMany({ where: (fields, { eq }) => eq(fields.telegramId, String(from.id)), limit: 1 });
+    if (dbUser.length > 0) {
+      languageCode = dbUser[0].languageCode;
+    }
+  }
+  if (from.language_code && languageCode === 'en') {
+    languageCode = from.language_code;
+    console.warn('[WARN !] Falling back to Telegram language_code for user', from.id);
+  }
+  const Strings = getStrings(languageCode);
+  return { Strings, languageCode };
+}
+
+export default (bot: Telegraf<Context>, db) => {
   bot.command("http", spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
     const reply_to_message_id = ctx.message.message_id;
-    const Strings = getStrings(languageCode(ctx));
+    const { Strings } = await getUserAndStrings(ctx, db);
     const userInput = ctx.message.text.split(' ')[1];
     const apiUrl = Resources.httpApi;
     const { invalidCode } = Strings.httpCodes
@@ -34,19 +57,19 @@ export default (bot: Telegraf<Context>) => {
           .replace("{description}", codeInfo.description);
         await ctx.reply(message, {
           parse_mode: 'Markdown',
-          ...({ reply_to_message_id })
+          ...(reply_to_message_id ? { reply_parameters: { message_id: reply_to_message_id } } : {})
         });
       } else {
         await ctx.reply(Strings.httpCodes.notFound, {
           parse_mode: 'Markdown',
-          ...({ reply_to_message_id })
+          ...(reply_to_message_id ? { reply_parameters: { message_id: reply_to_message_id } } : {})
         });
       };
     } catch (error) {
-      const message = Strings.httpCodes.fetchErr.replace("{error}", error);
+      const message = Strings.httpCodes.fetchErr.replace('{error}', error);
       ctx.reply(message, {
         parse_mode: 'Markdown',
-        ...({ reply_to_message_id })
+        ...(reply_to_message_id ? { reply_parameters: { message_id: reply_to_message_id } } : {})
       });
     };
   });
@@ -63,7 +86,7 @@ export default (bot: Telegraf<Context>) => {
     if (userInput.length !== 3) {
       ctx.reply(Strings.httpCodes.invalidCode, {
         parse_mode: 'Markdown',
-        ...({ reply_to_message_id })
+        ...(reply_to_message_id ? { reply_parameters: { message_id: reply_to_message_id } } : {})
       })
       return
     }
@@ -74,12 +97,12 @@ export default (bot: Telegraf<Context>) => {
       await ctx.replyWithPhoto(apiUrl, {
         caption: `🐱 ${apiUrl}`,
         parse_mode: 'Markdown',
-        ...({ reply_to_message_id })
+        ...(reply_to_message_id ? { reply_parameters: { message_id: reply_to_message_id } } : {})
       });
     } catch (error) {
       ctx.reply(Strings.catImgErr, {
         parse_mode: 'Markdown',
-        ...({ reply_to_message_id })
+        ...(reply_to_message_id ? { reply_parameters: { message_id: reply_to_message_id } } : {})
       });
     }
   });
