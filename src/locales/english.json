@@ -70,7 +70,9 @@
     "pulling": "🔄 *Pulling {model} from Ollama...*\n\nThis may take a few minutes...",
     "askGenerating": "✨ _{model} is working..._",
     "askNoMessage": "Please provide a message to ask the model.",
-    "languageCode": "Language"
+    "languageCode": "Language",
+    "thinking": "Thinking...",
+    "finishedThinking": "Finished thinking"
   },
   "maInvalidModule": "Please provide a valid module ID from The Mod Archive.\nExample: `/modarchive 81574`",
   "maDownloadError": "Error downloading the file. Check the module ID and try again.",

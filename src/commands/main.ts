@@ -7,7 +7,7 @@ import * as schema from '../db/schema';
 import { eq } from 'drizzle-orm';
 import { ensureUserInDb } from '../utils/ensure-user';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { models } from './ai';
+import { models, getModelLabelByName } from './ai';
 import { langs } from '../locales/config';
 
 type UserRow = typeof schema.usersTable.$inferSelect;
@@ -54,7 +54,7 @@ function getSettingsMenu(user: UserRow, Strings: any): SettingsMenu {
       inline_keyboard: [
         [
           { text: `✨ ${Strings.settings.ai.aiEnabled}: ${user.aiEnabled ? Strings.settings.enabled : Strings.settings.disabled}`, callback_data: 'settings_aiEnabled' },
-          { text: `🧠 ${Strings.settings.ai.aiModel}: ${user.customAiModel}`, callback_data: 'settings_aiModel' }
+          { text: `🧠 ${Strings.settings.ai.aiModel}: ${getModelLabelByName(user.customAiModel)}`, callback_data: 'settings_aiModel' }
         ],
         [
           { text: `🌡️ ${Strings.settings.ai.aiTemperature}: ${user.aiTemperature}`, callback_data: 'settings_aiTemperature' },
@@ -78,7 +78,7 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
         user.aiEnabled ? Strings.settings.enabled : Strings.settings.disabled
       ).replace(
         /{aiModel}/g,
-        user.customAiModel
+        getModelLabelByName(user.customAiModel)
       ).replace(
         /{aiTemperature}/g,
         user.aiTemperature.toString()

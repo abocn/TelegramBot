@@ -220,6 +220,10 @@ function extractAxiosErrorMessage(error: unknown): string {
   return 'An unexpected error occurred.';
 }
 
+function escapeMarkdown(text: string): string {
+  return text.replace(/([*_])/g, '\\$1');
+}
+
 async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Message, model: string, aiTemperature: number): Promise<{ success: boolean; response?: string; error?: string }> {
   const Strings = getStrings(languageCode(ctx));
   if (!ctx.chat) {
@@ -228,6 +232,7 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
       error: Strings.unexpectedErr.replace("{error}", "No chat found"),
     };
   }
+  const modelHeader = `🤖 *${model}*  |  🌡️ *${aiTemperature}*\n\n`;
   try {
     const aiResponse = await axios.post<unknown>(
       `${process.env.ollamaApi}/api/generate`,
@@ -246,6 +251,7 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
     let fullResponse = "";
     let thoughts = "";
     let lastUpdate = Date.now();
+    let sentHeader = false;
     const stream: NodeJS.ReadableStream = aiResponse.data as any;
     for await (const chunk of stream) {
       const lines = chunk.toString().split('\n');
@@ -275,23 +281,24 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
           if (model === thinking_model) {
             let patchedThoughts = ln.response;
             const thinkTagRx = /<think>([\s\S]*?)<\/think>/g;
-            patchedThoughts = patchedThoughts.replace(thinkTagRx, (match, p1) => p1.trim().length > 0 ? '`Thinking...`' + p1 + '`Finished thinking`' : '');
-            patchedThoughts = patchedThoughts.replace(/<think>/g, '`Thinking...`');
-            patchedThoughts = patchedThoughts.replace(/<\/think>/g, '`Finished thinking`');
+            patchedThoughts = patchedThoughts.replace(thinkTagRx, (p1) => p1.trim().length > 0 ? '`' + Strings.ai.thinking + '`' + p1 + '`' + Strings.ai.finishedThinking + '`' : '');
+            patchedThoughts = patchedThoughts.replace(/<think>/g, '`' + Strings.ai.thinking + '`');
+            patchedThoughts = patchedThoughts.replace(/<\/think>/g, '`' + Strings.ai.finishedThinking + '`');
             thoughts += patchedThoughts;
             fullResponse += patchedThoughts;
           } else {
             fullResponse += ln.response;
           }
-          if (now - lastUpdate >= 1000) {
+          if (now - lastUpdate >= 1000 || !sentHeader) {
             await rateLimiter.editMessageWithRetry(
               ctx,
               ctx.chat.id,
               replyGenerating.message_id,
-              thoughts,
+              modelHeader + fullResponse,
               { parse_mode: 'Markdown' }
             );
             lastUpdate = now;
+            sentHeader = true;
           }
         }
       }
@@ -315,7 +322,7 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
           Strings.ai.pulling.replace("{model}", model),
           { parse_mode: 'Markdown' }
         );
-        console.log(`[✨ AI | i] Pulling ${model} from ollama...`);
+        console.log(`[✨ AI] Pulling ${model} from ollama...`);
         try {
           await axios.post(
             `${process.env.ollamaApi}/api/pull`,
@@ -330,13 +337,13 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
           console.error("[✨ AI | !] Pull error:", pullMsg);
           return {
             success: false,
-            error: `❌ Something went wrong while pulling ${model}: ${pullMsg}`,
+            error: `❌ Something went wrong while pulling ${escapeMarkdown(model)}: ${escapeMarkdown(pullMsg)}`,
           };
         }
-        console.log(`[✨ AI | i] ${model} pulled successfully`);
+        console.log(`[✨ AI] ${model} pulled successfully`);
         return {
           success: true,
-          response: `✅ Pulled ${model} successfully, please retry the command.`,
+          response: `✅ Pulled ${escapeMarkdown(model)} successfully, please retry the command.`,
         };
       }
     }
@@ -347,13 +354,13 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
   }
 }
 
-async function handleAiReply(ctx: TextContext, db: NodePgDatabase<typeof schema>, model: string, prompt: string, replyGenerating: Message, aiTemperature: number) {
+async function handleAiReply(ctx: TextContext, model: string, prompt: string, replyGenerating: Message, aiTemperature: number) {
   const Strings = getStrings(languageCode(ctx));
   const aiResponse = await getResponse(prompt, ctx, replyGenerating, model, aiTemperature);
   if (!aiResponse) return;
   if (!ctx.chat) return;
+  const modelHeader = `🤖 *${model}*  |  🌡️ *${aiTemperature}*\n\n`;
   if (aiResponse.success && aiResponse.response) {
-    const modelHeader = `🤖 *${model}*  |  🌡️ *${aiTemperature}*\n\n`;
     await rateLimiter.editMessageWithRetry(
       ctx,
       ctx.chat.id,
@@ -385,6 +392,14 @@ async function getUserWithStringsAndModel(ctx: Context, db: NodePgDatabase<typeo
   }
   const Strings = getStrings(user.languageCode);
   return { user, Strings, languageCode: user.languageCode, customAiModel: user.customAiModel, aiTemperature: user.aiTemperature };
+}
+
+export function getModelLabelByName(name: string): string {
+  for (const series of models) {
+    const found = series.models.find(m => m.name === name);
+    if (found) return found.label;
+  }
+  return name;
 }
 
 export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
@@ -427,44 +442,56 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
     logger.logPrompt(fixedMsg)
 
     const prompt = sanitizeForJson(await usingSystemPrompt(textCtx, db, botName))
-    await handleAiReply(textCtx, db, model, prompt, replyGenerating, aiTemperature)
+    await handleAiReply(textCtx, model, prompt, replyGenerating, aiTemperature)
   })
 
   bot.command(["ai"], spamwatchMiddleware, async (ctx) => {
-    if (!ctx.message || !('text' in ctx.message)) return
-    const textCtx = ctx as TextContext
-    const reply_to_message_id = replyToMessageId(textCtx)
-    const { Strings, customAiModel, aiTemperature } = await getUserWithStringsAndModel(textCtx, db)
-    const message = textCtx.message.text
-    const author = ("@" + ctx.from?.username) || ctx.from?.first_name
+    try {
+      if (!ctx.message || !("text" in ctx.message)) return
+      const textCtx = ctx as TextContext
+      const reply_to_message_id = replyToMessageId(textCtx)
+      const { Strings, customAiModel, aiTemperature } = await getUserWithStringsAndModel(textCtx, db)
+      const message = textCtx.message.text
+      const author = ("@" + ctx.from?.username) || ctx.from?.first_name
 
-    logger.logCmdStart(author, "ask")
+      logger.logCmdStart(author, "ask")
 
-    if (!process.env.ollamaApi) {
-      await ctx.reply(Strings.ai.disabled, {
+      if (!process.env.ollamaApi) {
+        await ctx.reply(Strings.ai.disabled, {
+          parse_mode: 'Markdown',
+          ...({ reply_to_message_id })
+        })
+        return
+      }
+
+      const fixedMsg = message.replace(/^\/ai(@\w+)?\s*/, "").trim()
+      if (fixedMsg.length < 1) {
+        await ctx.reply(Strings.ai.askNoMessage, {
+          parse_mode: 'Markdown',
+          ...({ reply_to_message_id })
+        })
+        return
+      }
+
+      const modelLabel = getModelLabelByName(customAiModel)
+      const replyGenerating = await ctx.reply(Strings.ai.askGenerating.replace("{model}", modelLabel), {
         parse_mode: 'Markdown',
         ...({ reply_to_message_id })
       })
-      return
+
+      logger.logPrompt(fixedMsg)
+
+      const prompt = sanitizeForJson(await usingSystemPrompt(textCtx, db, botName))
+      await handleAiReply(textCtx, customAiModel, prompt, replyGenerating, aiTemperature)
+    } catch (err) {
+      const Strings = getStrings(languageCode(ctx));
+      if (ctx && ctx.reply) {
+        try {
+          await ctx.reply(Strings.unexpectedErr.replace("{error}", (err && err.message ? err.message : String(err))), { parse_mode: 'Markdown' })
+        } catch (e) {
+          console.error("[✨ AI | !] Failed to send error reply:", e)
+        }
+      }
     }
-
-    const fixedMsg = message.replace(/^\/ai(@\w+)?\s*/, "").trim()
-    if (fixedMsg.length < 1) {
-      await ctx.reply(Strings.ai.askNoMessage, {
-        parse_mode: 'Markdown',
-        ...({ reply_to_message_id })
-      })
-      return
-    }
-
-    const replyGenerating = await ctx.reply(Strings.ai.askGenerating.replace("{model}", customAiModel), {
-      parse_mode: 'Markdown',
-      ...({ reply_to_message_id })
-    })
-
-    logger.logPrompt(fixedMsg)
-
-    const prompt = sanitizeForJson(await usingSystemPrompt(textCtx, db, botName))
-    await handleAiReply(textCtx, db, customAiModel, prompt, replyGenerating, aiTemperature)
   })
 }

@@ -69,7 +69,9 @@
         "pulling": "🔄 *Puxando {model} do Ollama...*\n\nIsso pode levar alguns minutos...",
         "askGenerating": "✨ _{model} está funcionando..._",
         "askNoMessage": "Por favor, forneça uma mensagem para fazer a pergunta ao modelo.",
-        "languageCode": "Idioma"
+        "languageCode": "Idioma",
+        "thinking": "Pensando...",
+        "finishedThinking": "Pensamento finalizado"
     },
     "maInvalidModule": "Por favor, forneça um ID de módulo válido do The Mod Archive.\nExemplo: `/modarchive 81574`",
     "maDownloadError": "Erro ao baixar o arquivo. Verifique o ID do módulo e tente novamente.",
