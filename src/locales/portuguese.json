@@ -66,12 +66,14 @@
         "helpEntry": "✨ Comandos de IA",
         "helpDesc": "✨ *Comandos de IA*\n\n- /ask `<prompt>`: Fazer uma pergunta a uma IA\n- /think `<prompt>`: Fazer uma pergunta a um modelo de pensamento",
         "disabled": "✨ Os recursos de IA estão desativados no momento",
+        "disabledForUser": "✨ Os recursos de IA estão desativados para sua conta. Você pode ativá-los em /settings",
         "pulling": "🔄 *Puxando {model} do Ollama...*\n\nIsso pode levar alguns minutos...",
         "askGenerating": "✨ _{model} está funcionando..._",
         "askNoMessage": "Por favor, forneça uma mensagem para fazer a pergunta ao modelo.",
         "languageCode": "Idioma",
         "thinking": "Pensando...",
-        "finishedThinking": "Pensamento finalizado"
+        "finishedThinking": "Pensamento finalizado",
+        "urlWarning": "⚠️ *Aviso: Não posso acessar ou abrir links. Por favor, forneça o conteúdo diretamente se precisar que eu analise algo de um site.*\n\n"
     },
     "maInvalidModule": "Por favor, forneça um ID de módulo válido do The Mod Archive.\nExemplo: `/modarchive 81574`",
     "maDownloadError": "Erro ao baixar o arquivo. Verifique o ID do módulo e tente novamente.",

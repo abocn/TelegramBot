@@ -67,12 +67,14 @@
     "helpEntry": "✨ AI Commands",
     "helpDesc": "✨ *AI Commands*\n\n- /ask `<prompt>`: Ask a question to an AI\n- /think `<prompt>`: Ask a thinking model about a question",
     "disabled": "✨ AI features are currently disabled",
+    "disabledForUser": "✨ AI features are disabled for your account. You can enable them in /settings",
     "pulling": "🔄 *Pulling {model} from Ollama...*\n\nThis may take a few minutes...",
     "askGenerating": "✨ _{model} is working..._",
     "askNoMessage": "Please provide a message to ask the model.",
     "languageCode": "Language",
     "thinking": "Thinking...",
-    "finishedThinking": "Finished thinking"
+    "finishedThinking": "Finished thinking",
+    "urlWarning": "⚠️ *Warning: I cannot access or open links. Please provide the content directly if you need me to analyze something from a website.*\n\n"
   },
   "maInvalidModule": "Please provide a valid module ID from The Mod Archive.\nExample: `/modarchive 81574`",
   "maDownloadError": "Error downloading the file. Check the module ID and try again.",

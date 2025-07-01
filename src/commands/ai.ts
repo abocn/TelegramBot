@@ -69,7 +69,7 @@ interface OllamaResponse {
 export const models: ModelInfo[] = [
   {
     name: 'gemma3n',
-    label: 'Gemma3n',
+    label: 'gemma3n',
     descriptionEn: 'Gemma3n is a family of open, light on-device models for general tasks.',
     descriptionPt: 'Gemma3n é uma família de modelos abertos, leves e para dispositivos locais, para tarefas gerais.',
     models: [
@@ -79,7 +79,7 @@ export const models: ModelInfo[] = [
   },
   {
     name: 'gemma3-abliterated',
-    label: 'Gemma3 Uncensored',
+    label: 'gemma3 Uncensored',
     descriptionEn: 'Gemma3-abliterated is a family of open, uncensored models for general tasks.',
     descriptionPt: 'Gemma3-abliterated é uma família de modelos abertos, não censurados, para tarefas gerais.',
     models: [
@@ -103,7 +103,18 @@ export const models: ModelInfo[] = [
     descriptionPt: 'DeepSeek é um modelo de pesquisa para tarefas de raciocínio.',
     models: [
       { name: 'deepseek-r1:1.5b', label: 'DeepSeek 1.5B', parameterSize: '1.5B' },
+      { name: 'deepseek-r1:7b', label: 'DeepSeek 7B', parameterSize: '7B' },
       { name: 'huihui_ai/deepseek-r1-abliterated:1.5b', label: 'DeepSeek Uncensored 1.5B', parameterSize: '1.5B' },
+      { name: 'huihui_ai/deepseek-r1-abliterated:7b', label: 'DeepSeek Uncensored 7B', parameterSize: '7B' },
+    ]
+  },
+  {
+    name: 'phi3',
+    label: 'Phi3',
+    descriptionEn: 'Phi-3 is a family of lightweight 3B (Mini) and 14B (Medium) state-of-the-art open models by Microsoft.',
+    descriptionPt: 'Phi-3 é uma família de modelos leves de 3B (Mini) e 14B (Médio) de última geração, abertos pela Microsoft.',
+    models: [
+      { name: 'phi3:3.8b', label: 'Phi3 3.8B', parameterSize: '3.8B' },
     ]
   }
 ];
@@ -224,7 +235,11 @@ function escapeMarkdown(text: string): string {
   return text.replace(/([*_])/g, '\\$1');
 }
 
-async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Message, model: string, aiTemperature: number): Promise<{ success: boolean; response?: string; error?: string }> {
+function containsUrls(text: string): boolean {
+  return text.includes('http://') || text.includes('https://');
+}
+
+async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Message, model: string, aiTemperature: number, originalMessage: string): Promise<{ success: boolean; response?: string; error?: string }> {
   const Strings = getStrings(languageCode(ctx));
   if (!ctx.chat) {
     return {
@@ -233,6 +248,8 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
     };
   }
   const modelHeader = `🤖 *${model}*  |  🌡️ *${aiTemperature}*\n\n`;
+  const urlWarning = containsUrls(originalMessage) ? Strings.ai.urlWarning : '';
+
   try {
     const aiResponse = await axios.post<unknown>(
       `${process.env.ollamaApi}/api/generate`,
@@ -289,12 +306,12 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
           } else {
             fullResponse += ln.response;
           }
-          if (now - lastUpdate >= 1000 || !sentHeader) {
+          if (now - lastUpdate >= 5000 || !sentHeader) {
             await rateLimiter.editMessageWithRetry(
               ctx,
               ctx.chat.id,
               replyGenerating.message_id,
-              modelHeader + fullResponse,
+              modelHeader + urlWarning + fullResponse,
               { parse_mode: 'Markdown' }
             );
             lastUpdate = now;
@@ -354,18 +371,21 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
   }
 }
 
-async function handleAiReply(ctx: TextContext, model: string, prompt: string, replyGenerating: Message, aiTemperature: number) {
+async function handleAiReply(ctx: TextContext, model: string, prompt: string, replyGenerating: Message, aiTemperature: number, originalMessage: string) {
   const Strings = getStrings(languageCode(ctx));
-  const aiResponse = await getResponse(prompt, ctx, replyGenerating, model, aiTemperature);
+  const aiResponse = await getResponse(prompt, ctx, replyGenerating, model, aiTemperature, originalMessage);
   if (!aiResponse) return;
   if (!ctx.chat) return;
   const modelHeader = `🤖 *${model}*  |  🌡️ *${aiTemperature}*\n\n`;
+
+  const urlWarning = containsUrls(originalMessage) ? Strings.ai.urlWarning : '';
+
   if (aiResponse.success && aiResponse.response) {
     await rateLimiter.editMessageWithRetry(
       ctx,
       ctx.chat.id,
       replyGenerating.message_id,
-      modelHeader + aiResponse.response,
+      modelHeader + urlWarning + aiResponse.response,
       { parse_mode: 'Markdown' }
     );
     return;
@@ -411,7 +431,7 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
     const model = isAsk ? flash_model : thinking_model
     const textCtx = ctx as TextContext
     const reply_to_message_id = replyToMessageId(textCtx)
-    const { Strings, aiTemperature } = await getUserWithStringsAndModel(textCtx, db)
+    const { user, Strings, aiTemperature } = await getUserWithStringsAndModel(textCtx, db)
     const message = textCtx.message.text
     const author = ("@" + ctx.from?.username) || ctx.from?.first_name
 
@@ -419,6 +439,14 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
 
     if (!process.env.ollamaApi) {
       await ctx.reply(Strings.ai.disabled, {
+        parse_mode: 'Markdown',
+        ...({ reply_to_message_id })
+      })
+      return
+    }
+
+    if (!user.aiEnabled) {
+      await ctx.reply(Strings.ai.disabledForUser, {
         parse_mode: 'Markdown',
         ...({ reply_to_message_id })
       })
@@ -442,7 +470,7 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
     logger.logPrompt(fixedMsg)
 
     const prompt = sanitizeForJson(await usingSystemPrompt(textCtx, db, botName))
-    await handleAiReply(textCtx, model, prompt, replyGenerating, aiTemperature)
+    await handleAiReply(textCtx, model, prompt, replyGenerating, aiTemperature, fixedMsg)
   })
 
   bot.command(["ai"], spamwatchMiddleware, async (ctx) => {
@@ -450,7 +478,7 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
       if (!ctx.message || !("text" in ctx.message)) return
       const textCtx = ctx as TextContext
       const reply_to_message_id = replyToMessageId(textCtx)
-      const { Strings, customAiModel, aiTemperature } = await getUserWithStringsAndModel(textCtx, db)
+      const { user, Strings, customAiModel, aiTemperature } = await getUserWithStringsAndModel(textCtx, db)
       const message = textCtx.message.text
       const author = ("@" + ctx.from?.username) || ctx.from?.first_name
 
@@ -458,6 +486,14 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
 
       if (!process.env.ollamaApi) {
         await ctx.reply(Strings.ai.disabled, {
+          parse_mode: 'Markdown',
+          ...({ reply_to_message_id })
+        })
+        return
+      }
+
+      if (!user.aiEnabled) {
+        await ctx.reply(Strings.ai.disabledForUser, {
           parse_mode: 'Markdown',
           ...({ reply_to_message_id })
         })
@@ -482,7 +518,7 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
       logger.logPrompt(fixedMsg)
 
       const prompt = sanitizeForJson(await usingSystemPrompt(textCtx, db, botName))
-      await handleAiReply(textCtx, customAiModel, prompt, replyGenerating, aiTemperature)
+      await handleAiReply(textCtx, customAiModel, prompt, replyGenerating, aiTemperature, fixedMsg)
     } catch (err) {
       const Strings = getStrings(languageCode(ctx));
       if (ctx && ctx.reply) {

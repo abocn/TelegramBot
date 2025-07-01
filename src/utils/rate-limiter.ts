@@ -32,7 +32,7 @@ import { Context } from 'telegraf'
 import { logger } from './log'
 
 class RateLimiter {
-  private lastEditTime: number = 0
+  private lastEditTimes: Map<string, number> = new Map()
   private readonly minInterval: number = 5000
   private pendingUpdates: Map<string, string> = new Map()
   private updateQueue: Map<string, NodeJS.Timeout> = new Map()
@@ -144,7 +144,8 @@ class RateLimiter {
     if (!latestText) return
 
     const now = Date.now()
-    const timeSinceLastEdit = now - this.lastEditTime
+    const lastEditTime = this.lastEditTimes.get(messageKey) || 0
+    const timeSinceLastEdit = now - lastEditTime
     await this.waitForRateLimit(chatId, messageId)
 
     if (timeSinceLastEdit < this.minInterval) {
@@ -217,7 +218,7 @@ class RateLimiter {
         }
         this.pendingUpdates.delete(messageKey)
       }
-      this.lastEditTime = Date.now()
+      this.lastEditTimes.set(messageKey, Date.now())
       this.updateQueue.delete(messageKey)
     } catch (error: unknown) {
       if (!this.handleTelegramError(error, messageKey, options, ctx, chatId, messageId)) {
