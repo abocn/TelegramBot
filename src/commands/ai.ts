@@ -119,31 +119,17 @@ export const models: ModelInfo[] = [
   }
 ];
 
-const enSystemPrompt = `You are a plaintext-only, helpful assistant called {botName}.
-Current Date/Time (UTC): {date}
-
----
-
-Respond to the user's message:
-{message}`
-
-const ptSystemPrompt = `Você é um assistente de texto puro e útil chamado {botName}.
-Data/Hora atual (UTC): {date}
-
----
-
-Responda à mensagem do usuário:
-{message}`
-
-async function usingSystemPrompt(ctx: TextContext, db: NodePgDatabase<typeof schema>, botName: string): Promise<string> {
+async function usingSystemPrompt(ctx: TextContext, db: NodePgDatabase<typeof schema>, botName: string, message: string): Promise<string> {
   const user = await db.query.usersTable.findMany({ where: (fields, { eq }) => eq(fields.telegramId, String(ctx.from!.id)), limit: 1 });
   if (user.length === 0) await ensureUserInDb(ctx, db);
   const userData = user[0];
   const lang = userData?.languageCode || "en";
+  const Strings = getStrings(lang);
   const utcDate = new Date().toISOString();
-  const prompt = lang === "pt"
-    ? ptSystemPrompt.replace("{botName}", botName).replace("{date}", utcDate).replace("{message}", ctx.message.text)
-    : enSystemPrompt.replace("{botName}", botName).replace("{date}", utcDate).replace("{message}", ctx.message.text);
+  const prompt = Strings.ai.systemPrompt
+    .replace("{botName}", botName)
+    .replace("{date}", utcDate)
+    .replace("{message}", message);
   return prompt;
 }
 
@@ -154,6 +140,51 @@ export function sanitizeForJson(text: string): string {
     .replace(/\n/g, '\\n')
     .replace(/\r/g, '\\r')
     .replace(/\t/g, '\\t')
+}
+
+function sanitizeMarkdownForTelegram(text: string): string {
+  let sanitizedText = text;
+
+  const replacements: string[] = [];
+  const addReplacement = (match: string): string => {
+    replacements.push(match);
+    return `___PLACEHOLDER_${replacements.length - 1}___`;
+  };
+
+  sanitizedText = sanitizedText.replace(/```([\s\S]*?)```/g, addReplacement);
+  sanitizedText = sanitizedText.replace(/`([^`]+)`/g, addReplacement);
+  sanitizedText = sanitizedText.replace(/\[([^\]]+)\]\(([^)]+)\)/g, addReplacement);
+
+  const parts = sanitizedText.split(/(___PLACEHOLDER_\d+___)/g);
+  const processedParts = parts.map(part => {
+    if (part.match(/___PLACEHOLDER_\d+___/)) {
+      return part;
+    } else {
+      let processedPart = part;
+      processedPart = processedPart.replace(/^(#{1,6})\s+(.+)/gm, '*$2*');
+      processedPart = processedPart.replace(/^(\s*)[-*]\s+/gm, '$1- ');
+      processedPart = processedPart.replace(/\*\*(.*?)\*\*/g, '*$1*');
+      processedPart = processedPart.replace(/__(.*?)__/g, '*$1*');
+      processedPart = processedPart.replace(/(^|\s)\*(?!\*)([^*]+?)\*(?!\*)/g, '$1_$2_');
+      processedPart = processedPart.replace(/(^|\s)_(?!_)([^_]+?)_(?!_)/g, '$1_$2_');
+      processedPart = processedPart.replace(/~~(.*?)~~/g, '~$1~');
+      processedPart = processedPart.replace(/^\s*┃/gm, '>');
+      processedPart = processedPart.replace(/^>\s?/gm, '> ');
+
+      return processedPart;
+    }
+  });
+
+  sanitizedText = processedParts.join('');
+
+  sanitizedText = sanitizedText.replace(/___PLACEHOLDER_(\d+)___/g, (_, idx) => replacements[Number(idx)]);
+
+  const codeBlockCount = (sanitizedText.match(/```/g) || []).length;
+  if (codeBlockCount % 2 !== 0) {
+    sanitizedText += '\n```';
+  }
+
+  return sanitizedText;
 }
 
 export async function preChecks() {
@@ -232,7 +263,7 @@ function extractAxiosErrorMessage(error: unknown): string {
 }
 
 function escapeMarkdown(text: string): string {
-  return text.replace(/([*_])/g, '\\$1');
+  return text.replace(/([_*\[\]()`>#\+\-=|{}.!~])/g, '\\$1');
 }
 
 function containsUrls(text: string): boolean {
@@ -244,10 +275,14 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
   if (!ctx.chat) {
     return {
       success: false,
-      error: Strings.unexpectedErr.replace("{error}", "No chat found"),
+      error: Strings.unexpectedErr.replace("{error}", Strings.ai.noChatFound),
     };
   }
-  const modelHeader = `🤖 *${model}*  |  🌡️ *${aiTemperature}*\n\n`;
+  let status = Strings.ai.statusWaitingRender;
+  let modelHeader = Strings.ai.modelHeader
+    .replace("{model}", model)
+    .replace("{temperature}", aiTemperature)
+    .replace("{status}", status) + "\n\n";
   const urlWarning = containsUrls(originalMessage) ? Strings.ai.urlWarning : '';
 
   try {
@@ -267,8 +302,9 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
     );
     let fullResponse = "";
     let thoughts = "";
-    let lastUpdate = Date.now();
+    let lastUpdateCharCount = 0;
     let sentHeader = false;
+    let firstChunk = true;
     const stream: NodeJS.ReadableStream = aiResponse.data as any;
     for await (const chunk of stream) {
       const lines = chunk.toString().split('\n');
@@ -293,7 +329,6 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
             logger.logThinking(ctx.chat.id, replyGenerating.message_id, false);
           }
         }
-        const now = Date.now();
         if (ln.response) {
           if (model === thinking_model) {
             let patchedThoughts = ln.response;
@@ -306,20 +341,51 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
           } else {
             fullResponse += ln.response;
           }
-          if (now - lastUpdate >= 5000 || !sentHeader) {
+          if (firstChunk) {
+            status = Strings.ai.statusWaitingRender;
+            modelHeader = Strings.ai.modelHeader
+              .replace("{model}", model)
+              .replace("{temperature}", aiTemperature)
+              .replace("{status}", status) + "\n\n";
             await rateLimiter.editMessageWithRetry(
               ctx,
               ctx.chat.id,
               replyGenerating.message_id,
-              modelHeader + urlWarning + fullResponse,
+              modelHeader + urlWarning + escapeMarkdown(fullResponse),
               { parse_mode: 'Markdown' }
             );
-            lastUpdate = now;
+            lastUpdateCharCount = fullResponse.length;
+            sentHeader = true;
+            firstChunk = false;
+            continue;
+          }
+          const updateEveryChars = Number(process.env.updateEveryChars) || 100;
+          if (fullResponse.length - lastUpdateCharCount >= updateEveryChars || !sentHeader) {
+            await rateLimiter.editMessageWithRetry(
+              ctx,
+              ctx.chat.id,
+              replyGenerating.message_id,
+              modelHeader + urlWarning + escapeMarkdown(fullResponse),
+              { parse_mode: 'Markdown' }
+            );
+            lastUpdateCharCount = fullResponse.length;
             sentHeader = true;
           }
         }
       }
     }
+    status = Strings.ai.statusRendering;
+    modelHeader = Strings.ai.modelHeader
+      .replace("{model}", model)
+      .replace("{temperature}", aiTemperature)
+      .replace("{status}", status) + "\n\n";
+    await rateLimiter.editMessageWithRetry(
+      ctx,
+      ctx.chat.id,
+      replyGenerating.message_id,
+      modelHeader + urlWarning + escapeMarkdown(fullResponse),
+      { parse_mode: 'Markdown' }
+    );
     return {
       success: true,
       response: fullResponse,
@@ -360,7 +426,7 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
         console.log(`[✨ AI] ${model} pulled successfully`);
         return {
           success: true,
-          response: `✅ Pulled ${escapeMarkdown(model)} successfully, please retry the command.`,
+          response: Strings.ai.pulled.replace("{model}", escapeMarkdown(model)),
         };
       }
     }
@@ -376,16 +442,18 @@ async function handleAiReply(ctx: TextContext, model: string, prompt: string, re
   const aiResponse = await getResponse(prompt, ctx, replyGenerating, model, aiTemperature, originalMessage);
   if (!aiResponse) return;
   if (!ctx.chat) return;
-  const modelHeader = `🤖 *${model}*  |  🌡️ *${aiTemperature}*\n\n`;
-
-  const urlWarning = containsUrls(originalMessage) ? Strings.ai.urlWarning : '';
-
   if (aiResponse.success && aiResponse.response) {
+    const status = Strings.ai.statusComplete;
+    const modelHeader = Strings.ai.modelHeader
+      .replace("{model}", model)
+      .replace("{temperature}", aiTemperature)
+      .replace("{status}", status) + "\n\n";
+    const urlWarning = containsUrls(originalMessage) ? Strings.ai.urlWarning : '';
     await rateLimiter.editMessageWithRetry(
       ctx,
       ctx.chat.id,
       replyGenerating.message_id,
-      modelHeader + urlWarning + aiResponse.response,
+      modelHeader + urlWarning + sanitizeMarkdownForTelegram(aiResponse.response),
       { parse_mode: 'Markdown' }
     );
     return;
@@ -425,109 +493,112 @@ export function getModelLabelByName(name: string): string {
 export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
   const botName = bot.botInfo?.first_name && bot.botInfo?.last_name ? `${bot.botInfo.first_name} ${bot.botInfo.last_name}` : "Kowalski"
 
-  bot.command(["ask", "think"], spamwatchMiddleware, async (ctx) => {
-    if (!ctx.message || !('text' in ctx.message)) return
-    const isAsk = ctx.message.text.startsWith("/ask")
-    const model = isAsk ? flash_model : thinking_model
-    const textCtx = ctx as TextContext
-    const reply_to_message_id = replyToMessageId(textCtx)
-    const { user, Strings, aiTemperature } = await getUserWithStringsAndModel(textCtx, db)
-    const message = textCtx.message.text
-    const author = ("@" + ctx.from?.username) || ctx.from?.first_name
+  interface AiRequest {
+    task: () => Promise<void>;
+    ctx: TextContext;
+    wasQueued: boolean;
+  }
 
-    logger.logCmdStart(author, model === flash_model ? "ask" : "think")
+  const requestQueue: AiRequest[] = [];
+  let isProcessing = false;
+
+  async function processQueue() {
+    if (isProcessing || requestQueue.length === 0) {
+      return;
+    }
+
+    isProcessing = true;
+    const { task, ctx, wasQueued } = requestQueue.shift()!;
+    const { Strings } = await getUserWithStringsAndModel(ctx, db);
+    const reply_to_message_id = replyToMessageId(ctx);
+
+    try {
+      if (wasQueued) {
+        await ctx.reply(Strings.ai.startingProcessing, {
+          ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } }),
+          parse_mode: 'Markdown'
+        });
+      }
+      await task();
+    } catch (error) {
+      console.error("[✨ AI | !] Error processing task:", error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      await ctx.reply(Strings.unexpectedErr.replace("{error}", errorMessage), {
+        ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } }),
+        parse_mode: 'Markdown'
+      });
+    } finally {
+      isProcessing = false;
+      processQueue();
+    }
+  }
+
+  async function aiCommandHandler(ctx: TextContext, command: 'ask' | 'think' | 'ai') {
+    const reply_to_message_id = replyToMessageId(ctx);
+    const { user, Strings, customAiModel, aiTemperature } = await getUserWithStringsAndModel(ctx, db);
+    const message = ctx.message.text;
+    const author = ("@" + ctx.from?.username) || ctx.from?.first_name || "Unknown";
+
+    let model: string;
+    let fixedMsg: string;
+
+    if (command === 'ai') {
+      model = customAiModel || flash_model;
+      fixedMsg = message.replace(/^\/ai(@\w+)?\s*/, "").trim();
+      logger.logCmdStart(author, "ask");
+    } else {
+      model = command === 'ask' ? flash_model : thinking_model;
+      fixedMsg = message.replace(/^\/(ask|think)(@\w+)?\s*/, "").trim();
+      logger.logCmdStart(author, command);
+    }
 
     if (!process.env.ollamaApi) {
-      await ctx.reply(Strings.ai.disabled, {
-        parse_mode: 'Markdown',
-        ...({ reply_to_message_id })
-      })
-      return
+      await ctx.reply(Strings.ai.disabled, { parse_mode: 'Markdown', ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } }) });
+      return;
     }
 
     if (!user.aiEnabled) {
-      await ctx.reply(Strings.ai.disabledForUser, {
-        parse_mode: 'Markdown',
-        ...({ reply_to_message_id })
-      })
-      return
+      await ctx.reply(Strings.ai.disabledForUser, { parse_mode: 'Markdown', ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } }) });
+      return;
     }
 
-    const fixedMsg = message.replace(/^\/(ask|think)(@\w+)?\s*/, "").trim()
     if (fixedMsg.length < 1) {
-      await ctx.reply(Strings.ai.askNoMessage, {
-        parse_mode: 'Markdown',
-        ...({ reply_to_message_id })
-      })
-      return
+      await ctx.reply(Strings.ai.askNoMessage, { parse_mode: 'Markdown', ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } }) });
+      return;
     }
 
-    const replyGenerating = await ctx.reply(Strings.ai.askGenerating.replace("{model}", model), {
-      parse_mode: 'Markdown',
-      ...({ reply_to_message_id })
-    })
-
-    logger.logPrompt(fixedMsg)
-
-    const prompt = sanitizeForJson(await usingSystemPrompt(textCtx, db, botName))
-    await handleAiReply(textCtx, model, prompt, replyGenerating, aiTemperature, fixedMsg)
-  })
-
-  bot.command(["ai"], spamwatchMiddleware, async (ctx) => {
-    try {
-      if (!ctx.message || !("text" in ctx.message)) return
-      const textCtx = ctx as TextContext
-      const reply_to_message_id = replyToMessageId(textCtx)
-      const { user, Strings, customAiModel, aiTemperature } = await getUserWithStringsAndModel(textCtx, db)
-      const message = textCtx.message.text
-      const author = ("@" + ctx.from?.username) || ctx.from?.first_name
-
-      logger.logCmdStart(author, "ask")
-
-      if (!process.env.ollamaApi) {
-        await ctx.reply(Strings.ai.disabled, {
-          parse_mode: 'Markdown',
-          ...({ reply_to_message_id })
-        })
-        return
-      }
-
-      if (!user.aiEnabled) {
-        await ctx.reply(Strings.ai.disabledForUser, {
-          parse_mode: 'Markdown',
-          ...({ reply_to_message_id })
-        })
-        return
-      }
-
-      const fixedMsg = message.replace(/^\/ai(@\w+)?\s*/, "").trim()
-      if (fixedMsg.length < 1) {
-        await ctx.reply(Strings.ai.askNoMessage, {
-          parse_mode: 'Markdown',
-          ...({ reply_to_message_id })
-        })
-        return
-      }
-
-      const modelLabel = getModelLabelByName(customAiModel)
+    const task = async () => {
+      const modelLabel = getModelLabelByName(model);
       const replyGenerating = await ctx.reply(Strings.ai.askGenerating.replace("{model}", modelLabel), {
         parse_mode: 'Markdown',
-        ...({ reply_to_message_id })
-      })
+        ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
+      });
+      logger.logPrompt(fixedMsg);
+      const prompt = sanitizeForJson(await usingSystemPrompt(ctx, db, botName, fixedMsg));
+      await handleAiReply(ctx, model, prompt, replyGenerating, aiTemperature, fixedMsg);
+    };
 
-      logger.logPrompt(fixedMsg)
-
-      const prompt = sanitizeForJson(await usingSystemPrompt(textCtx, db, botName))
-      await handleAiReply(textCtx, customAiModel, prompt, replyGenerating, aiTemperature, fixedMsg)
-    } catch (err) {
-      const Strings = getStrings(languageCode(ctx));
-      if (ctx && ctx.reply) {
-        try {
-          await ctx.reply(Strings.unexpectedErr.replace("{error}", (err && err.message ? err.message : String(err))), { parse_mode: 'Markdown' })
-        } catch (e) {
-          console.error("[✨ AI | !] Failed to send error reply:", e)
-        }
-      }
+    if (isProcessing) {
+      requestQueue.push({ task, ctx, wasQueued: true });
+      const position = requestQueue.length;
+      await ctx.reply(Strings.ai.inQueue.replace("{position}", String(position)), {
+        parse_mode: 'Markdown',
+        ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
+      });
+    } else {
+      requestQueue.push({ task, ctx, wasQueued: false });
+      processQueue();
     }
-  })
+  }
+
+  bot.command(["ask", "think"], spamwatchMiddleware, async (ctx) => {
+    if (!ctx.message || !('text' in ctx.message)) return;
+    const command = ctx.message.text.startsWith('/ask') ? 'ask' : 'think';
+    await aiCommandHandler(ctx as TextContext, command);
+  });
+
+  bot.command(["ai"], spamwatchMiddleware, async (ctx) => {
+    if (!ctx.message || !('text' in ctx.message)) return;
+    await aiCommandHandler(ctx as TextContext, 'ai');
+  });
 }

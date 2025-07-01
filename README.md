@@ -117,6 +117,7 @@ If you prefer to use Docker directly, you can use these instructions instead.
 - **handlerTimeout** (optional): How long handlers will wait before timing out. Set this high if using large AI models.
 - **flashModel** (optional): Which model will be used for /ask
 - **thinkingModel** (optional): Which model will be used for /think
+- **updateEveryChars** (optional): The amount of chars until message update triggers (for streaming response)
 - **databaseUrl**: Database server configuration (see `.env.example`)
 - **botAdmins**: Put the ID of the people responsible for managing the bot. They can use some administrative + exclusive commands on any group.
 - **lastKey**: Last.fm API key, for use on `lastfm.js` functions, like see who is listening to what song and etc.

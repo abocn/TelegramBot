@@ -12,9 +12,9 @@
         "varWas": "estava",
         "varNone": "Nenhum",
         "varUnknown": "Desconhecido",
-        "varBack": "Voltar"
+        "varBack": "⬅️ Voltar"
     },
-    "unexpectedErr": "Algum erro inesperado ocorreu durante uma ação do bot. Por favor, reporte aos desenvolvedores.\n\n{error}",
+    "unexpectedErr": "Ocorreu um erro inesperado: {error}",
     "errInvalidOption": "Ops! Opção inválida!",
     "kickingMyself": "*Já que você não precisa de mim, vou sair daqui.*",
     "kickingMyselfErr": "Erro ao sair do chat.",
@@ -64,16 +64,31 @@
     "animalCommandsDesc": "🐱 *Animais*\n\n- /soggy | /soggycat `<1 | 2 | 3 | 4 | orig | thumb | sticker | alt>`: Envia o [meme do gato encharcado](https://knowyourmeme.com/memes/soggy-cat)\n- /cat - Envia uma foto aleatória de um gato.\n- /fox - Envia uma foto aleatória de uma raposa.\n- /duck - Envia uma foto aleatória de um pato.\n- /dog - Envia uma imagem aleatória de um cachorro.\n- /httpcat `<código http>`: Envia memes de gato do http.cat com o código HTTP especificado. Exemplo: `/httpcat 404`",
     "ai": {
         "helpEntry": "✨ Comandos de IA",
-        "helpDesc": "✨ *Comandos de IA*\n\n- /ask `<prompt>`: Fazer uma pergunta a uma IA\n- /think `<prompt>`: Fazer uma pergunta a um modelo de pensamento",
-        "disabled": "✨ Os recursos de IA estão desativados no momento",
-        "disabledForUser": "✨ Os recursos de IA estão desativados para sua conta. Você pode ativá-los em /settings",
-        "pulling": "🔄 *Puxando {model} do Ollama...*\n\nIsso pode levar alguns minutos...",
-        "askGenerating": "✨ _{model} está funcionando..._",
-        "askNoMessage": "Por favor, forneça uma mensagem para fazer a pergunta ao modelo.",
-        "languageCode": "Idioma",
-        "thinking": "Pensando...",
-        "finishedThinking": "Pensamento finalizado",
-        "urlWarning": "⚠️ *Aviso: Não posso acessar ou abrir links. Por favor, forneça o conteúdo diretamente se precisar que eu analise algo de um site.*\n\n"
+        "helpDesc": "✨ *Comandos de IA*\n\n- /ask `<prompt>`: Fazer uma pergunta a uma IA\n- /think `<prompt>`: Fazer uma pergunta a um modelo de pensamento\n- /ai `<prompt>`: Fazer uma pergunta a um modelo de IA personalizado",
+        "disabled": "A AIApi foi desativada\\.",
+        "disabledForUser": "As funções de IA estão desativadas para a sua conta\\.",
+        "pulling": "O modelo {model} não foi encontrado localmente, baixando\\.\\.\\.",
+        "askGenerating": "Gerando resposta com {model}\\.\\.\\.",
+        "askNoMessage": "Você precisa fazer uma pergunta\\.",
+        "thinking": "Pensando\\.\\.\\.",
+        "finishedThinking": "Pronto\\.",
+        "urlWarning": "\n\n⚠️ O usuário forneceu um ou mais URLs na sua mensagem\\. Por favor, não visite URLs suspeitos\\.",
+        "inQueue": "ℹ️ Você é o {position} na fila.",
+        "startingProcessing": "✨ Começando a processar o seu pedido\\.\\.\\.",
+        "aiEnabled": "IA",
+        "aiModel": "Modelo",
+        "aiTemperature": "Temperatura",
+        "selectSeries": "Por favor, selecione uma série de modelos.",
+        "seriesDescription": "{seriesDescription}",
+        "selectParameterSize": "Por favor, selecione um tamanho de parâmetro para {seriesLabel}.",
+        "parameterSizeExplanation": "O tamanho do parâmetro (ex: 2B, 4B) refere-se ao número de parâmetros do modelo. Modelos maiores podem ser mais capazes, mas exigem mais recursos.",
+        "systemPrompt": "Você é um assistente de Telegram chamado {botName}, capaz de Telegram MarkdownV2.\nVocê está em um chat com um usuário, que enviou uma mensagem para você.\nData/Hora atual (UTC): {date}\n\n---\n\nResponda à mensagem do usuário:\n{message}",
+        "statusWaitingRender": "⏳ Aguardando renderização...",
+        "statusRendering": "🖼️ Renderizando...",
+        "statusComplete": "✅ Completo!",
+        "modelHeader": "🤖 *{model}*  |  🌡️ *{temperature}*  |  {status}",
+        "noChatFound": "Nenhum chat encontrado",
+        "pulled": "✅ {model} baixado com sucesso, por favor tente o comando novamente."
     },
     "maInvalidModule": "Por favor, forneça um ID de módulo válido do The Mod Archive.\nExemplo: `/modarchive 81574`",
     "maDownloadError": "Erro ao baixar o arquivo. Verifique o ID do módulo e tente novamente.",
@@ -113,8 +128,7 @@
             "seriesDescription": "{seriesDescription}",
             "selectParameterSize": "Por favor, selecione um tamanho de parâmetro para {seriesLabel}.",
             "parameterSizeExplanation": "O tamanho do parâmetro (ex: 2B, 4B) refere-se ao número de parâmetros do modelo. Modelos maiores podem ser mais capazes, mas exigem mais recursos.",
-            "modelSetTo": "Modelo definido para {aiModel} ({parameterSize})",
-            "back": "Voltar"
+            "modelSetTo": "Modelo definido para {aiModel} ({parameterSize})"
         },
         "languageCodeSetTo": "Idioma definido para {languageCode}",
         "unknownAction": "Ação desconhecida."
@@ -165,6 +179,5 @@
     "gsmarenaNotAllowed": "você não tem permissão para interagir com isso.",
     "gsmarenaInvalidOrExpired": "Ops! Opção inválida ou expirada. Por favor, tente novamente.",
     "gsmarenaDeviceDetails": "estes são os detalhes do seu dispositivo:",
-    "gsmarenaErrorFetchingDetails": "Erro ao buscar detalhes do celular.",
-    "userNotFound": "Usuário não encontrado."
+    "gsmarenaErrorFetchingDetails": "Erro ao buscar detalhes do celular."
 }

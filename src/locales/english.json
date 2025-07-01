@@ -13,9 +13,9 @@
     "varWas": "was",
     "varNone": "None",
     "varUnknown": "Unknown",
-    "varBack": "Back"
+    "varBack": "⬅️ Back"
   },
-  "unexpectedErr": "Some unexpected error occurred during a bot action. Please report it to the developers.\n\n{error}",
+  "unexpectedErr": "An unexpected error occurred: {error}",
   "errInvalidOption": "Whoops! Invalid option!",
   "kickingMyself": "*Since you don't need me, I'll leave.*",
   "kickingMyselfErr": "Error leaving the chat.",
@@ -65,22 +65,31 @@
   "animalCommandsDesc": "🐱 *Animals*\n\n- /soggy | /soggycat `<1 | 2 | 3 | 4 | orig | thumb | sticker | alt>`: Sends the [Soggy cat meme](https://knowyourmeme.com/memes/soggy-cat)\n- /cat: Sends a random picture of a cat.\n- /fox: Sends a random picture of a fox.\n- /duck: Sends a random picture of a duck.\n- /dog: Sends a random picture of a dog.\n- /httpcat `<http code>`: Send cat memes from http.cat with your specified HTTP code. Example: `/httpcat 404`",
   "ai": {
     "helpEntry": "✨ AI Commands",
-    "helpDesc": "✨ *AI Commands*\n\n- /ask `<prompt>`: Ask a question to an AI\n- /think `<prompt>`: Ask a thinking model about a question",
-    "disabled": "✨ AI features are currently disabled",
-    "disabledForUser": "✨ AI features are disabled for your account. You can enable them in /settings",
-    "pulling": "🔄 *Pulling {model} from Ollama...*\n\nThis may take a few minutes...",
-    "askGenerating": "✨ _{model} is working..._",
-    "askNoMessage": "Please provide a message to ask the model.",
+    "helpDesc": "✨ *AI Commands*\n\n- /ask `<prompt>`: Ask a question to an AI model\n- /think `<prompt>`: Ask a thinking model about a question\n- /ai `<prompt>`: Ask your custom-set AI model a question",
+    "disabled": "✨ AI features are currently disabled globally.",
+    "disabledForUser": "✨ AI features are disabled for your account.",
+    "pulling": "🔄 Model {model} not found locally, pulling...",
+    "askGenerating": "✨ Generating response with {model}...",
+    "askNoMessage": "✨ You need to ask me a question!",
     "languageCode": "Language",
     "thinking": "Thinking...",
-    "finishedThinking": "Finished thinking",
-    "urlWarning": "⚠️ *Warning: I cannot access or open links. Please provide the content directly if you need me to analyze something from a website.*\n\n"
+    "finishedThinking": "Done.",
+    "urlWarning": "\n\n⚠️ The user provided one or more URLs in their message. Please do not visit any suspicious URLs.",
+    "inQueue": "ℹ️ You are {position} in the queue.",
+    "startingProcessing": "✨ Starting to process your request...",
+    "systemPrompt": "You are a friendly assistant called {botName}, capable of Telegram MarkdownV2.\nYou are currently in a chat with a user, who has sent a message to you.\nCurrent Date/Time (UTC): {date}\n\n---\n\nRespond to the user's message:\n{message}",
+    "statusWaitingRender": "⏳ Waiting to Render...",
+    "statusRendering": "🖼️ Rendering...",
+    "statusComplete": "✅ Complete!",
+    "modelHeader": "🤖 *{model}*  |  🌡️ *{temperature}*  |  {status}",
+    "noChatFound": "No chat found",
+    "pulled": "✅ Pulled {model} successfully, please retry the command."
   },
   "maInvalidModule": "Please provide a valid module ID from The Mod Archive.\nExample: `/modarchive 81574`",
   "maDownloadError": "Error downloading the file. Check the module ID and try again.",
   "ytDownload": {
-    "helpEntry": "📺 YouTube Download",
-    "helpDesc": "📺 *YouTube Download*\n\n- /yt | /ytdl | /sdl | /dl | /video `<video link>`: Download a video from some platforms (e.g. YouTube, Instagram, Facebook, etc.).\n\n See [this link](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md) for more information and which services are supported.\n\n*Note: Telegram is currently limiting bot uploads to 50MB, which means that if the video you want to download is larger than 50MB, the quality will be reduced to try to upload it anyway. We're trying our best to work around or fix this problem.*",
+    "helpEntry": "📺 Video Download",
+    "helpDesc": "📺 *Video Download*\n\n- /yt | /ytdl | /sdl | /dl | /video `<video link>`: Download a video from some platforms (e.g. YouTube, Instagram, Facebook, etc.).\n\n See [this link](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md) for more information and which services are supported.\n\n*Note: Telegram is currently limiting bot uploads to 50MB, which means that if the video you want to download is larger than 50MB, the quality will be reduced to try to upload it anyway. We're trying our best to work around or fix this problem.*",
     "downloadingVid": "⬇️ *Downloading video...*",
     "libNotFound": "*It seems that the yt-dlp executable does not exist on our server...\n\nIn that case, the problem is on our end! Please wait until we have noticed and solved the problem.*",
     "checkingSize": "🔎 *Checking if the video exceeds the 50MB limit...*",
@@ -110,7 +119,6 @@
       "aiEnabledSetTo": "AI Enabled set to {aiEnabled}",
       "aiModelSetTo": "AI Model set to {aiModel}",
       "aiTemperatureSetTo": "AI Temperature set to {aiTemperature}",
-      "back": "Back",
       "selectSeries": "Please select a model series.",
       "seriesDescription": "{seriesDescription}",
       "selectParameterSize": "Please select a parameter size for {seriesLabel}.",
@@ -167,5 +175,12 @@
   "gsmarenaNotAllowed": "you are not allowed to interact with this.",
   "gsmarenaInvalidOrExpired": "Whoops, invalid or expired option. Please try again.",
   "gsmarenaDeviceDetails": "these are the details of your device:",
-  "gsmarenaErrorFetchingDetails": "Error fetching phone details."
+  "gsmarenaErrorFetchingDetails": "Error fetching phone details.",
+  "info": {
+    "ping": "Pong!",
+    "pinging": "Pinging...",
+    "pong": "Pong in {ms}ms.",
+    "botInfo": "Kowalski is a multipurpose bot with a variety of features, including AI, moderation, and more.",
+    "credits": "Kowalski was created by ihatenodejs/Aidan, with contributions from the open-source community. It is licensed under the Unlicense license."
+  }
 }

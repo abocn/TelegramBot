@@ -146,7 +146,7 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
               inline_keyboard: models.map(series => [
                 { text: series.label, callback_data: `selectseries_${series.name}` }
               ]).concat([[
-                { text: `⬅️ ${Strings.settings.ai.back}`, callback_data: 'settings_back' }
+                { text: `${Strings.varStrings.varBack}`, callback_data: 'settings_back' }
               ]])
             }
           }
@@ -185,7 +185,7 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
               inline_keyboard: series.models.map(m => [
                 { text: `${m.label} (${m.parameterSize})`, callback_data: `setmodel_${series.name}_${m.name}` }
               ]).concat([[
-                { text: `⬅️ ${Strings.settings.ai.back}`, callback_data: 'settings_aiModel' }
+                { text: `${Strings.varStrings.varBack}`, callback_data: 'settings_aiModel' }
               ]])
             }
           }
@@ -262,7 +262,7 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
       const temps = [0.2, 0.5, 0.7, 0.9, 1.2];
       try {
         await ctx.editMessageReplyMarkup({
-          inline_keyboard: temps.map(t => [{ text: t.toString(), callback_data: `settemp_${t}` }]).concat([[{ text: `⬅️ ${Strings.settings.ai.back}`, callback_data: 'settings_back' }]])
+          inline_keyboard: temps.map(t => [{ text: t.toString(), callback_data: `settemp_${t}` }]).concat([[{ text: `${Strings.varStrings.varBack}`, callback_data: 'settings_back' }]])
         });
       } catch (err) {
         if (
@@ -304,7 +304,7 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
       if (!user) return;
       try {
         await ctx.editMessageReplyMarkup({
-          inline_keyboard: langs.map(l => [{ text: l.label, callback_data: `setlang_${l.code}` }]).concat([[{ text: `⬅️ ${Strings.settings.ai.back}`, callback_data: 'settings_back' }]])
+          inline_keyboard: langs.map(l => [{ text: l.label, callback_data: `setlang_${l.code}` }]).concat([[{ text: `${Strings.varStrings.varBack}`, callback_data: 'settings_back' }]])
         });
       } catch (err) {
         if (
