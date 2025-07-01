@@ -12,7 +12,9 @@
         "varWas": "estava",
         "varNone": "Nenhum",
         "varUnknown": "Desconhecido",
-        "varBack": "⬅️ Voltar"
+        "varBack": "⬅️ Voltar",
+        "varMore": "➡️ Mais",
+        "varLess": "➖ Menos"
     },
     "unexpectedErr": "Ocorreu um erro inesperado: {error}",
     "errInvalidOption": "Ops! Opção inválida!",
@@ -78,7 +80,7 @@
         "aiEnabled": "IA",
         "aiModel": "Modelo",
         "aiTemperature": "Temperatura",
-        "selectSeries": "Por favor, selecione uma série de modelos.",
+        "selectSeries": "*Por favor, selecione uma série de modelos.*",
         "seriesDescription": "{seriesDescription}",
         "selectParameterSize": "Por favor, selecione um tamanho de parâmetro para {seriesLabel}.",
         "parameterSizeExplanation": "O tamanho do parâmetro (ex: 2B, 4B) refere-se ao número de parâmetros do modelo. Modelos maiores podem ser mais capazes, mas exigem mais recursos.",
@@ -124,12 +126,15 @@
             "aiEnabledSetTo": "Inteligência Artificial definido para {aiEnabled}",
             "aiModelSetTo": "Modelo personalizado definido para {aiModel}",
             "aiTemperatureSetTo": "Temperatura definida para {aiTemperature}",
-            "selectSeries": "Por favor, selecione uma série de modelos.",
+            "selectSeries": "*Por favor, selecione uma série de modelos.*",
             "seriesDescription": "{seriesDescription}",
             "selectParameterSize": "Por favor, selecione um tamanho de parâmetro para {seriesLabel}.",
             "parameterSizeExplanation": "O tamanho do parâmetro (ex: 2B, 4B) refere-se ao número de parâmetros do modelo. Modelos maiores podem ser mais capazes, mas exigem mais recursos.",
-            "modelSetTo": "Modelo definido para {aiModel} ({parameterSize})"
+            "modelSetTo": "Modelo definido para {aiModel} ({parameterSize})",
+            "selectTemperature": "*Por favor, selecione uma temperatura:*",
+            "temperatureExplanation": "A temperatura controla a aleatoriedade das respostas da IA. Valores mais baixos (ex: 0.2) tornam o modelo mais focado e determinístico, enquanto valores mais altos (ex: 1.2 ou mais) tornam as respostas mais criativas e aleatórias."
         },
+        "selectLanguage": "*Por favor, selecione um idioma:*",
         "languageCodeSetTo": "Idioma definido para {languageCode}",
         "unknownAction": "Ação desconhecida."
     },

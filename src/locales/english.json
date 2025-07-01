@@ -13,7 +13,9 @@
     "varWas": "was",
     "varNone": "None",
     "varUnknown": "Unknown",
-    "varBack": "⬅️ Back"
+    "varBack": "⬅️ Back",
+    "varMore": "➡️ More",
+    "varLess": "➖ Less"
   },
   "unexpectedErr": "An unexpected error occurred: {error}",
   "errInvalidOption": "Whoops! Invalid option!",
@@ -83,7 +85,9 @@
     "statusComplete": "✅ Complete!",
     "modelHeader": "🤖 *{model}*  |  🌡️ *{temperature}*  |  {status}",
     "noChatFound": "No chat found",
-    "pulled": "✅ Pulled {model} successfully, please retry the command."
+    "pulled": "✅ Pulled {model} successfully, please retry the command.",
+    "selectTemperature": "*Please select a temperature:*",
+    "temperatureExplanation": "Temperature controls the randomness of the AI's responses. Lower values (e.g., 0.2) make the model more focused and deterministic, while higher values (e.g., 1.2 or above) make it more creative and random."
   },
   "maInvalidModule": "Please provide a valid module ID from The Mod Archive.\nExample: `/modarchive 81574`",
   "maDownloadError": "Error downloading the file. Check the module ID and try again.",
@@ -119,12 +123,15 @@
       "aiEnabledSetTo": "AI Enabled set to {aiEnabled}",
       "aiModelSetTo": "AI Model set to {aiModel}",
       "aiTemperatureSetTo": "AI Temperature set to {aiTemperature}",
-      "selectSeries": "Please select a model series.",
+      "selectSeries": "*Please select a model series.*",
       "seriesDescription": "{seriesDescription}",
       "selectParameterSize": "Please select a parameter size for {seriesLabel}.",
       "parameterSizeExplanation": "Parameter size (e.g. 2B, 4B) refers to the number of parameters in the model. Larger models may be more capable but require more resources.",
-      "modelSetTo": "Model set to {aiModel} ({parameterSize})"
+      "modelSetTo": "Model set to {aiModel} ({parameterSize})",
+      "selectTemperature": "*Please select a temperature:*",
+      "temperatureExplanation": "Temperature controls the randomness of the AI's responses. Lower values (e.g., 0.2) make the model more focused and deterministic, while higher values (e.g., 1.2 or above) make it more creative and random."
     },
+    "selectLanguage": "*Please select a language:*",
     "languageCodeSetTo": "Language set to {languageCode}",
     "unknownAction": "Unknown action."
   },

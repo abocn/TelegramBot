@@ -50,7 +50,7 @@ function getSettingsMenu(user: UserRow, Strings: any): SettingsMenu {
   const langLabel = langObj ? langObj.label : user.languageCode;
   const userId = user.telegramId;
   return {
-    text: Strings.settings.selectSetting,
+    text: `*${Strings.settings.selectSetting}*`,
     reply_markup: {
       inline_keyboard: [
         [
@@ -171,9 +171,10 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
       await ctx.editMessageText(
         `${Strings.settings.ai.selectSeries}`,
         {
+          parse_mode: 'Markdown',
           reply_markup: {
-            inline_keyboard: models.map(series => [
-              { text: series.label, callback_data: `selectseries_${series.name}_${user.telegramId}` }
+            inline_keyboard: models.map((series, idx) => [
+              { text: series.label, callback_data: `selectseries_${idx}_${user.telegramId}` }
             ]).concat([[
               { text: `${Strings.varStrings.varBack}`, callback_data: `settings_back_${user.telegramId}` }
             ]])
@@ -193,7 +194,7 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
     }
   });
 
-  bot.action(/^selectseries_.+_\d+$/, async (ctx) => {
+  bot.action(/^selectseries_\d+_\d+$/, async (ctx) => {
     const data = (ctx.callbackQuery as any).data;
     const userId = extractUserIdFromCallback(data);
     const allowed = !!userId && String(ctx.from.id) === userId;
@@ -205,8 +206,10 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
     await ctx.answerCbQuery();
     const { user, Strings } = await getUserAndStrings(ctx, db);
     if (!user) return;
-    const seriesName = data.replace(/^selectseries_/, '').replace(/_\d+$/, '');
-    const series = models.find(s => s.name === seriesName);
+    const match = data.match(/^selectseries_(\d+)_\d+$/);
+    if (!match) return;
+    const seriesIdx = parseInt(match[1], 10);
+    const series = models[seriesIdx];
     if (!series) return;
     const desc = user.languageCode === 'pt' ? series.descriptionPt : series.descriptionEn;
     try {
@@ -214,8 +217,8 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
         `${Strings.settings.ai.seriesDescription.replace('{seriesDescription}', desc)}\n\n${Strings.settings.ai.selectParameterSize.replace('{seriesLabel}', series.label)}\n\n${Strings.settings.ai.parameterSizeExplanation}`,
         {
           reply_markup: {
-            inline_keyboard: series.models.map(m => [
-              { text: `${m.label} (${m.parameterSize})`, callback_data: `setmodel_${series.name}_${m.name}_${user.telegramId}` }
+            inline_keyboard: series.models.map((m, idx) => [
+              { text: `${m.label} (${m.parameterSize})`, callback_data: `setmodel_${seriesIdx}_${idx}_${user.telegramId}` }
             ]).concat([[
               { text: `${Strings.varStrings.varBack}`, callback_data: `settings_aiModel_${user.telegramId}` }
             ]])
@@ -235,7 +238,7 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
     }
   });
 
-  bot.action(/^setmodel_.+_\d+$/, async (ctx) => {
+  bot.action(/^setmodel_\d+_\d+_\d+$/, async (ctx) => {
     const data = (ctx.callbackQuery as any).data;
     const userId = extractUserIdFromCallback(data);
     const allowed = !!userId && String(ctx.from.id) === userId;
@@ -247,11 +250,12 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
     await ctx.answerCbQuery();
     const { user, Strings } = await getUserAndStrings(ctx, db);
     if (!user) return;
-    const parts = data.split('_');
-    const seriesName = parts[1];
-    const modelName = parts.slice(2, -1).join('_');
-    const series = models.find(s => s.name === seriesName);
-    const model = series?.models.find(m => m.name === modelName);
+    const match = data.match(/^setmodel_(\d+)_(\d+)_\d+$/);
+    if (!match) return;
+    const seriesIdx = parseInt(match[1], 10);
+    const modelIdx = parseInt(match[2], 10);
+    const series = models[seriesIdx];
+    const model = series?.models[modelIdx];
     if (!series || !model) return;
     await db.update(schema.usersTable)
       .set({ customAiModel: model.name })
@@ -300,8 +304,54 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
     if (!user) return;
     const temps = [0.2, 0.5, 0.7, 0.9, 1.2];
     try {
+      await ctx.editMessageText(
+        `${Strings.settings.ai.temperatureExplanation}\n\n${Strings.settings.ai.selectTemperature}`,
+        {
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: temps.map(t => [{ text: t.toString(), callback_data: `settemp_${t}_${user.telegramId}` }])
+              .concat([
+                [{ text: Strings.varStrings.varMore, callback_data: `show_more_temps_${user.telegramId}` }],
+                [
+                  { text: Strings.varStrings.varBack, callback_data: `settings_back_${user.telegramId}` }
+                ]
+              ])
+          }
+        }
+      );
+    } catch (err) {
+      if (
+        !(
+          err.response.description?.includes('query is too old') ||
+          err.response.description?.includes('query ID is invalid') ||
+          err.response.description?.includes('message is not modified') ||
+          err.response.description?.includes('message to edit not found')
+        )
+      )
+        console.error('Unexpected Telegram error:', err);
+    }
+  });
+
+  bot.action(/^show_more_temps_\d+$/, async (ctx) => {
+    const data = (ctx.callbackQuery as any).data;
+    const userId = extractUserIdFromCallback(data);
+    const allowed = !!userId && String(ctx.from.id) === userId;
+    logSettingsAccess('show_more_temps', ctx, allowed, userId);
+    if (!allowed) {
+      const { Strings } = await getUserAndStrings(ctx, db);
+      return ctx.answerCbQuery(getNotAllowedMessage(Strings), { show_alert: true });
+    }
+    await ctx.answerCbQuery();
+    const { user, Strings } = await getUserAndStrings(ctx, db);
+    if (!user) return;
+    const moreTemps = [1.4, 1.6, 1.8, 2.0];
+    try {
       await ctx.editMessageReplyMarkup({
-        inline_keyboard: temps.map(t => [{ text: t.toString(), callback_data: `settemp_${t}_${user.telegramId}` }]).concat([[{ text: `${Strings.varStrings.varBack}`, callback_data: `settings_back_${user.telegramId}` }]])
+        inline_keyboard: moreTemps.map(t => [{ text: `🔥 ${t}`, callback_data: `settemp_${t}_${user.telegramId}` }])
+          .concat([
+            [{ text: Strings.varStrings.varLess, callback_data: `settings_aiTemperature_${user.telegramId}` }],
+            [{ text: Strings.varStrings.varBack, callback_data: `settings_back_${user.telegramId}` }]
+          ])
       });
     } catch (err) {
       if (
@@ -349,9 +399,15 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
     const { user, Strings } = await getUserAndStrings(ctx, db);
     if (!user) return;
     try {
-      await ctx.editMessageReplyMarkup({
-        inline_keyboard: langs.map(l => [{ text: l.label, callback_data: `setlang_${l.code}_${user.telegramId}` }]).concat([[{ text: `${Strings.varStrings.varBack}`, callback_data: `settings_back_${user.telegramId}` }]])
-      });
+      await ctx.editMessageText(
+        Strings.settings.selectLanguage,
+        {
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: langs.map(l => [{ text: l.label, callback_data: `setlang_${l.code}_${user.telegramId}` }]).concat([[{ text: `${Strings.varStrings.varBack}`, callback_data: `settings_back_${user.telegramId}` }]])
+          }
+        }
+      );
     } catch (err) {
       if (
         !(
@@ -377,7 +433,33 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
     await ctx.answerCbQuery();
     const { user, Strings } = await getUserAndStrings(ctx, db);
     if (!user) return;
-    await updateSettingsKeyboard(ctx, user, Strings);
+    const menu = getSettingsMenu(user, Strings);
+    try {
+      if (ctx.callbackQuery.message) {
+        await ctx.editMessageText(
+          menu.text,
+          {
+            reply_markup: menu.reply_markup,
+            parse_mode: 'Markdown'
+          }
+        );
+      } else {
+        await ctx.reply(menu.text, {
+          reply_markup: menu.reply_markup,
+          parse_mode: 'Markdown'
+        });
+      }
+    } catch (err) {
+      if (
+        !(
+          err.response.description?.includes('query is too old') ||
+          err.response.description?.includes('query ID is invalid') ||
+          err.response.description?.includes('message is not modified') ||
+          err.response.description?.includes('message to edit not found')
+        )
+      )
+        console.error('[Settings] Unexpected Telegram error:', err);
+    }
   });
 
   bot.action(/^setlang_.+_\d+$/, async (ctx) => {
