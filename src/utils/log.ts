@@ -42,8 +42,8 @@ class Logger {
     return Logger.instance
   }
 
-  logCmdStart(user: string, type: "ask" | "think"): void {
-    console.log(`\n[✨ AI | START] Received /${type} for model ${type === "ask" ? flash_model : thinking_model}`)
+  logCmdStart(user: string, command: string, model: string): void {
+    console.log(`\n[✨ AI | START] Received /${command} for model ${model} (from ${user})`)
   }
 
   logThinking(chatId: number, messageId: number, thinking: boolean): void {
@@ -55,12 +55,16 @@ class Logger {
   }
 
   logChunk(chatId: number, messageId: number, text: string, isOverflow: boolean = false): void {
-    const prefix = isOverflow ? "[✨ AI | OVERFLOW]" : "[✨ AI | CHUNK]"
-    console.log(`${prefix} [${chatId}:${messageId}] ${text.length} chars pushed to Telegram`)
+    if (process.env.longerLogs === 'true') {
+      const prefix = isOverflow ? "[✨ AI | OVERFLOW]" : "[✨ AI | CHUNK]"
+      console.log(`${prefix} [${chatId}:${messageId}] ${text.length} chars pushed to Telegram`)
+    }
   }
 
   logPrompt(prompt: string): void {
-    console.log(`[✨ AI | PROMPT] ${prompt.length} chars input`)
+    if (process.env.longerLogs === 'true') {
+      console.log(`[✨ AI | PROMPT] ${prompt}`)
+    }
   }
 
   logError(error: unknown): void {

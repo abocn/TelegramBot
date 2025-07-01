@@ -74,7 +74,7 @@
     "languageCode": "Language",
     "thinking": "Thinking...",
     "finishedThinking": "Done.",
-    "urlWarning": "\n\n⚠️ The user provided one or more URLs in their message. Please do not visit any suspicious URLs.",
+    "urlWarning": "\n\n⚠️ Note: The model cannot access or visit links!",
     "inQueue": "ℹ️ You are {position} in the queue.",
     "startingProcessing": "✨ Starting to process your request...",
     "systemPrompt": "You are a friendly assistant called {botName}, capable of Telegram MarkdownV2.\nYou are currently in a chat with a user, who has sent a message to you.\nCurrent Date/Time (UTC): {date}\n\n---\n\nRespond to the user's message:\n{message}",
@@ -182,5 +182,10 @@
     "pong": "Pong in {ms}ms.",
     "botInfo": "Kowalski is a multipurpose bot with a variety of features, including AI, moderation, and more.",
     "credits": "Kowalski was created by ihatenodejs/Aidan, with contributions from the open-source community. It is licensed under the Unlicense license."
+  },
+  "aiStats": {
+    "header": "✨ *Your AI Usage Stats*",
+    "requests": "*Total AI Requests:* {aiRequests}",
+    "characters": "*Total AI Characters:* {aiCharacters}\n_That's around {bookCount} books of text!_"
   }
 }

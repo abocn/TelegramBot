@@ -122,6 +122,7 @@ If you prefer to use Docker directly, you can use these instructions instead.
 - **botAdmins**: Put the ID of the people responsible for managing the bot. They can use some administrative + exclusive commands on any group.
 - **lastKey**: Last.fm API key, for use on `lastfm.js` functions, like see who is listening to what song and etc.
 - **weatherKey**: Weather.com API key, used for the `/weather` command.
+- **longerLogs**: Set to `true` to enable verbose logging whenever possible.
 
 ## Troubleshooting
 

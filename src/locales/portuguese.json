@@ -72,7 +72,7 @@
         "askNoMessage": "Você precisa fazer uma pergunta\\.",
         "thinking": "Pensando\\.\\.\\.",
         "finishedThinking": "Pronto\\.",
-        "urlWarning": "\n\n⚠️ O usuário forneceu um ou mais URLs na sua mensagem\\. Por favor, não visite URLs suspeitos\\.",
+        "urlWarning": "\n\n⚠️ Nota: O modelo de IA não pode acessar ou visitar links!",
         "inQueue": "ℹ️ Você é o {position} na fila.",
         "startingProcessing": "✨ Começando a processar o seu pedido\\.\\.\\.",
         "aiEnabled": "IA",
@@ -179,5 +179,10 @@
     "gsmarenaNotAllowed": "você não tem permissão para interagir com isso.",
     "gsmarenaInvalidOrExpired": "Ops! Opção inválida ou expirada. Por favor, tente novamente.",
     "gsmarenaDeviceDetails": "estes são os detalhes do seu dispositivo:",
-    "gsmarenaErrorFetchingDetails": "Erro ao buscar detalhes do celular."
+    "gsmarenaErrorFetchingDetails": "Erro ao buscar detalhes do celular.",
+    "aiStats": {
+        "header": "✨ *Suas estatísticas de uso de IA*",
+        "requests": "*Total de requisições de IA:* {aiRequests}",
+        "characters": "*Total de caracteres de IA:* {aiCharacters}\n_Isso é cerca de {bookCount} livros de texto!_"
+    }
 }

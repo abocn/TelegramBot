@@ -41,6 +41,7 @@ import { logger } from "../utils/log"
 import { ensureUserInDb } from "../utils/ensure-user"
 import * as schema from '../db/schema'
 import type { NodePgDatabase } from "drizzle-orm/node-postgres"
+import { eq, sql } from 'drizzle-orm'
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch)
 export const flash_model = process.env.flashModel || "gemma3:4b"
@@ -270,7 +271,7 @@ function containsUrls(text: string): boolean {
   return text.includes('http://') || text.includes('https://');
 }
 
-async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Message, model: string, aiTemperature: number, originalMessage: string): Promise<{ success: boolean; response?: string; error?: string }> {
+async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Message, model: string, aiTemperature: number, originalMessage: string, db: NodePgDatabase<typeof schema>, userId: string): Promise<{ success: boolean; response?: string; error?: string }> {
   const Strings = getStrings(languageCode(ctx));
   if (!ctx.chat) {
     return {
@@ -283,7 +284,11 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
     .replace("{model}", model)
     .replace("{temperature}", aiTemperature)
     .replace("{status}", status) + "\n\n";
-  const urlWarning = containsUrls(originalMessage) ? Strings.ai.urlWarning : '';
+
+  const promptCharCount = originalMessage.length;
+  await db.update(schema.usersTable)
+    .set({ aiCharacters: sql`${schema.usersTable.aiCharacters} + ${promptCharCount}` })
+    .where(eq(schema.usersTable.telegramId, userId));
 
   try {
     const aiResponse = await axios.post<unknown>(
@@ -314,7 +319,7 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
         try {
           ln = JSON.parse(line);
         } catch (e) {
-          console.error("[✨ AI | !] Error parsing chunk:", e);
+          console.error("[✨ AI | !] Error parsing chunk");
           continue;
         }
         if (model === thinking_model && ln.response) {
@@ -351,7 +356,7 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
               ctx,
               ctx.chat.id,
               replyGenerating.message_id,
-              modelHeader + urlWarning + escapeMarkdown(fullResponse),
+              modelHeader + escapeMarkdown(fullResponse),
               { parse_mode: 'Markdown' }
             );
             lastUpdateCharCount = fullResponse.length;
@@ -365,7 +370,7 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
               ctx,
               ctx.chat.id,
               replyGenerating.message_id,
-              modelHeader + urlWarning + escapeMarkdown(fullResponse),
+              modelHeader + escapeMarkdown(fullResponse),
               { parse_mode: 'Markdown' }
             );
             lastUpdateCharCount = fullResponse.length;
@@ -383,9 +388,16 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
       ctx,
       ctx.chat.id,
       replyGenerating.message_id,
-      modelHeader + urlWarning + escapeMarkdown(fullResponse),
+      modelHeader + escapeMarkdown(fullResponse),
       { parse_mode: 'Markdown' }
     );
+    const responseCharCount = fullResponse.length;
+    await db.update(schema.usersTable)
+      .set({
+        aiCharacters: sql`${schema.usersTable.aiCharacters} + ${responseCharCount}`,
+        aiRequests: sql`${schema.usersTable.aiRequests} + 1`
+      })
+      .where(eq(schema.usersTable.telegramId, userId));
     return {
       success: true,
       response: fullResponse,
@@ -437,9 +449,9 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
   }
 }
 
-async function handleAiReply(ctx: TextContext, model: string, prompt: string, replyGenerating: Message, aiTemperature: number, originalMessage: string) {
+async function handleAiReply(ctx: TextContext, model: string, prompt: string, replyGenerating: Message, aiTemperature: number, originalMessage: string, db: NodePgDatabase<typeof schema>, userId: string) {
   const Strings = getStrings(languageCode(ctx));
-  const aiResponse = await getResponse(prompt, ctx, replyGenerating, model, aiTemperature, originalMessage);
+  const aiResponse = await getResponse(prompt, ctx, replyGenerating, model, aiTemperature, originalMessage, db, userId);
   if (!aiResponse) return;
   if (!ctx.chat) return;
   if (aiResponse.success && aiResponse.response) {
@@ -453,7 +465,7 @@ async function handleAiReply(ctx: TextContext, model: string, prompt: string, re
       ctx,
       ctx.chat.id,
       replyGenerating.message_id,
-      modelHeader + urlWarning + sanitizeMarkdownForTelegram(aiResponse.response),
+      modelHeader + sanitizeMarkdownForTelegram(aiResponse.response) + urlWarning,
       { parse_mode: 'Markdown' }
     );
     return;
@@ -545,11 +557,11 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
     if (command === 'ai') {
       model = customAiModel || flash_model;
       fixedMsg = message.replace(/^\/ai(@\w+)?\s*/, "").trim();
-      logger.logCmdStart(author, "ask");
+      logger.logCmdStart(author, command, model);
     } else {
       model = command === 'ask' ? flash_model : thinking_model;
       fixedMsg = message.replace(/^\/(ask|think)(@\w+)?\s*/, "").trim();
-      logger.logCmdStart(author, command);
+      logger.logCmdStart(author, command, model);
     }
 
     if (!process.env.ollamaApi) {
@@ -573,9 +585,8 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
         parse_mode: 'Markdown',
         ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
       });
-      logger.logPrompt(fixedMsg);
       const prompt = sanitizeForJson(await usingSystemPrompt(ctx, db, botName, fixedMsg));
-      await handleAiReply(ctx, model, prompt, replyGenerating, aiTemperature, fixedMsg);
+      await handleAiReply(ctx, model, prompt, replyGenerating, aiTemperature, fixedMsg, db, user.telegramId);
     };
 
     if (isProcessing) {
@@ -600,5 +611,17 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
   bot.command(["ai"], spamwatchMiddleware, async (ctx) => {
     if (!ctx.message || !('text' in ctx.message)) return;
     await aiCommandHandler(ctx as TextContext, 'ai');
+  });
+
+  bot.command(["aistats"], spamwatchMiddleware, async (ctx) => {
+    const { user, Strings } = await getUserWithStringsAndModel(ctx, db);
+    if (!user) {
+      await ctx.reply(Strings.userNotFound || "User not found.");
+      return;
+    }
+    const bookCount = Math.max(1, Math.round(user.aiCharacters / 500000));
+    const bookWord = bookCount === 1 ? 'book' : 'books';
+    const msg = `${Strings.aiStats.header}\n\n${Strings.aiStats.requests.replace('{aiRequests}', user.aiRequests)}\n${Strings.aiStats.characters.replace('{aiCharacters}', user.aiCharacters).replace('{bookCount}', bookCount).replace('books', bookWord)}`;
+    await ctx.reply(msg, { parse_mode: 'Markdown' });
   });
 }
