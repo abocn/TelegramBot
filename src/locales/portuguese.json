@@ -64,7 +64,7 @@
     "animalCommandsDesc": "🐱 *Animais*\n\n- /soggy | /soggycat `<1 | 2 | 3 | 4 | orig | thumb | sticker | alt>`: Envia o [meme do gato encharcado](https://knowyourmeme.com/memes/soggy-cat)\n- /cat - Envia uma foto aleatória de um gato.\n- /fox - Envia uma foto aleatória de uma raposa.\n- /duck - Envia uma foto aleatória de um pato.\n- /dog - Envia uma imagem aleatória de um cachorro.\n- /httpcat `<código http>`: Envia memes de gato do http.cat com o código HTTP especificado. Exemplo: `/httpcat 404`",
     "ai": {
         "helpEntry": "✨ Comandos de IA",
-        "helpDesc": "✨ *Comandos de IA*\n\n- /ask `<prompt>`: Fazer uma pergunta a uma IA\n- /think `<prompt>`: Fazer uma pergunta a um modelo de pensamento\n- /ai `<prompt>`: Fazer uma pergunta a um modelo de IA personalizado",
+        "helpDesc": "✨ *Comandos de IA*\n\n- /ask `<prompt>`: Fazer uma pergunta a uma IA\n- /think `<prompt>`: Fazer uma pergunta a um modelo de pensamento\n- /ai `<prompt>`: Fazer uma pergunta a um modelo de IA personalizado\n- /aistats: Mostra suas estatísticas de uso de IA",
         "disabled": "A AIApi foi desativada\\.",
         "disabledForUser": "As funções de IA estão desativadas para a sua conta\\.",
         "pulling": "O modelo {model} não foi encontrado localmente, baixando\\.\\.\\.",

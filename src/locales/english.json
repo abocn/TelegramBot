@@ -65,7 +65,7 @@
   "animalCommandsDesc": "🐱 *Animals*\n\n- /soggy | /soggycat `<1 | 2 | 3 | 4 | orig | thumb | sticker | alt>`: Sends the [Soggy cat meme](https://knowyourmeme.com/memes/soggy-cat)\n- /cat: Sends a random picture of a cat.\n- /fox: Sends a random picture of a fox.\n- /duck: Sends a random picture of a duck.\n- /dog: Sends a random picture of a dog.\n- /httpcat `<http code>`: Send cat memes from http.cat with your specified HTTP code. Example: `/httpcat 404`",
   "ai": {
     "helpEntry": "✨ AI Commands",
-    "helpDesc": "✨ *AI Commands*\n\n- /ask `<prompt>`: Ask a question to an AI model\n- /think `<prompt>`: Ask a thinking model about a question\n- /ai `<prompt>`: Ask your custom-set AI model a question",
+    "helpDesc": "✨ *AI Commands*\n\n- /ask `<prompt>`: Ask a question to an AI model\n- /think `<prompt>`: Ask a thinking model about a question\n- /ai `<prompt>`: Ask your custom-set AI model a question\n- /aistats: Show your AI usage stats",
     "disabled": "✨ AI features are currently disabled globally.",
     "disabledForUser": "✨ AI features are disabled for your account.",
     "pulling": "🔄 Model {model} not found locally, pulling...",
