@@ -68,7 +68,7 @@
         "helpEntry": "✨ Comandos de IA",
         "helpDesc": "✨ *Comandos de IA*\n\n- /ask `<prompt>`: Fazer uma pergunta a uma IA\n- /think `<prompt>`: Fazer uma pergunta a um modelo de pensamento\n- /ai `<prompt>`: Fazer uma pergunta a um modelo de IA personalizado\n- /aistats: Mostra suas estatísticas de uso de IA",
         "disabled": "A AIApi foi desativada\\.",
-        "disabledForUser": "As funções de IA estão desativadas para a sua conta\\.",
+        "disabledForUser": "As funções de IA estão desativadas para a sua conta. Você pode ativá-las com o comando /settings.",
         "pulling": "O modelo {model} não foi encontrado localmente, baixando\\.\\.\\.",
         "askGenerating": "Gerando resposta com {model}\\.\\.\\.",
         "askNoMessage": "Você precisa fazer uma pergunta\\.",

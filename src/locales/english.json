@@ -69,7 +69,7 @@
     "helpEntry": "✨ AI Commands",
     "helpDesc": "✨ *AI Commands*\n\n- /ask `<prompt>`: Ask a question to an AI model\n- /think `<prompt>`: Ask a thinking model about a question\n- /ai `<prompt>`: Ask your custom-set AI model a question\n- /aistats: Show your AI usage stats",
     "disabled": "✨ AI features are currently disabled globally.",
-    "disabledForUser": "✨ AI features are disabled for your account.",
+    "disabledForUser": "✨ AI features are disabled for your account. You can enable them with the /settings command.",
     "pulling": "🔄 Model {model} not found locally, pulling...",
     "askGenerating": "✨ Generating response with {model}...",
     "askNoMessage": "✨ You need to ask me a question!",
