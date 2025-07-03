@@ -1,6 +1,6 @@
-{   
+{
   "ignore": ["src/props/*.json", "src/props/*.txt"],
-  "watch": ["src"],
+  "watch": ["src", "config"],
   "ext": "ts,js",
   "exec": "bun src/bot.ts"
 }

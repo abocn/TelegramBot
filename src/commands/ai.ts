@@ -135,6 +135,26 @@ function sanitizeMarkdownForTelegram(text: string): string {
   return sanitizedText;
 }
 
+function processThinkingTags(text: string): string {
+  let processedText = text;
+
+  const firstThinkIndex = processedText.indexOf('<think>');
+  if (firstThinkIndex === -1) {
+      return processedText.replace(/<\/think>/g, '___THINK_END___');
+  }
+
+  processedText = processedText.substring(0, firstThinkIndex) + '___THINK_START___' + processedText.substring(firstThinkIndex + '<think>'.length);
+  const lastThinkEndIndex = processedText.lastIndexOf('</think>');
+  if (lastThinkEndIndex !== -1) {
+      processedText = processedText.substring(0, lastThinkEndIndex) + '___THEND___' + processedText.substring(lastThinkEndIndex + '</think>'.length);
+  }
+  processedText = processedText.replace(/<think>/g, '');
+  processedText = processedText.replace(/<\/think>/g, '');
+  processedText = processedText.replace('___THEND___', '___THINK_END___');
+
+  return processedText;
+}
+
 export async function preChecks() {
   const envs = [
     "ollamaApi",
@@ -221,9 +241,10 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
       error: Strings.unexpectedErr.replace("{error}", Strings.ai.noChatFound),
     };
   }
+  const cleanedModelName = model.replace('hf.co/', '');
   let status = Strings.ai.statusWaitingRender;
   let modelHeader = Strings.ai.modelHeader
-    .replace("{model}", model)
+    .replace("{model}", cleanedModelName)
     .replace("{temperature}", aiTemperature)
     .replace("{status}", status) + "\n\n";
 
@@ -277,23 +298,8 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
           console.error("[✨ AI | !] Error parsing chunk");
           continue;
         }
-        if (model === thinking_model && !showThinking) {
-          if (ln.response) {
-            finalResponseText += ln.response;
-            if (finalResponseText.includes('<think>') && !thinkingMessageSent) {
-              await rateLimiter.editMessageWithRetry(
-                ctx,
-                ctx.chat.id,
-                replyGenerating.message_id,
-                modelHeader + Strings.ai.thinking,
-                { parse_mode: 'Markdown' }
-              );
-              thinkingMessageSent = true;
-            }
-          }
-          continue;
-        }
-        if (model === thinking_model && ln.response) {
+
+        if (ln.response) {
           if (ln.response.includes('<think>')) {
             const thinkMatch = ln.response.match(/<think>([\s\S]*?)<\/think>/);
             if (thinkMatch && thinkMatch[1].trim().length > 0) {
@@ -304,68 +310,63 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
           } else if (ln.response.includes('</think>')) {
             logger.logThinking(ctx.chat.id, replyGenerating.message_id, false);
           }
-        }
-        if (ln.response) {
-          if (model === thinking_model) {
-            let patchedThoughts = ln.response;
-            const thinkTagRx = /<think>([\s\S]*?)<\/think>/g;
-            patchedThoughts = patchedThoughts.replace(thinkTagRx, (p1) => p1.trim().length > 0 ? '___THINK_START___' + p1.trim() + '___THINK_END___' : '');
-            patchedThoughts = patchedThoughts.replace(/<think>/g, '___THINK_START___');
-            patchedThoughts = patchedThoughts.replace(/<\/think>/g, '___THINK_END___');
-            thoughts += patchedThoughts;
-            fullResponse += patchedThoughts;
-          } else {
-            fullResponse += ln.response;
-          }
-          if (firstChunk) {
-            status = Strings.ai.statusWaitingRender;
-            modelHeader = Strings.ai.modelHeader
-              .replace("{model}", model)
-              .replace("{temperature}", aiTemperature)
-              .replace("{status}", status) + "\n\n";
-            await rateLimiter.editMessageWithRetry(
-              ctx,
-              ctx.chat.id,
-              replyGenerating.message_id,
-              modelHeader + formatThinkingMessage(fullResponse),
-              { parse_mode: 'Markdown' }
-            );
-            lastUpdateCharCount = fullResponse.length;
-            sentHeader = true;
-            firstChunk = false;
-            continue;
-          }
-          const updateEveryChars = Number(process.env.updateEveryChars) || 100;
-          if (fullResponse.length - lastUpdateCharCount >= updateEveryChars || !sentHeader) {
-            await rateLimiter.editMessageWithRetry(
-              ctx,
-              ctx.chat.id,
-              replyGenerating.message_id,
-              modelHeader + formatThinkingMessage(fullResponse),
-              { parse_mode: 'Markdown' }
-            );
-            lastUpdateCharCount = fullResponse.length;
-            sentHeader = true;
+          fullResponse += ln.response;
+          if (showThinking) {
+            let displayResponse = processThinkingTags(fullResponse);
+
+            if (firstChunk) {
+              status = Strings.ai.statusWaitingRender;
+              modelHeader = Strings.ai.modelHeader
+                .replace("{model}", cleanedModelName)
+                .replace("{temperature}", aiTemperature)
+                .replace("{status}", status) + "\n\n";
+              await rateLimiter.editMessageWithRetry(
+                ctx,
+                ctx.chat.id,
+                replyGenerating.message_id,
+                modelHeader + formatThinkingMessage(displayResponse),
+                { parse_mode: 'Markdown' }
+              );
+              lastUpdateCharCount = displayResponse.length;
+              sentHeader = true;
+              firstChunk = false;
+              continue;
+            }
+            const updateEveryChars = Number(process.env.updateEveryChars) || 100;
+            if (displayResponse.length - lastUpdateCharCount >= updateEveryChars || !sentHeader) {
+              await rateLimiter.editMessageWithRetry(
+                ctx,
+                ctx.chat.id,
+                replyGenerating.message_id,
+                modelHeader + formatThinkingMessage(displayResponse),
+                { parse_mode: 'Markdown' }
+              );
+              lastUpdateCharCount = displayResponse.length;
+              sentHeader = true;
+            }
           }
         }
       }
     }
-    if (model === thinking_model && !showThinking) {
-      const cleanedResponse = finalResponseText.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
-      return { success: true, response: cleanedResponse };
-    }
+
     status = Strings.ai.statusRendering;
     modelHeader = Strings.ai.modelHeader
-      .replace("{model}", model)
+      .replace("{model}", cleanedModelName)
       .replace("{temperature}", aiTemperature)
       .replace("{status}", status) + "\n\n";
-    await rateLimiter.editMessageWithRetry(
-      ctx,
-      ctx.chat.id,
-      replyGenerating.message_id,
-      modelHeader + formatThinkingMessage(fullResponse),
-      { parse_mode: 'Markdown' }
-    );
+
+    if (showThinking) {
+        let displayResponse = processThinkingTags(fullResponse);
+
+        await rateLimiter.editMessageWithRetry(
+            ctx,
+            ctx.chat.id,
+            replyGenerating.message_id,
+            modelHeader + formatThinkingMessage(displayResponse),
+            { parse_mode: 'Markdown' }
+        );
+    }
+
     const responseCharCount = fullResponse.length;
     await db.update(schema.usersTable)
       .set({
@@ -373,9 +374,12 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
         aiRequests: sql`${schema.usersTable.aiRequests} + 1`
       })
       .where(eq(schema.usersTable.telegramId, userId));
+
+    const patchedResponse = processThinkingTags(fullResponse);
+
     return {
       success: true,
-      response: fullResponse,
+      response: patchedResponse,
     };
   } catch (error: unknown) {
     const errorMsg = extractAxiosErrorMessage(error);
@@ -429,16 +433,20 @@ async function handleAiReply(ctx: TextContext, model: string, prompt: string, re
   if (!aiResponse) return;
   if (!ctx.chat) return;
   if (aiResponse.success && aiResponse.response) {
+    const cleanedModelName = model.replace('hf.co/', '');
     const status = Strings.ai.statusComplete;
     const modelHeader = Strings.ai.modelHeader
-      .replace("{model}", model)
+      .replace("{model}", cleanedModelName)
       .replace("{temperature}", aiTemperature)
       .replace("{status}", status) + "\n\n";
     const urlWarning = containsUrls(originalMessage) ? Strings.ai.urlWarning : '';
     let finalResponse = aiResponse.response;
-    if (model === thinking_model) {
-      finalResponse = finalResponse.replace(/___THINK_START___/g, `${Strings.ai.thinking}`)
-                                 .replace(/___THINK_END___/g, `${Strings.ai.finishedThinking}`);
+    if (showThinking) {
+        finalResponse = finalResponse.replace(/___THINK_START___/g, `${Strings.ai.thinking}`)
+                                     .replace(/___THINK_END___/g, `${Strings.ai.finishedThinking}`);
+    } else {
+        finalResponse = finalResponse.replace(/___THINK_START___[\s\S]*?___THINK_END___/g, '').trim();
+        finalResponse = finalResponse.replace(/___THINK_START___[\s\S]*/g, '').trim();
     }
 
     await rateLimiter.editMessageWithRetry(

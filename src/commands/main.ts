@@ -10,6 +10,7 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { getModelLabelByName } from './ai';
 import { models } from '../../config/ai';
 import { langs } from '../locales/config';
+import { modelPageSize, seriesPageSize } from '../../config/settings';
 
 type UserRow = typeof schema.usersTable.$inferSelect;
 
@@ -221,12 +222,12 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
       const originalIndex = start + idx;
       const isSelected = series.models.some(m => m.name === user.customAiModel);
       const label = isSelected ? `✅ ${series.label}` : series.label;
-      return { text: label, callback_data: `selectseries_${originalIndex}_${user.telegramId}` };
+      return { text: label, callback_data: `selectseries_${originalIndex}_0_${user.telegramId}` };
     });
 
     const navigationButtons: any[] = [];
     if (page > 0) {
-      navigationButtons.push({ text: Strings.varStrings.varBack, callback_data: `settings_aiModel_${page - 1}_${user.telegramId}` });
+      navigationButtons.push({ text: Strings.varStrings.varLess, callback_data: `settings_aiModel_${page - 1}_${user.telegramId}` });
     }
     if (end < models.length) {
       navigationButtons.push({ text: Strings.varStrings.varMore, callback_data: `settings_aiModel_${page + 1}_${user.telegramId}` });
@@ -257,7 +258,7 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
     }
   });
 
-  bot.action(/^selectseries_\d+_\d+$/, async (ctx) => {
+  bot.action(/^selectseries_\d+_\d+_\d+$/, async (ctx) => {
     const data = (ctx.callbackQuery as any).data;
     const userId = extractUserIdFromCallback(data);
     const allowed = !!userId && String(ctx.from.id) === userId;
@@ -269,26 +270,46 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
     await ctx.answerCbQuery();
     const { user, Strings } = await getUserAndStrings(ctx, db);
     if (!user) return;
-    const match = data.match(/^selectseries_(\d+)_\d+$/);
+    const match = data.match(/^selectseries_(\d+)_(\d+)_(\d+)$/);
     if (!match) return;
     const seriesIdx = parseInt(match[1], 10);
+    const modelPage = parseInt(match[2], 10);
     const series = models[seriesIdx];
     if (!series) return;
-    const pageSize = 4;
-    const page = Math.floor(seriesIdx / pageSize);
+
+    const seriesPage = Math.floor(seriesIdx / seriesPageSize);
+
+    const start = modelPage * modelPageSize;
+    const end = start + modelPageSize;
+    const paginatedSeriesModels = series.models.slice(start, end);
+
+    const modelButtons = paginatedSeriesModels.map((m, idx) => {
+      const originalModelIndex = start + idx;
+      const isSelected = m.name === user.customAiModel;
+      const label = isSelected ? `✅ ${m.label}` : m.label;
+      return [{ text: `${label} (${m.parameterSize})`, callback_data: `setmodel_${seriesIdx}_${originalModelIndex}_${user.telegramId}` }];
+    });
+
+    const navigationButtons: any[] = [];
+    if (modelPage > 0) {
+      navigationButtons.push({ text: Strings.varStrings.varLess, callback_data: `selectseries_${seriesIdx}_${modelPage - 1}_${user.telegramId}` });
+    }
+    if (end < series.models.length) {
+      navigationButtons.push({ text: Strings.varStrings.varMore, callback_data: `selectseries_${seriesIdx}_${modelPage + 1}_${user.telegramId}` });
+    }
+
+    const keyboard: any[][] = [...modelButtons];
+    if (navigationButtons.length > 0) {
+      keyboard.push(navigationButtons);
+    }
+    keyboard.push([{ text: `${Strings.varStrings.varBack}`, callback_data: `settings_aiModel_${seriesPage}_${user.telegramId}` }]);
     const desc = user.languageCode === 'pt' ? series.descriptionPt : series.descriptionEn;
     try {
       await ctx.editMessageText(
         `${Strings.settings.ai.seriesDescription.replace('{seriesDescription}', desc)}\n\n${Strings.settings.ai.selectParameterSize.replace('{seriesLabel}', series.label).replace('   [ & Uncensored ]', '')}\n\n${Strings.settings.ai.parameterSizeExplanation}`,
         {
           reply_markup: {
-            inline_keyboard: series.models.map((m, idx) => {
-              const isSelected = m.name === user.customAiModel;
-              const label = isSelected ? `✅ ${m.label}` : m.label;
-              return [{ text: `${label} (${m.parameterSize})`, callback_data: `setmodel_${seriesIdx}_${idx}_${user.telegramId}` }];
-            }).concat([[
-              { text: `${Strings.varStrings.varBack}`, callback_data: `settings_aiModel_${page}_${user.telegramId}` }
-            ]])
+            inline_keyboard: keyboard
           }
         }
       );
