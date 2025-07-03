@@ -7,7 +7,8 @@ import * as schema from '../db/schema';
 import { eq } from 'drizzle-orm';
 import { ensureUserInDb } from '../utils/ensure-user';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { models, getModelLabelByName } from './ai';
+import { getModelLabelByName } from './ai';
+import { models } from '../../config/ai';
 import { langs } from '../locales/config';
 
 type UserRow = typeof schema.usersTable.$inferSelect;
@@ -55,11 +56,14 @@ function getSettingsMenu(user: UserRow, Strings: any): SettingsMenu {
       inline_keyboard: [
         [
           { text: `✨ ${Strings.settings.ai.aiEnabled}: ${user.aiEnabled ? Strings.settings.enabled : Strings.settings.disabled}`, callback_data: `settings_aiEnabled_${userId}` },
-          { text: `🧠 ${Strings.settings.ai.aiModel}: ${getModelLabelByName(user.customAiModel)}`, callback_data: `settings_aiModel_${userId}` }
+          { text: `🧠 ${Strings.settings.ai.aiModel}: ${getModelLabelByName(user.customAiModel)}`, callback_data: `settings_aiModel_0_${userId}` }
         ],
         [
-          { text: `🌡️ ${Strings.settings.ai.aiTemperature}: ${user.aiTemperature}`, callback_data: `settings_aiTemperature_${userId}` },
+          { text: `🌡️  ${Strings.settings.ai.aiTemperature}: ${user.aiTemperature}`, callback_data: `settings_aiTemperature_${userId}` },
           { text: `🌐 ${langLabel}`, callback_data: `settings_language_${userId}` }
+        ],
+        [
+          { text: `🧠 ${Strings.settings.ai.showThinking}: ${user.showThinking ? Strings.settings.enabled : Strings.settings.disabled}`, callback_data: `settings_showThinking_${userId}` }
         ]
       ]
     }
@@ -80,6 +84,22 @@ function logSettingsAccess(action: string, ctx: Context, allowed: boolean, expec
     const actualUserId = ctx.from?.id;
     const username = ctx.from?.username || ctx.from?.first_name || 'unknown';
     console.log(`[Settings] Action: ${action}, Callback from: ${username} (${actualUserId}), Expected: ${expectedUserId}, Allowed: ${allowed}`);
+  }
+}
+
+function handleTelegramError(err: any, context: string) {
+  const description = err?.response?.description || '';
+  const ignoredErrors = [
+    'query is too old',
+    'query ID is invalid',
+    'message is not modified',
+    'message to edit not found',
+  ];
+
+  const isIgnored = ignoredErrors.some(errorString => description.includes(errorString));
+
+  if (!isIgnored) {
+    console.error(`[${context}] Unexpected Telegram error:`, err);
   }
 }
 
@@ -155,7 +175,26 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
     await updateSettingsKeyboard(ctx, updatedUser, Strings);
   });
 
-  bot.action(/^settings_aiModel_\d+$/, async (ctx) => {
+  bot.action(/^settings_showThinking_\d+$/, async (ctx) => {
+    const data = (ctx.callbackQuery as any).data;
+    const userId = extractUserIdFromCallback(data);
+    const allowed = !!userId && String(ctx.from.id) === userId;
+    logSettingsAccess('settings_showThinking', ctx, allowed, userId);
+    if (!allowed) {
+      const { Strings } = await getUserAndStrings(ctx, db);
+      return ctx.answerCbQuery(getNotAllowedMessage(Strings), { show_alert: true });
+    }
+    await ctx.answerCbQuery();
+    const { user, Strings } = await getUserAndStrings(ctx, db);
+    if (!user) return;
+    await db.update(schema.usersTable)
+      .set({ showThinking: !user.showThinking })
+      .where(eq(schema.usersTable.telegramId, String(user.telegramId)));
+    const updatedUser = (await db.query.usersTable.findMany({ where: (fields, { eq }) => eq(fields.telegramId, String(user.telegramId)), limit: 1 }))[0];
+    await updateSettingsKeyboard(ctx, updatedUser, Strings);
+  });
+
+  bot.action(/^settings_aiModel_(\d+)_(\d+)$/, async (ctx) => {
     const data = (ctx.callbackQuery as any).data;
     const userId = extractUserIdFromCallback(data);
     const allowed = !!userId && String(ctx.from.id) === userId;
@@ -167,30 +206,54 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
     await ctx.answerCbQuery();
     const { user, Strings } = await getUserAndStrings(ctx, db);
     if (!user) return;
+
+    const match = data.match(/^settings_aiModel_(\d+)_/);
+    if (!match) return;
+
+    const page = parseInt(match[1], 10);
+    const pageSize = 4;
+    const start = page * pageSize;
+    const end = start + pageSize;
+
+    const paginatedModels = models.slice(start, end);
+
+    const buttons = paginatedModels.map((series, idx) => {
+      const originalIndex = start + idx;
+      const isSelected = series.models.some(m => m.name === user.customAiModel);
+      const label = isSelected ? `✅ ${series.label}` : series.label;
+      return { text: label, callback_data: `selectseries_${originalIndex}_${user.telegramId}` };
+    });
+
+    const navigationButtons: any[] = [];
+    if (page > 0) {
+      navigationButtons.push({ text: Strings.varStrings.varBack, callback_data: `settings_aiModel_${page - 1}_${user.telegramId}` });
+    }
+    if (end < models.length) {
+      navigationButtons.push({ text: Strings.varStrings.varMore, callback_data: `settings_aiModel_${page + 1}_${user.telegramId}` });
+    }
+
+    const keyboard: any[][] = [];
+    for (const button of buttons) {
+      keyboard.push([button]);
+    }
+
+    if (navigationButtons.length > 0) {
+      keyboard.push(navigationButtons);
+    }
+    keyboard.push([{ text: `${Strings.varStrings.varBack}`, callback_data: `settings_back_${user.telegramId}` }]);
+
     try {
       await ctx.editMessageText(
         `${Strings.settings.ai.selectSeries}`,
         {
           parse_mode: 'Markdown',
           reply_markup: {
-            inline_keyboard: models.map((series, idx) => [
-              { text: series.label, callback_data: `selectseries_${idx}_${user.telegramId}` }
-            ]).concat([[
-              { text: `${Strings.varStrings.varBack}`, callback_data: `settings_back_${user.telegramId}` }
-            ]])
+            inline_keyboard: keyboard
           }
         }
       );
     } catch (err) {
-      if (
-        !(
-          err.response.description?.includes('query is too old') ||
-          err.response.description?.includes('query ID is invalid') ||
-          err.response.description?.includes('message is not modified') ||
-          err.response.description?.includes('message to edit not found')
-        )
-      )
-        console.error('Unexpected Telegram error:', err);
+      handleTelegramError(err, 'settings_aiModel');
     }
   });
 
@@ -211,30 +274,26 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
     const seriesIdx = parseInt(match[1], 10);
     const series = models[seriesIdx];
     if (!series) return;
+    const pageSize = 4;
+    const page = Math.floor(seriesIdx / pageSize);
     const desc = user.languageCode === 'pt' ? series.descriptionPt : series.descriptionEn;
     try {
       await ctx.editMessageText(
-        `${Strings.settings.ai.seriesDescription.replace('{seriesDescription}', desc)}\n\n${Strings.settings.ai.selectParameterSize.replace('{seriesLabel}', series.label)}\n\n${Strings.settings.ai.parameterSizeExplanation}`,
+        `${Strings.settings.ai.seriesDescription.replace('{seriesDescription}', desc)}\n\n${Strings.settings.ai.selectParameterSize.replace('{seriesLabel}', series.label).replace('   [ & Uncensored ]', '')}\n\n${Strings.settings.ai.parameterSizeExplanation}`,
         {
           reply_markup: {
-            inline_keyboard: series.models.map((m, idx) => [
-              { text: `${m.label} (${m.parameterSize})`, callback_data: `setmodel_${seriesIdx}_${idx}_${user.telegramId}` }
-            ]).concat([[
-              { text: `${Strings.varStrings.varBack}`, callback_data: `settings_aiModel_${user.telegramId}` }
+            inline_keyboard: series.models.map((m, idx) => {
+              const isSelected = m.name === user.customAiModel;
+              const label = isSelected ? `✅ ${m.label}` : m.label;
+              return [{ text: `${label} (${m.parameterSize})`, callback_data: `setmodel_${seriesIdx}_${idx}_${user.telegramId}` }];
+            }).concat([[
+              { text: `${Strings.varStrings.varBack}`, callback_data: `settings_aiModel_${page}_${user.telegramId}` }
             ]])
           }
         }
       );
     } catch (err) {
-      if (
-        !(
-          err.response.description?.includes('query is too old') ||
-          err.response.description?.includes('query ID is invalid') ||
-          err.response.description?.includes('message is not modified') ||
-          err.response.description?.includes('message to edit not found')
-        )
-      )
-        console.error('Unexpected Telegram error:', err);
+      handleTelegramError(err, 'selectseries');
     }
   });
 
@@ -278,15 +337,7 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
         });
       }
     } catch (err) {
-      if (
-        !(
-          err.response.description?.includes('query is too old') ||
-          err.response.description?.includes('query ID is invalid') ||
-          err.response.description?.includes('message is not modified') ||
-          err.response.description?.includes('message to edit not found')
-        )
-      )
-        console.error('[Settings] Unexpected Telegram error:', err);
+      handleTelegramError(err, 'setmodel');
     }
   });
 
@@ -320,15 +371,7 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
         }
       );
     } catch (err) {
-      if (
-        !(
-          err.response.description?.includes('query is too old') ||
-          err.response.description?.includes('query ID is invalid') ||
-          err.response.description?.includes('message is not modified') ||
-          err.response.description?.includes('message to edit not found')
-        )
-      )
-        console.error('Unexpected Telegram error:', err);
+      handleTelegramError(err, 'settings_aiTemperature');
     }
   });
 
@@ -354,15 +397,7 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
           ])
       });
     } catch (err) {
-      if (
-        !(
-          err.response.description?.includes('query is too old') ||
-          err.response.description?.includes('query ID is invalid') ||
-          err.response.description?.includes('message is not modified') ||
-          err.response.description?.includes('message to edit not found')
-        )
-      )
-        console.error('Unexpected Telegram error:', err);
+      handleTelegramError(err, 'show_more_temps');
     }
   });
 
@@ -409,15 +444,7 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
         }
       );
     } catch (err) {
-      if (
-        !(
-          err.response.description?.includes('query is too old') ||
-          err.response.description?.includes('query ID is invalid') ||
-          err.response.description?.includes('message is not modified') ||
-          err.response.description?.includes('message to edit not found')
-        )
-      )
-        console.error('Unexpected Telegram error:', err);
+      handleTelegramError(err, 'settings_language');
     }
   });
 
@@ -450,15 +477,7 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
         });
       }
     } catch (err) {
-      if (
-        !(
-          err.response.description?.includes('query is too old') ||
-          err.response.description?.includes('query ID is invalid') ||
-          err.response.description?.includes('message is not modified') ||
-          err.response.description?.includes('message to edit not found')
-        )
-      )
-        console.error('[Settings] Unexpected Telegram error:', err);
+      handleTelegramError(err, 'settings_back');
     }
   });
 
@@ -500,15 +519,7 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
         });
       }
     } catch (err) {
-      if (
-        !(
-          err.response.description?.includes('query is too old') ||
-          err.response.description?.includes('query ID is invalid') ||
-          err.response.description?.includes('message is not modified') ||
-          err.response.description?.includes('message to edit not found')
-        )
-      )
-        console.error('[Settings] Unexpected Telegram error:', err);
+      handleTelegramError(err, 'setlang');
     }
   });
 

@@ -47,6 +47,7 @@ export async function ensureUserInDb(ctx, db) {
       lastName,
       languageCode,
       aiEnabled: false,
+      showThinking: false,
       customAiModel: "deepseek-r1:1.5b",
       aiTemperature: 0.9,
       aiRequests: 0,

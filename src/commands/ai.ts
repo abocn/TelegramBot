@@ -34,7 +34,6 @@ import { Telegraf, Context } from "telegraf"
 import type { Message } from "telegraf/types"
 import { replyToMessageId } from "../utils/reply-to-message-id"
 import { getStrings } from "../plugins/checklang"
-import { languageCode } from "../utils/language-code"
 import axios from "axios"
 import { rateLimiter } from "../utils/rate-limiter"
 import { logger } from "../utils/log"
@@ -42,6 +41,7 @@ import { ensureUserInDb } from "../utils/ensure-user"
 import * as schema from '../db/schema'
 import type { NodePgDatabase } from "drizzle-orm/node-postgres"
 import { eq, sql } from 'drizzle-orm'
+import { models, unloadModelAfterB } from "../../config/ai"
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch)
 export const flash_model = process.env.flashModel || "gemma3:4b"
@@ -51,7 +51,7 @@ type TextContext = Context & { message: Message.TextMessage }
 
 type User = typeof schema.usersTable.$inferSelect
 
-interface ModelInfo {
+export interface ModelInfo {
   name: string;
   label: string;
   descriptionEn: string;
@@ -66,59 +66,6 @@ interface ModelInfo {
 interface OllamaResponse {
   response: string;
 }
-
-export const models: ModelInfo[] = [
-  {
-    name: 'gemma3n',
-    label: 'gemma3n',
-    descriptionEn: 'Gemma3n is a family of open, light on-device models for general tasks.',
-    descriptionPt: 'Gemma3n é uma família de modelos abertos, leves e para dispositivos locais, para tarefas gerais.',
-    models: [
-      { name: 'gemma3n:e2b', label: 'Gemma3n e2b', parameterSize: '2B' },
-      { name: 'gemma3n:e4b', label: 'Gemma3n e4b', parameterSize: '4B' },
-    ]
-  },
-  {
-    name: 'gemma3-abliterated',
-    label: 'gemma3 Uncensored',
-    descriptionEn: 'Gemma3-abliterated is a family of open, uncensored models for general tasks.',
-    descriptionPt: 'Gemma3-abliterated é uma família de modelos abertos, não censurados, para tarefas gerais.',
-    models: [
-      { name: 'huihui_ai/gemma3-abliterated:1b', label: 'Gemma3-abliterated 1B', parameterSize: '1b' },
-      { name: 'huihui_ai/gemma3-abliterated:4b', label: 'Gemma3-abliterated 4B', parameterSize: '4b' },
-    ]
-  },
-  {
-    name: 'qwen3',
-    label: 'Qwen3',
-    descriptionEn: 'Qwen3 is a multilingual reasoning model series.',
-    descriptionPt: 'Qwen3 é uma série de modelos multilingues.',
-    models: [
-      { name: 'qwen3:4b', label: 'Qwen3 4B', parameterSize: '4B' },
-    ]
-  },
-  {
-    name: 'deepseek',
-    label: 'DeepSeek',
-    descriptionEn: 'DeepSeek is a research model for reasoning tasks.',
-    descriptionPt: 'DeepSeek é um modelo de pesquisa para tarefas de raciocínio.',
-    models: [
-      { name: 'deepseek-r1:1.5b', label: 'DeepSeek 1.5B', parameterSize: '1.5B' },
-      { name: 'deepseek-r1:7b', label: 'DeepSeek 7B', parameterSize: '7B' },
-      { name: 'huihui_ai/deepseek-r1-abliterated:1.5b', label: 'DeepSeek Uncensored 1.5B', parameterSize: '1.5B' },
-      { name: 'huihui_ai/deepseek-r1-abliterated:7b', label: 'DeepSeek Uncensored 7B', parameterSize: '7B' },
-    ]
-  },
-  {
-    name: 'phi3',
-    label: 'Phi3',
-    descriptionEn: 'Phi-3 is a family of lightweight 3B (Mini) and 14B (Medium) state-of-the-art open models by Microsoft.',
-    descriptionPt: 'Phi-3 é uma família de modelos leves de 3B (Mini) e 14B (Médio) de última geração, abertos pela Microsoft.',
-    models: [
-      { name: 'phi3:3.8b', label: 'Phi3 3.8B', parameterSize: '3.8B' },
-    ]
-  }
-];
 
 async function usingSystemPrompt(ctx: TextContext, db: NodePgDatabase<typeof schema>, botName: string, message: string): Promise<string> {
   const user = await db.query.usersTable.findMany({ where: (fields, { eq }) => eq(fields.telegramId, String(ctx.from!.id)), limit: 1 });
@@ -263,16 +210,11 @@ function extractAxiosErrorMessage(error: unknown): string {
   return 'An unexpected error occurred.';
 }
 
-function escapeMarkdown(text: string): string {
-  return text.replace(/([_*\[\]()`>#\+\-=|{}.!~])/g, '\\$1');
-}
-
 function containsUrls(text: string): boolean {
-  return text.includes('http://') || text.includes('https://');
+  return text.includes('http://') || text.includes('https://') || text.includes('.com') || text.includes('.net') || text.includes('.org') || text.includes('.io') || text.includes('.ai') || text.includes('.dev')
 }
 
-async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Message, model: string, aiTemperature: number, originalMessage: string, db: NodePgDatabase<typeof schema>, userId: string): Promise<{ success: boolean; response?: string; error?: string }> {
-  const Strings = getStrings(languageCode(ctx));
+async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Message, model: string, aiTemperature: number, originalMessage: string, db: NodePgDatabase<typeof schema>, userId: string, Strings: ReturnType<typeof getStrings>, showThinking: boolean): Promise<{ success: boolean; response?: string; error?: string }> {
   if (!ctx.chat) {
     return {
       success: false,
@@ -289,6 +231,8 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
   await db.update(schema.usersTable)
     .set({ aiCharacters: sql`${schema.usersTable.aiCharacters} + ${promptCharCount}` })
     .where(eq(schema.usersTable.telegramId, userId));
+  const paramSizeStr = models.find(m => m.name === model)?.models.find(m => m.name === model)?.parameterSize?.replace('B', '');
+  const shouldKeepAlive = paramSizeStr ? Number(paramSizeStr) > unloadModelAfterB : false;
 
   try {
     const aiResponse = await axios.post<unknown>(
@@ -297,6 +241,7 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
         model,
         prompt,
         stream: true,
+        keep_alive: shouldKeepAlive ? '1' : '0',
         options: {
           temperature: aiTemperature
         }
@@ -311,6 +256,16 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
     let sentHeader = false;
     let firstChunk = true;
     const stream: NodeJS.ReadableStream = aiResponse.data as any;
+    let thinkingMessageSent = false;
+    let finalResponseText = '';
+
+    const formatThinkingMessage = (text: string) => {
+        const withPlaceholders = text
+            .replace(/___THINK_START___/g, `${Strings.ai.thinking}`)
+            .replace(/___THINK_END___/g, `${Strings.ai.finishedThinking}`);
+        return sanitizeMarkdownForTelegram(withPlaceholders);
+    };
+
     for await (const chunk of stream) {
       const lines = chunk.toString().split('\n');
       for (const line of lines) {
@@ -320,6 +275,22 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
           ln = JSON.parse(line);
         } catch (e) {
           console.error("[✨ AI | !] Error parsing chunk");
+          continue;
+        }
+        if (model === thinking_model && !showThinking) {
+          if (ln.response) {
+            finalResponseText += ln.response;
+            if (finalResponseText.includes('<think>') && !thinkingMessageSent) {
+              await rateLimiter.editMessageWithRetry(
+                ctx,
+                ctx.chat.id,
+                replyGenerating.message_id,
+                modelHeader + Strings.ai.thinking,
+                { parse_mode: 'Markdown' }
+              );
+              thinkingMessageSent = true;
+            }
+          }
           continue;
         }
         if (model === thinking_model && ln.response) {
@@ -338,9 +309,9 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
           if (model === thinking_model) {
             let patchedThoughts = ln.response;
             const thinkTagRx = /<think>([\s\S]*?)<\/think>/g;
-            patchedThoughts = patchedThoughts.replace(thinkTagRx, (p1) => p1.trim().length > 0 ? '`' + Strings.ai.thinking + '`' + p1 + '`' + Strings.ai.finishedThinking + '`' : '');
-            patchedThoughts = patchedThoughts.replace(/<think>/g, '`' + Strings.ai.thinking + '`');
-            patchedThoughts = patchedThoughts.replace(/<\/think>/g, '`' + Strings.ai.finishedThinking + '`');
+            patchedThoughts = patchedThoughts.replace(thinkTagRx, (p1) => p1.trim().length > 0 ? '___THINK_START___' + p1.trim() + '___THINK_END___' : '');
+            patchedThoughts = patchedThoughts.replace(/<think>/g, '___THINK_START___');
+            patchedThoughts = patchedThoughts.replace(/<\/think>/g, '___THINK_END___');
             thoughts += patchedThoughts;
             fullResponse += patchedThoughts;
           } else {
@@ -356,7 +327,7 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
               ctx,
               ctx.chat.id,
               replyGenerating.message_id,
-              modelHeader + escapeMarkdown(fullResponse),
+              modelHeader + formatThinkingMessage(fullResponse),
               { parse_mode: 'Markdown' }
             );
             lastUpdateCharCount = fullResponse.length;
@@ -370,7 +341,7 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
               ctx,
               ctx.chat.id,
               replyGenerating.message_id,
-              modelHeader + escapeMarkdown(fullResponse),
+              modelHeader + formatThinkingMessage(fullResponse),
               { parse_mode: 'Markdown' }
             );
             lastUpdateCharCount = fullResponse.length;
@@ -378,6 +349,10 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
           }
         }
       }
+    }
+    if (model === thinking_model && !showThinking) {
+      const cleanedResponse = finalResponseText.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+      return { success: true, response: cleanedResponse };
     }
     status = Strings.ai.statusRendering;
     modelHeader = Strings.ai.modelHeader
@@ -388,7 +363,7 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
       ctx,
       ctx.chat.id,
       replyGenerating.message_id,
-      modelHeader + escapeMarkdown(fullResponse),
+      modelHeader + formatThinkingMessage(fullResponse),
       { parse_mode: 'Markdown' }
     );
     const responseCharCount = fullResponse.length;
@@ -432,13 +407,13 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
           console.error("[✨ AI | !] Pull error:", pullMsg);
           return {
             success: false,
-            error: `❌ Something went wrong while pulling ${escapeMarkdown(model)}: ${escapeMarkdown(pullMsg)}`,
+            error: `❌ Something went wrong while pulling ${model}: ${pullMsg}`,
           };
         }
         console.log(`[✨ AI] ${model} pulled successfully`);
         return {
           success: true,
-          response: Strings.ai.pulled.replace("{model}", escapeMarkdown(model)),
+          response: Strings.ai.pulled.replace("{model}", model),
         };
       }
     }
@@ -449,9 +424,8 @@ async function getResponse(prompt: string, ctx: TextContext, replyGenerating: Me
   }
 }
 
-async function handleAiReply(ctx: TextContext, model: string, prompt: string, replyGenerating: Message, aiTemperature: number, originalMessage: string, db: NodePgDatabase<typeof schema>, userId: string) {
-  const Strings = getStrings(languageCode(ctx));
-  const aiResponse = await getResponse(prompt, ctx, replyGenerating, model, aiTemperature, originalMessage, db, userId);
+async function handleAiReply(ctx: TextContext, model: string, prompt: string, replyGenerating: Message, aiTemperature: number, originalMessage: string, db: NodePgDatabase<typeof schema>, userId: string, Strings: ReturnType<typeof getStrings>, showThinking: boolean) {
+  const aiResponse = await getResponse(prompt, ctx, replyGenerating, model, aiTemperature, originalMessage, db, userId, Strings, showThinking);
   if (!aiResponse) return;
   if (!ctx.chat) return;
   if (aiResponse.success && aiResponse.response) {
@@ -461,11 +435,17 @@ async function handleAiReply(ctx: TextContext, model: string, prompt: string, re
       .replace("{temperature}", aiTemperature)
       .replace("{status}", status) + "\n\n";
     const urlWarning = containsUrls(originalMessage) ? Strings.ai.urlWarning : '';
+    let finalResponse = aiResponse.response;
+    if (model === thinking_model) {
+      finalResponse = finalResponse.replace(/___THINK_START___/g, `${Strings.ai.thinking}`)
+                                 .replace(/___THINK_END___/g, `${Strings.ai.finishedThinking}`);
+    }
+
     await rateLimiter.editMessageWithRetry(
       ctx,
       ctx.chat.id,
       replyGenerating.message_id,
-      modelHeader + sanitizeMarkdownForTelegram(aiResponse.response) + urlWarning,
+      modelHeader + sanitizeMarkdownForTelegram(finalResponse) + urlWarning,
       { parse_mode: 'Markdown' }
     );
     return;
@@ -480,7 +460,7 @@ async function handleAiReply(ctx: TextContext, model: string, prompt: string, re
   );
 }
 
-async function getUserWithStringsAndModel(ctx: Context, db: NodePgDatabase<typeof schema>): Promise<{ user: User; Strings: ReturnType<typeof getStrings>; languageCode: string; customAiModel: string; aiTemperature: number }> {
+async function getUserWithStringsAndModel(ctx: Context, db: NodePgDatabase<typeof schema>): Promise<{ user: User; Strings: ReturnType<typeof getStrings>; languageCode: string; customAiModel: string; aiTemperature: number, showThinking: boolean }> {
   const userArr = await db.query.usersTable.findMany({ where: (fields, { eq }) => eq(fields.telegramId, String(ctx.from!.id)), limit: 1 });
   let user = userArr[0];
   if (!user) {
@@ -488,10 +468,10 @@ async function getUserWithStringsAndModel(ctx: Context, db: NodePgDatabase<typeo
     const newUserArr = await db.query.usersTable.findMany({ where: (fields, { eq }) => eq(fields.telegramId, String(ctx.from!.id)), limit: 1 });
     user = newUserArr[0];
     const Strings = getStrings(user.languageCode);
-    return { user, Strings, languageCode: user.languageCode, customAiModel: user.customAiModel, aiTemperature: user.aiTemperature };
+    return { user, Strings, languageCode: user.languageCode, customAiModel: user.customAiModel, aiTemperature: user.aiTemperature, showThinking: user.showThinking };
   }
   const Strings = getStrings(user.languageCode);
-  return { user, Strings, languageCode: user.languageCode, customAiModel: user.customAiModel, aiTemperature: user.aiTemperature };
+  return { user, Strings, languageCode: user.languageCode, customAiModel: user.customAiModel, aiTemperature: user.aiTemperature, showThinking: user.showThinking };
 }
 
 export function getModelLabelByName(name: string): string {
@@ -547,7 +527,7 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
 
   async function aiCommandHandler(ctx: TextContext, command: 'ask' | 'think' | 'ai') {
     const reply_to_message_id = replyToMessageId(ctx);
-    const { user, Strings, customAiModel, aiTemperature } = await getUserWithStringsAndModel(ctx, db);
+    const { user, Strings, customAiModel, aiTemperature, showThinking } = await getUserWithStringsAndModel(ctx, db);
     const message = ctx.message.text;
     const author = ("@" + ctx.from?.username) || ctx.from?.first_name || "Unknown";
 
@@ -586,7 +566,7 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
         ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
       });
       const prompt = sanitizeForJson(await usingSystemPrompt(ctx, db, botName, fixedMsg));
-      await handleAiReply(ctx, model, prompt, replyGenerating, aiTemperature, fixedMsg, db, user.telegramId);
+      await handleAiReply(ctx, model, prompt, replyGenerating, aiTemperature, fixedMsg, db, user.telegramId, Strings, showThinking);
     };
 
     if (isProcessing) {

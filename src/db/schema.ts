@@ -13,6 +13,7 @@ export const usersTable = pgTable("users", {
   firstName: varchar({ length: 255 }).notNull(),
   lastName: varchar({ length: 255 }).notNull(),
   aiEnabled: boolean().notNull().default(false),
+  showThinking: boolean().notNull().default(false),
   customAiModel: varchar({ length: 255 }).notNull().default("deepseek-r1:1.5b"),
   aiTemperature: real().notNull().default(0.9),
   aiRequests: integer().notNull().default(0),

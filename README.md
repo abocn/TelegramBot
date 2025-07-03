@@ -124,6 +124,9 @@ If you prefer to use Docker directly, you can use these instructions instead.
 - **weatherKey**: Weather.com API key, used for the `/weather` command.
 - **longerLogs**: Set to `true` to enable verbose logging whenever possible.
 
+> [!NOTE]
+> Further, advanced fine-tuning and configuration can be done in TypeScript with the files in the `/config` folder.
+
 ## Troubleshooting
 
 ### YouTube Downloading
