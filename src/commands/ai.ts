@@ -198,6 +198,8 @@ export async function preChecks() {
   }
   checked++;
   console.log(`[✨  AI] Pre-checks passed [${checked}/${envs.length + 1}]`)
+  const modelCount = models.reduce((acc, model) => acc + model.models.length, 0);
+  console.log(`[✨  AI] Found ${modelCount} models.`);
   return true
 }
 
