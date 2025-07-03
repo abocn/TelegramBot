@@ -78,6 +78,7 @@
     "finishedThinking": "`🧠 Done thinking.`",
     "urlWarning": "\n\n⚠️ Note: The model cannot access or visit links!",
     "inQueue": "ℹ️ You are {position} in the queue.",
+    "queueFull": "🚫 You already have too many requests in the queue. Please wait for them to finish.",
     "startingProcessing": "✨ Starting to process your request...",
     "systemPrompt": "You are a friendly assistant called {botName}.\nCurrent Date/Time (UTC): {date}\n\n---\n\nUser message:\n{message}",
     "statusWaitingRender": "⏳ Streaming...",

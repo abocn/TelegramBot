@@ -3,6 +3,7 @@ import type { ModelInfo } from "../src/commands/ai"
 export const defaultFlashModel = "gemma3:4b"
 export const defaultThinkingModel = "qwen3:4b"
 export const unloadModelAfterB = 12 // how many billion params until model is auto-unloaded
+export const maxUserQueueSize = 3
 
 export const models: ModelInfo[] = [
   {

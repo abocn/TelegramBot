@@ -76,6 +76,7 @@
         "finishedThinking": "`🧠 Pensamento concluido.`",
         "urlWarning": "\n\n⚠️ Nota: O modelo de IA não pode acessar ou visitar links!",
         "inQueue": "ℹ️ Você é o {position} na fila.",
+        "queueFull": "🚫 Você já tem muitas solicitações na fila. Por favor, espere que elas terminem.",
         "startingProcessing": "✨ Começando a processar o seu pedido...",
         "aiEnabled": "IA",
         "aiModel": "Modelo de IA",

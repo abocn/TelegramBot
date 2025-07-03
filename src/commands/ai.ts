@@ -41,7 +41,7 @@ import { ensureUserInDb } from "../utils/ensure-user"
 import * as schema from '../db/schema'
 import type { NodePgDatabase } from "drizzle-orm/node-postgres"
 import { eq, sql } from 'drizzle-orm'
-import { models, unloadModelAfterB } from "../../config/ai"
+import { models, unloadModelAfterB, maxUserQueueSize } from "../../config/ai"
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch)
 export const flash_model = process.env.flashModel || "gemma3:4b"
@@ -503,6 +503,7 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
     task: () => Promise<void>;
     ctx: TextContext;
     wasQueued: boolean;
+    userId: number;
   }
 
   const requestQueue: AiRequest[] = [];
@@ -567,6 +568,17 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
       return;
     }
 
+    const userId = ctx.from!.id;
+    const userQueueSize = requestQueue.filter(req => req.userId === userId).length;
+
+    if (userQueueSize >= maxUserQueueSize) {
+      await ctx.reply(Strings.ai.queueFull, {
+        parse_mode: 'Markdown',
+        ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
+      });
+      return;
+    }
+
     const task = async () => {
       const modelLabel = getModelLabelByName(model);
       const replyGenerating = await ctx.reply(Strings.ai.askGenerating.replace("{model}", `\`${modelLabel}\``), {
@@ -578,14 +590,14 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
     };
 
     if (isProcessing) {
-      requestQueue.push({ task, ctx, wasQueued: true });
+      requestQueue.push({ task, ctx, wasQueued: true, userId: ctx.from!.id });
       const position = requestQueue.length;
       await ctx.reply(Strings.ai.inQueue.replace("{position}", String(position)), {
         parse_mode: 'Markdown',
         ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
       });
     } else {
-      requestQueue.push({ task, ctx, wasQueued: false });
+      requestQueue.push({ task, ctx, wasQueued: false, userId: ctx.from!.id });
       processQueue();
     }
   }
