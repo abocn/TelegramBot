@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "start": "nodemon src/bot.ts",
+    "start": "nodemon telegram/bot.ts",
     "docs": "bunx typedoc",
     "serve:docs": "bun run serve-docs.ts"
   },
@@ -10,6 +10,7 @@
     "axios": "^1.10.0",
     "dotenv": "^17.0.0",
     "drizzle-orm": "^0.44.2",
+    "express": "^5.1.0",
     "node-html-parser": "^7.0.1",
     "nodemon": "^3.1.10",
     "pg": "^8.16.3",

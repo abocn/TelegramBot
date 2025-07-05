@@ -1,6 +1,6 @@
 {
-  "ignore": ["src/props/*.json", "src/props/*.txt"],
-  "watch": ["src", "config"],
+  "ignore": ["telegram/props/*.json", "telegram/props/*.txt"],
+  "watch": ["telegram", "database", "config"],
   "ext": "ts,js",
-  "exec": "bun src/bot.ts"
+  "exec": "bun telegram/bot.ts"
 }

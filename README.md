@@ -26,21 +26,6 @@ Kowalski is a a simple Telegram bot made in Node.js.
 - High-end CPU *or* GPU (~ 6GB vRAM)
 - If using CPU, enough RAM to load the models (~6GB w/ defaults)
 
-## Running locally (non-Docker setup)
-
-First, clone the repo with Git:
-
-```bash
-git clone --recurse-submodules https://github.com/ABOCN/TelegramBot
-```
-
-Next, inside the repository directory, create an `.env` file with some content, which you can see the [example .env file](.env.example) to fill info with. To see the meaning of each one, see [the Functions section](#env-functions).
-
-After editing the file, save all changes and run the bot with ``bun start``.
-
-> [!TIP]
-> To deal with dependencies, just run ``bun install`` or ``bun i`` at any moment to install all of them.
-
 ## Running with Docker
 
 > [!IMPORTANT]
@@ -69,14 +54,16 @@ You can also run Kowalski using Docker, which simplifies the setup process. Make
    mv docker-compose.yml.ai.example docker-compose.yml
    ```
 
-2. **Make sure to setup your `.env` file first!**
+1. **Make sure to setup your `.env` file first!**
+
+   In order to successfuly deploy Kowalski, you will need to edit both your `.env` file and enter matching values in `webui/.env`.
 
    > [!TIP]
    > If you intend to setup AI, the defaults for Docker are already included (just uncomment) and don't need to be changed.
    >
    > Further setup may be needed for GPUs. See the Ollama documentation for more.
 
-3. **Run the container**
+1. **Run the container**
 
    ```bash
    docker compose up -d
@@ -88,13 +75,15 @@ If you prefer to use Docker directly, you can use these instructions instead.
 
 1. **Make sure to setup your `.env` file first!**
 
-2. **Build the image**
+   In order to successfuly deploy Kowalski, you will need to edit both your `.env` file and enter matching values in `webui/.env`.
+
+1. **Build the image**
 
    ```bash
    docker build -t kowalski .
    ```
 
-3. **Run the container**
+1. **Run the container**
 
    ```bash
    docker run -d --name kowalski --restart unless-stopped -v $(pwd)/.env:/usr/src/app/.env:ro kowalski
@@ -103,10 +92,35 @@ If you prefer to use Docker directly, you can use these instructions instead.
 > [!NOTE]
 > You must setup Ollama on your own if you would like to use AI features.
 
+## Running locally (non-Docker/development setup)
+
+First, clone the repo with Git:
+
+```bash
+git clone --recurse-submodules https://github.com/ABOCN/TelegramBot
+```
+
+Next, inside the repository directory, create an `.env` file with some content, which you can see the [example .env file](.env.example) to fill info with. To see the meaning of each one, see [the Functions section](#env-functions).
+
+After editing the file, save all changes and run the bot with ``bun start``.
+
+> [!TIP]
+> To deal with dependencies, just run ``bun install`` or ``bun i`` at any moment to install all of them.
+
+### Efficant Local (w/ Docker) Development
+
+If you want to develop a component of Kowalski, without dealing with the headache of several terminals, we suggest you follow these guidelines:
+
+1. If you are working on one component, run it with Bun, and Dockerize the other components.
+1. Minimize the amount of non-Dockerized components to reduce headaches.
+1. You will have to change your `.env` a lot. This is a common source of issues. Make sure the hostname and port are correct.
+
 ## .env Functions
 
 > [!IMPORTANT]
 > Take care of your ``.env`` file, as it is so much important and needs to be secret (like your passwords), as anyone can do whatever they want to the bot with this token!
+
+### Bot
 
 - **botSource**: Put the link to your bot source code.
 - **botPrivacy**: Put the link to your bot privacy policy.
@@ -127,16 +141,21 @@ If you prefer to use Docker directly, you can use these instructions instead.
 > [!NOTE]
 > Further, advanced fine-tuning and configuration can be done in TypeScript with the files in the `/config` folder.
 
+### WebUI
+
+- **botApiUrl**: Likely will stay the same, but changes the API that the bot exposes
+- **databaseUrl**: Database server configuration (see `.env.example`)
+
 ## Troubleshooting
 
 ### YouTube Downloading
 
 **Q:** I get a "Permission denied (EACCES)" error in the console when running the `/yt` command
 
-**A:** Make sure `src/plugins/yt-dlp/yt-dlp` is executable. You can do this on Linux like so:
+**A:** Make sure `telegram/plugins/yt-dlp/yt-dlp` is executable. You can do this on Linux like so:
 
 ```bash
-chmod +x src/plugins/yt-dlp/yt-dlp
+chmod +x telegram/plugins/yt-dlp/yt-dlp
 ```
 
 ### AI
@@ -157,4 +176,4 @@ Made with [contrib.rocks](https://contrib.rocks).
 
 BSD-3-Clause - 2024 Lucas Gabriel (lucmsilva).
 
-Featuring some components under Unlicense.
+With some components under Unlicense.

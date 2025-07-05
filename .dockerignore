@@ -1,8 +1,13 @@
 node_modules
+webui/node_modules
 npm-debug.log
 .git
+webui/.git
 .gitignore
-.env
+webui/.gitignore
+.env*
+webui/.env*
+webui/.next
 *.md
 !README.md
 ollama/

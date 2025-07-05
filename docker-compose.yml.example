@@ -2,17 +2,20 @@ services:
   kowalski:
     build: .
     container_name: kowalski
-    restart: unless-stopped
+    ports:
+      - "3000:3000"
     volumes:
       - ./.env:/usr/src/app/.env:ro
+      - ./telegram/props/lastfm.json:/usr/src/app/telegram/props/lastfm.json
     environment:
       - NODE_ENV=production
+    env_file:
+      - .env
+    depends_on:
+      - postgres
   postgres:
     image: postgres:17
     container_name: kowalski-postgres
-    restart: unless-stopped
-    ports:
-      - 5433:5432
     volumes:
       - ./db:/var/lib/postgresql/data
     environment:
