@@ -123,7 +123,10 @@
         "requestStopped": "🛑 Sua solicitação de IA foi interrompida.",
         "requestRemovedFromQueue": "🛑 Sua solicitação de IA foi removida da fila.",
         "noActiveRequest": "ℹ️ Você não tem nenhuma solicitação ativa de IA para parar.",
-        "executionTimeoutReached": "\n\n⏱️ Limite máximo de tempo de execução atingido!"
+        "executionTimeoutReached": "\n\n⏱️ Limite máximo de tempo de execução atingido!",
+        "stoppedCurrentAndCleared": "🛑 Parou solicitação atual e limpou {count} item(s) da fila para o usuário {userId}.",
+        "stoppedCurrentRequestOnly": "🛑 Parou solicitação atual para o usuário {userId} (nenhum item na fila encontrado).",
+        "stoppedCurrentAndClearedQueue": "🛑 Parou solicitação atual e limpou todos os itens da fila para o usuário {userId}."
     },
     "maInvalidModule": "Por favor, forneça um ID de módulo válido do The Mod Archive.\nExemplo: `/modarchive 81574`",
     "maDownloadError": "Erro ao baixar o arquivo. Verifique o ID do módulo e tente novamente.",

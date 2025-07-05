@@ -984,11 +984,30 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
       return;
     }
 
+    let stoppedCurrentRequest = false;
     const initialLength = requestQueue.length;
     const filteredQueue = requestQueue.filter(item => item.userId !== targetUserId);
     const removedCount = initialLength - filteredQueue.length;
 
-    if (removedCount === 0) {
+    requestQueue.length = 0;
+    requestQueue.push(...filteredQueue);
+
+    if (currentRequest && currentRequest.userId === targetUserId) {
+      currentRequest.abortController?.abort();
+
+      try {
+        await axios.post(`${process.env.ollamaApi}/api/generate`, {
+          model: currentRequest.model,
+          keep_alive: 0,
+        }, { timeout: 5000 });
+      } catch (error) {
+        console.log("[✨ AI] Could not unload model after cancellation:", error.message);
+      }
+
+      stoppedCurrentRequest = true;
+    }
+
+    if (removedCount === 0 && !stoppedCurrentRequest) {
       await ctx.reply(Strings.ai.noQueueItems.replace("{userId}", String(targetUserId)), {
         parse_mode: 'Markdown',
         ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
@@ -996,10 +1015,16 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
       return;
     }
 
-    requestQueue.length = 0;
-    requestQueue.push(...filteredQueue);
+    let responseMessage = "";
+    if (stoppedCurrentRequest && removedCount > 0) {
+      responseMessage = Strings.ai.stoppedCurrentAndCleared.replace("{count}", String(removedCount)).replace("{userId}", String(targetUserId));
+    } else if (stoppedCurrentRequest) {
+      responseMessage = Strings.ai.stoppedCurrentRequestOnly.replace("{userId}", String(targetUserId));
+    } else {
+      responseMessage = Strings.ai.queueCleared.replace("{count}", String(removedCount)).replace("{userId}", String(targetUserId));
+    }
 
-    await ctx.reply(Strings.ai.queueCleared.replace("{count}", String(removedCount)).replace("{userId}", String(targetUserId)), {
+    await ctx.reply(responseMessage, {
       parse_mode: 'Markdown',
       ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
     });

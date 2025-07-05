@@ -328,24 +328,10 @@ export const models: ModelInfo[] = [
     descriptionPt: 'Phi-4 é um modelo de 14B de última geração, aberto pela Microsoft.',
     models: [
       {
-        name: 'hf.co/unsloth/Phi-4-mini-reasoning-GGUF',
-        label: 'Phi4 Mini Reasoning',
-        parameterSize: '4B',
-        thinking: true,
-        uncensored: false
-      },
-      {
         name: 'phi4:14b',
         label: 'Phi4 14B',
         parameterSize: '14B',
         thinking: false,
-        uncensored: false
-      },
-      {
-        name: 'hf.co/unsloth/Phi-4-reasoning-plus-GGUF',
-        label: 'Phi4 Reasoning Plus',
-        parameterSize: '14B',
-        thinking: true,
         uncensored: false
       },
       {

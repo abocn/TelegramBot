@@ -120,7 +120,10 @@
     "requestStopped": "🛑 Your AI request has been stopped.",
     "requestRemovedFromQueue": "🛑 Your AI request has been removed from the queue.",
     "noActiveRequest": "ℹ️ You don't have any active AI requests to stop.",
-    "executionTimeoutReached": "\n\n⏱️ Max execution time limit reached!"
+    "executionTimeoutReached": "\n\n⏱️ Max execution time limit reached!",
+    "stoppedCurrentAndCleared": "🛑 Stopped current request and cleared {count} queued item(s) for user {userId}.",
+    "stoppedCurrentRequestOnly": "🛑 Stopped current request for user {userId} (no queued items found).",
+    "stoppedCurrentAndClearedQueue": "🛑 Stopped current request and cleared all queued items for user {userId}."
   },
   "maInvalidModule": "Please provide a valid module ID from The Mod Archive.\nExample: `/modarchive 81574`",
   "maDownloadError": "Error downloading the file. Check the module ID and try again.",
