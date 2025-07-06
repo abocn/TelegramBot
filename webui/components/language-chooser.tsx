@@ -1,11 +1,20 @@
+"use client";
+
 import Image from "next/image";
 import USFlag from "../assets/flags/en.webp";
 import BRFlag from "../assets/flags/br.svg";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { useTranslation } from "react-i18next";
 
 export function LanguageChooser() {
+    const { i18n } = useTranslation();
+
+    const handleLanguageChange = (value: string) => {
+        i18n.changeLanguage(value);
+    };
+
     return (
-        <Select>
+        <Select value={i18n.language} onValueChange={handleLanguageChange}>
             <SelectTrigger>
                 <SelectValue placeholder="Language" />
             </SelectTrigger>
