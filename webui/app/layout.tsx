@@ -6,6 +6,7 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/s
 import { AppSidebar } from "@/components/app-sidebar";
 import { AuthProvider } from "@/contexts/auth-context";
 import { HeaderAuth } from "@/components/header-auth";
+import { LanguageChooser } from "@/components/language-chooser";
 
 const sora = Sora({
   variable: "--font-sora",
@@ -37,8 +38,9 @@ export default function RootLayout({
               <SidebarInset className="h-[calc(100vh-16px)] overflow-hidden rounded-lg border bg-background flex flex-col">
                 <header className="flex h-16 shrink-0 items-center gap-2 px-4 border-b bg-background">
                   <SidebarTrigger className="-ml-1" />
-                  <div className="ml-auto">
+                  <div className="flex gap-1 ml-auto">
                     <HeaderAuth />
+                    <LanguageChooser />
                   </div>
                 </header>
                 <main className="flex-1 overflow-auto scroll-smooth">
