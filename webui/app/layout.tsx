@@ -38,7 +38,7 @@ export default function RootLayout({
               <SidebarInset className="h-[calc(100vh-16px)] overflow-hidden rounded-lg border bg-background flex flex-col">
                 <header className="flex h-16 shrink-0 items-center gap-2 px-4 border-b bg-background">
                   <SidebarTrigger className="-ml-1" />
-                  <div className="flex gap-1 ml-auto">
+                  <div className="flex flex-row items-center gap-3 ml-auto">
                     <HeaderAuth />
                     <LanguageChooser />
                   </div>
