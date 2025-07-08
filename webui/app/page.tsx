@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button"
 import {
   Bot,
@@ -18,8 +20,10 @@ import { TbEyeSpark } from "react-icons/tb";
 import Image from "next/image";
 import Footer from "@/components/footer";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 
 export default function Home() {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col">
       <section className="flex flex-col items-center justify-center py-24 px-6 text-center bg-gradient-to-br from-background to-muted">
@@ -40,8 +44,7 @@ export default function Home() {
           </h1>
 
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            A powerful, multi-function Telegram bot with AI capabilities, media downloading,
-            user management, and much more. Built for communities and power users.
+            {t("description")}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
