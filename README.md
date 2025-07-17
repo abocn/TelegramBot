@@ -69,12 +69,12 @@ Running Kowalski with Docker simplifies the setup, deployment, and management pr
 
    You can learn more about the different options in the [.env section](#env-functions).
 
-   > [!TIP]
-   > If you intend to setup AI, the defaults for Docker are already included (just uncomment) and don't need to be changed.
-   >
-   > Further setup may be needed for GPUs. See the [Ollama documentation](https://github.com/ollama/ollama/blob/main/docs/gpu.md) for more.
+> [!TIP]
+> If you intend to setup AI, the defaults for Docker are already included (just uncomment) and don't need to be changed.
+>
+> Further setup may be needed for GPUs. See the [Ollama documentation](https://github.com/ollama/ollama/blob/main/docs/gpu.md) for more.
 
-1. **Run the container**
+4. **Run the container**
 
    You're all done! You can run the container with:
 
@@ -82,8 +82,8 @@ Running Kowalski with Docker simplifies the setup, deployment, and management pr
    docker compose up -d
    ```
 
-   > [!NOTE]
-   > Using the `-d` flag when running causes Kowalski to run in the background. If you're just playing around or testing, you may not want to use this flag.
+> [!NOTE]
+> Using the `-d` flag when running causes Kowalski to run in the background. If you're just playing around or testing, you may not want to use this flag.
 
    The web interface will be avaliable at [http://localhost:3000]. We suggest putting it a reverse proxy if you plan to use Kowalski for production use.
 
@@ -118,27 +118,27 @@ Running Kowalski with Docker simplifies the setup, deployment, and management pr
 
    You can learn more about the different options in the [.env section](#env-functions).
 
-   > [!TIP]
-   > Further setup may be needed for GPUs. See the [Ollama documentation](https://github.com/ollama/ollama/blob/main/docs/gpu.md) for more.
+> [!TIP]
+> Further setup may be needed for GPUs. See the [Ollama documentation](https://github.com/ollama/ollama/blob/main/docs/gpu.md) for more.
 
-1. **Run the bot and WebUI**
+5. **Run the bot and WebUI**
 
    ```bash
    chmod +x start-services.sh # makes the script executable
    ./start-services.sh # starts the bot and webui
    ```
 
-   > [!NOTE]
-   > If you want to run the bot and webui separately, you can do so with:
-   >
-   > ```bash
-   > # In terminal 1
-   > bun start
-   >
-   > # In terminal 2
-   > cd webui
-   > bun dev
-   > ```
+> [!NOTE]
+> If you want to run the bot and webui separately, you can do so with:
+>
+> ```bash
+> # In terminal 1
+> bun start
+>
+> # In terminal 2
+> cd webui
+> bun dev
+> ```
 
 ### Efficant Local (w/ Docker) Development
 
