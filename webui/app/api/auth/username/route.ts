@@ -2,9 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import * as schema from "@/lib/schema";
 import { db } from "@/lib/db";
+import { rateLimit, addRateLimitHeaders } from "@/lib/ratelimit";
 
 export async function POST(request: NextRequest) {
   try {
+    const rateLimitResult = await rateLimit(request, '2fa-username', 3, 15 * 60 * 1000); // 3 req per 15m    
+    if (!rateLimitResult.success && rateLimitResult.response) {
+      return rateLimitResult.response;
+    }
+
     const requestContentType = request.headers.get('content-type');
     if (!requestContentType || !requestContentType.includes('application/json')) {
       return NextResponse.json({ success: false, error: "Invalid content type" }, { status: 400 });
@@ -75,12 +81,13 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       message: "2FA code sent successfully",
       userId: user.telegramId
     });
-
+    
+    return addRateLimitHeaders(response, rateLimitResult);
   } catch (error) {
     console.error("Error in username API:", error);
     return NextResponse.json({

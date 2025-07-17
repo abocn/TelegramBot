@@ -6,9 +6,9 @@
 [![CodeQL](https://github.com/abocn/TelegramBot/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/abocn/TelegramBot/actions/workflows/github-code-scanning/codeql)
 [![Dependabot Updates](https://github.com/abocn/TelegramBot/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/abocn/TelegramBot/actions/workflows/dependabot/dependabot-updates)
 
-Kowalski is a a simple Telegram bot made in Node.js.
+Kowalski is a extendable Telegram bot written in TypeScript.
 
-- You can find Kowalski at [@KowalskiNodeBot](https://t.me/KowalskiNodeBot) on Telegram.
+- You can find Kowalski on Telegram as [@KowalskiNodeBot](https://t.me/KowalskiNodeBot)
 
 ## Self-host requirements
 
@@ -23,89 +23,122 @@ Kowalski is a a simple Telegram bot made in Node.js.
 
 ### AI Requirements
 
-- High-end CPU *or* GPU (~ 6GB vRAM)
-- If using CPU, enough RAM to load the models (~6GB w/ defaults)
+Using AI features is not suggested for all users who plan to host Kowalski. It requires a server or computer capable of being under intense load when users are active. In the future, we plan to support for using LLM APIs to remove this requirement.
 
-## Running with Docker
+#### CPU-Only
 
-> [!IMPORTANT]
-> Please complete the above steps to prepare your local copy for building. You do not need to install FFmpeg on your host system.
+A CPU with **at least** 8 cores is recommended, otherwise AI commands will be extremely slow, and not worth the stress you are putting on the CPU.
 
----
+If you plan to use CPU, you will also need a lot of RAM to load the models themselves. 16GB is suggested at a **minimum**, and larger models can require upwards of 64-256GB of RAM. If you have a GPU available, you can use it to speed up the process.
 
-> [!NOTE]
-> Using the `-d` flag when running causes Kowalski to run in the background. If you're just playing around or testing, you may not want to use this flag.
+#### GPU-Only
 
-You can also run Kowalski using Docker, which simplifies the setup process. Make sure you have Docker and Docker Compose installed.
+GPU support has not been tested. With some extra configuration, you should have no problem using your GPU, as Ollama has amazing support. Using a GPU will speed up the model's responses **significantly**. We are not rich enough to afford them, so if you have tested Kowalski with GPU, please let us know.
 
-### Using Docker Compose
+Your GPU will require enough VRAM to load the models, which will limit the size of the models you can run. As mentioned above, these models can be quite large.
 
-1. **Copy compose file**
+Please ensure your GPU is compatible with Ollama, as well. Supported GPUs can be found on in the [Ollama documentation](https://github.com/ollama/ollama/blob/main/docs/gpu.md)
 
-   _Without AI (Ollama)_
+## Run with Docker Compose
 
-   ```bash
-   mv docker-compose.yml.example docker-compose.yml
-   ```
+Running Kowalski with Docker simplifies the setup, deployment, and management process significantly. Make sure you have Docker and Docker Compose installed, then continue to the next steps.
 
-   _With AI (Ollama)_
+1. **Clone the repo**
 
    ```bash
-   mv docker-compose.yml.ai.example docker-compose.yml
+   git clone --recurse-submodules https://github.com/ABOCN/TelegramBot
    ```
 
-1. **Make sure to setup your `.env` file first!**
+1. **Copy a Docker Compose file**
 
-   In order to successfuly deploy Kowalski, you will need to edit both your `.env` file and enter matching values in `webui/.env`.
+   _Without AI Features (Ollama)_
+
+   ```bash
+   mv examples/docker-compose.yml docker-compose.yml
+   ```
+
+   _With AI Features (Ollama)_
+
+   ```bash
+   mv examples/docker-compose.ai.yml docker-compose.yml
+   ```
+
+1. **Setup your `.env`**
+
+   In order to successfuly deploy Kowalski, you will need to have a valid `.env`. An example is provided in `.env.example`. You will need to edit both your `.env` file and enter matching values in `webui/.env`. Don't worry... it's mostly copy-paste!
+
+   You can learn more about the different options in the [.env section](#env-functions).
 
    > [!TIP]
    > If you intend to setup AI, the defaults for Docker are already included (just uncomment) and don't need to be changed.
    >
-   > Further setup may be needed for GPUs. See the Ollama documentation for more.
+   > Further setup may be needed for GPUs. See the [Ollama documentation](https://github.com/ollama/ollama/blob/main/docs/gpu.md) for more.
 
 1. **Run the container**
+
+   You're all done! You can run the container with:
 
    ```bash
    docker compose up -d
    ```
 
-### Using Docker Run
+   > [!NOTE]
+   > Using the `-d` flag when running causes Kowalski to run in the background. If you're just playing around or testing, you may not want to use this flag.
 
-If you prefer to use Docker directly, you can use these instructions instead.
-
-1. **Make sure to setup your `.env` file first!**
-
-   In order to successfuly deploy Kowalski, you will need to edit both your `.env` file and enter matching values in `webui/.env`.
-
-1. **Build the image**
-
-   ```bash
-   docker build -t kowalski .
-   ```
-
-1. **Run the container**
-
-   ```bash
-   docker run -d --name kowalski --restart unless-stopped -v $(pwd)/.env:/usr/src/app/.env:ro kowalski
-   ```
-
-> [!NOTE]
-> You must setup Ollama on your own if you would like to use AI features.
+   The web interface will be avaliable at [http://localhost:3000]. We suggest putting it a reverse proxy if you plan to use Kowalski for production use.
 
 ## Running locally (non-Docker/development setup)
 
-First, clone the repo with Git:
+1. **Clone the repo**
 
-```bash
-git clone --recurse-submodules https://github.com/ABOCN/TelegramBot
-```
+   ```bash
+   git clone --recurse-submodules https://github.com/ABOCN/TelegramBot
+   ```
 
-Next, inside the repository directory, create an `.env` file with some content, which you can see the [example .env file](.env.example) to fill info with. To see the meaning of each one, see [the Functions section](#env-functions).
+1. **Install dependencies**
 
-After editing the file, save all changes and run the bot with ``bun start``.
+   ```bash
+   bun install # installs deps for bot
+   cd webui
+   bun install # installs deps for webui
+   ```
 
-> [!TIP]
-> To deal with dependencies, just run ``bun install`` or ``bun i`` at any moment to install all of them.
+1. **Deploy neccessary components**
+
+   - **Postgres**
+     You will need a Postgres server for storing users
+   - **FFmpeg**
+     Make sure FFmpeg is installed for video download commands
+   - **Ollama** (optional)
+     If you want to use AI features, you will need to install [Ollama](https://ollama.com/).
+
+1. **Setup your `.env`**
+
+   In order to successfuly deploy Kowalski, you will need to have a valid `.env`. An example is provided in `.env.example`. You will need to edit both your `.env` file and enter matching values in `webui/.env`. Don't worry... it's mostly copy-paste!
+
+   You can learn more about the different options in the [.env section](#env-functions).
+
+   > [!TIP]
+   > Further setup may be needed for GPUs. See the [Ollama documentation](https://github.com/ollama/ollama/blob/main/docs/gpu.md) for more.
+
+1. **Run the bot and WebUI**
+
+   ```bash
+   chmod +x start-services.sh # makes the script executable
+   ./start-services.sh # starts the bot and webui
+   ```
+
+   > [!NOTE]
+   > If you want to run the bot and webui separately, you can do so with:
+   >
+   > ```bash
+   > # In terminal 1
+   > bun start
+   >
+   > # In terminal 2
+   > cd webui
+   > bun dev
+   > ```
 
 ### Efficant Local (w/ Docker) Development
 
@@ -133,6 +166,7 @@ If you want to develop a component of Kowalski, without dealing with the headach
 - **thinkingModel** (optional): Which model will be used for /think
 - **updateEveryChars** (optional): The amount of chars until message update triggers (for streaming response)
 - **databaseUrl**: Database server configuration (see `.env.example`)
+- **valkeyUrl**: Valkey URL used for ratelimiting
 - **botAdmins**: Put the ID of the people responsible for managing the bot. They can use some administrative + exclusive commands on any group.
 - **lastKey**: Last.fm API key, for use on `lastfm.js` functions, like see who is listening to what song and etc.
 - **weatherKey**: Weather.com API key, used for the `/weather` command.
@@ -144,7 +178,10 @@ If you want to develop a component of Kowalski, without dealing with the headach
 ### WebUI
 
 - **botApiUrl**: Likely will stay the same, but changes the API that the bot exposes
-- **databaseUrl**: Database server configuration (see `.env.example`)
+- **databaseUrl**: Database server configuration (see `.env.example`). Should match `.env`
+- **valkeyBaseUrl**: The hostname of your Valkey instance. Should match `.env`
+- **valkeyPort**: The port of your Valkey instance. Should match `.env`
+- **ratelimitSalt**: The salt used for hashing IP addresses in Valkey. **This should be changed in production.**
 
 ## Troubleshooting
 
@@ -176,4 +213,4 @@ Made with [contrib.rocks](https://contrib.rocks).
 
 BSD-3-Clause - 2024 Lucas Gabriel (lucmsilva).
 
-With some components under Unlicense.
+With some components under the [Unlicense](https://unlicense.org).

@@ -16,7 +16,12 @@ let users = {};
 
 function loadUsers() {
   if (!fs.existsSync(dbFile)) {
-    console.log(`WARN: Last.fm user database ${dbFile} not found. Creating a new one.`);
+    console.log(`[WARN] Last.fm user database ${dbFile} not found. Creating a new one.`);
+    saveUsers();
+    return;
+  } else if (fs.lstatSync(dbFile).isDirectory()) {
+    // if file doesn't exist, docker might make it a directory
+    fs.rmSync(dbFile, { recursive: true });
     saveUsers();
     return;
   }
@@ -25,7 +30,7 @@ function loadUsers() {
     const data = fs.readFileSync(dbFile, 'utf-8');
     users = JSON.parse(data);
   } catch (err) {
-    console.log("WARN: Error loading the Last.fm user database:", err);
+    console.log("[WARN] Error loading the Last.fm user database:", err);
     users = {};
   }
 }
@@ -34,7 +39,7 @@ function saveUsers() {
   try {
     fs.writeFileSync(dbFile, JSON.stringify(users, null, 2), 'utf-8');
   } catch (err) {
-    console.error("WARN: Error saving Last.fm users:", err);
+    console.error("[WARN] Error saving Last.fm users:", err);
   }
 }
 

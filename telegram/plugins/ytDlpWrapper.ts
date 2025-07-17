@@ -44,10 +44,10 @@ async function downloadYtDlp() {
       });
 
       writer.on('error', (err) => {
-        console.error('WARN: yt-dlp download failed:', err);
+        console.error('[WARN] yt-dlp download failed:', err);
       });
     } catch (err) {
-      console.error('WARN: yt-dlp download failed:', err.message);
+      console.error('[WARN] yt-dlp download failed:', err.message);
     };
   };
 };

@@ -13,6 +13,12 @@ services:
       - .env
     depends_on:
       - postgres
+      - ollama
+  ollama:
+    image: ollama/ollama
+    container_name: kowalski-ollama
+    volumes:
+      - ./ollama:/root/.ollama
   postgres:
     image: postgres:17
     container_name: kowalski-postgres
@@ -22,3 +28,6 @@ services:
       - POSTGRES_USER=kowalski
       - POSTGRES_PASSWORD=kowalski
       - POSTGRES_DB=kowalski
+  valkey:
+    image: valkey/valkey
+    container_name: kowalski-valkey

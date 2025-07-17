@@ -12,6 +12,7 @@ import * as schema from '../database/schema';
 import { ensureUserInDb } from './utils/ensure-user';
 import { getSpamwatchBlockedCount } from './spamwatch/spamwatch';
 import { startServer } from './api/server';
+import { createClient } from 'redis';
 
 (async function main() {
   const { botToken, handlerTimeout, maxRetries, databaseUrl, ollamaEnabled } = process.env;
@@ -103,6 +104,25 @@ import { startServer } from './api/server';
     console.error('Unhandled Rejection at:', promise, 'reason:', reason);
   });
 
+  async function testValkeyConnection() {
+    const { valkeyUrl } = process.env;
+    if (!valkeyUrl) {
+      console.log('[🔴  VK] Please set your Valkey URL in .env!');
+      process.exit(1);
+    }
+
+    try {
+      const client = createClient({ url: valkeyUrl });
+      await client.connect();
+      await client.ping();
+      console.log('[🟢  VK] Connected to Valkey');
+      await client.destroy();
+    } catch (err) {
+      console.error('[🔴  VK] Failed to connect to Valkey:', err);
+      process.exit(1);
+    }
+  }
+
   async function testDbConnection() {
     try {
       await db.query.usersTable.findMany({ limit: 1 });
@@ -115,6 +135,7 @@ import { startServer } from './api/server';
     }
   }
 
+  await testValkeyConnection();
   await testDbConnection();
 
   if (isSpamwatchConnected()) {
