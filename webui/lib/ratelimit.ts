@@ -223,31 +223,6 @@ export async function getRateLimitStatus(
   }
 }
 
-export async function cleanupExpiredEntries(): Promise<boolean> {
-  try {
-    const redis = getRedisClient();
-    const pattern = 'ratelimit:*';
-    const keys = await redis.keys(pattern);
-    
-    if (keys.length === 0) return true;
-    
-    const pipeline = redis.pipeline();
-    const now = Date.now();
-    const maxAge = 12 * 60 * 60 * 1000; // 12h
-    const cutoff = now - maxAge;
-    
-    for (const key of keys) {
-      pipeline.zremrangebyscore(key, 0, cutoff);
-    }
-    
-    await pipeline.exec();
-    return true;
-  } catch (error) {
-    console.error('[ERR] Failed to cleanup expired entries:', error);
-    return false;
-  }
-}
-
 export async function closeRedisConnection(): Promise<void> {
   if (redisClient) {
     await redisClient.quit();

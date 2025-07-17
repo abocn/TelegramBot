@@ -166,7 +166,8 @@ If you want to develop a component of Kowalski, without dealing with the headach
 - **thinkingModel** (optional): Which model will be used for /think
 - **updateEveryChars** (optional): The amount of chars until message update triggers (for streaming response)
 - **databaseUrl**: Database server configuration (see `.env.example`)
-- **valkeyUrl**: Valkey URL used for ratelimiting
+- **valkeyBaseUrl**: The hostname of your Valkey instance.
+- **valkeyPort**: The port of your Valkey instance.
 - **botAdmins**: Put the ID of the people responsible for managing the bot. They can use some administrative + exclusive commands on any group.
 - **lastKey**: Last.fm API key, for use on `lastfm.js` functions, like see who is listening to what song and etc.
 - **weatherKey**: Weather.com API key, used for the `/weather` command.
@@ -182,6 +183,7 @@ If you want to develop a component of Kowalski, without dealing with the headach
 - **valkeyBaseUrl**: The hostname of your Valkey instance. Should match `.env`
 - **valkeyPort**: The port of your Valkey instance. Should match `.env`
 - **ratelimitSalt**: The salt used for hashing IP addresses in Valkey. **This should be changed in production.**
+- **longerLogs**: Set to `true` to enable verbose logging whenever possible.
 
 ## Troubleshooting
 

@@ -8,7 +8,6 @@ import {
   withRateLimit,
   resetRateLimit,
   getRateLimitStatus,
-  cleanupExpiredEntries,
   closeRedisConnection
 } from '../ratelimit';
 
@@ -271,32 +270,6 @@ describe('Rate Limiting', () => {
       expect(status).toBeNull();
       
       mockRedis.zremrangebyscore = tempZremrangebyscore;
-    });
-  });
-
-  describe('cleanupExpiredEntries', () => {
-    it('should cleanup expired entries successfully', async () => {
-      const result = await cleanupExpiredEntries();
-      expect(result).toBe(true);
-    });
-
-    it('should handle empty keys array', async () => {
-      mockRedis.keys = mock(() => Promise.resolve([]));
-      
-      const result = await cleanupExpiredEntries();
-      expect(result).toBe(true);
-    });
-
-    it('should handle redis errors during cleanup', async () => {
-      const tempKeys = mockRedis.keys;
-      mockRedis.keys = () => {
-        throw new Error('Redis error');
-      };
-      
-      const result = await cleanupExpiredEntries();
-      expect(result).toBe(false);
-      
-      mockRedis.keys = tempKeys;
     });
   });
 

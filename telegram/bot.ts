@@ -105,11 +105,20 @@ import { createClient } from 'redis';
   });
 
   async function testValkeyConnection() {
-    const { valkeyUrl } = process.env;
-    if (!valkeyUrl) {
-      console.log('[🔴  VK] Please set your Valkey URL in .env!');
+    const { valkeyBaseUrl, valkeyPort } = process.env;
+    if (!valkeyBaseUrl || !valkeyPort) {
+      let baseMsg = '[🔴  VK] Please set your Valkey ';
+      if (!valkeyBaseUrl && !valkeyPort) {
+        baseMsg += "base URL and port in .env";
+      } else if (!valkeyBaseUrl) {
+        baseMsg += "base URL in .env";
+      } else {
+        baseMsg += "port in .env";
+      }
+      console.error(baseMsg);
       process.exit(1);
     }
+    const valkeyUrl = `redis://${valkeyBaseUrl}:${valkeyPort}`;
 
     try {
       const client = createClient({ url: valkeyUrl });
