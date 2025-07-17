@@ -41,10 +41,10 @@ function createMockRequest(ip: string = '192.168.1.1'): NextRequest {
 }
 
 describe('Rate Limiting', () => {
-  let originalPipeline: any;
-  let originalDel: any;
-  let originalZremrangebyscore: any;
-  let originalKeys: any;
+  let originalPipeline: typeof mockRedis.pipeline;
+  let originalDel: typeof mockRedis.del;
+  let originalZremrangebyscore: typeof mockRedis.zremrangebyscore;
+  let originalKeys: typeof mockRedis.keys;
 
   beforeEach(async () => {
     await mockRedis.flushall();
