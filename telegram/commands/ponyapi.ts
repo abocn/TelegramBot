@@ -84,16 +84,16 @@ export default (bot: Telegraf<Context>, db) => {
     const { message } = ctx;
     const reply_to_message_id = replyToMessageId(ctx);
     const Strings = getStrings(languageCode(ctx) || 'en');
-    const userInput = message.text.split(' ').slice(1).join(' ').trim().replace(/\s+/g, '+');
+    const userInput = message.text.split(' ').slice(1).join(' ').trim();
     const { noCharName } = Strings.ponyApi;
 
     if (verifyInput(ctx, userInput, noCharName)) return;
-    if (!userInput || /[^a-zA-Z\s]/.test(userInput) || userInput.length > 30) {
+    if (!userInput || /[^a-zA-Z0-9\s]/.test(userInput) || userInput.length > 30) {
       return sendReply(ctx, Strings.mlpInvalidCharacter, reply_to_message_id);
     }
 
     const capitalizedInput = capitalizeFirstLetter(userInput);
-    const apiUrl = `${Resources.ponyApi}/character/${capitalizedInput}`;
+    const apiUrl = `${Resources.ponyApi}/character/${capitalizedInput.replace(/ /g, "+")}`;
 
     try {
       const response = await axios(apiUrl);
@@ -204,7 +204,7 @@ export default (bot: Telegraf<Context>, db) => {
     if (await isCommandDisabled(ctx, db, 'mlp-content')) return;
 
     const Strings = getStrings(languageCode(ctx) || 'en');
-    const userInput = ctx.message.text.split(' ').slice(1).join(' ').replace(" ", "+");
+    const userInput = ctx.message.text.split(' ').slice(1).join(' ');
     const reply_to_message_id = replyToMessageId(ctx);
 
     const { noComicName } = Strings.ponyApi
@@ -213,8 +213,8 @@ export default (bot: Telegraf<Context>, db) => {
       return;
     };
 
-    // if special characters or numbers (max 30 characters)
-    if (/[^a-zA-Z\s]/.test(userInput) || userInput.length > 30) {
+    // if special characters (max 30 characters)
+    if (/[^a-zA-Z0-9\s]/.test(userInput) || userInput.length > 30) {
       ctx.reply(Strings.mlpInvalidCharacter, {
         parse_mode: 'Markdown',
         ...(reply_to_message_id ? { reply_parameters: { message_id: reply_to_message_id } } : {})
@@ -222,7 +222,7 @@ export default (bot: Telegraf<Context>, db) => {
       return;
     }
 
-    const apiUrl = `${Resources.ponyApi}/comics-story/${userInput}`;
+    const apiUrl = `${Resources.ponyApi}/comics-story/${userInput.replace(/ /g, "+")}`;
 
     try {
       const response = await axios(apiUrl);
