@@ -12,14 +12,6 @@ services:
       - kowalski
     depends_on:
       - postgres
-      - ollama
-  ollama:
-    image: ollama/ollama
-    container_name: kowalski-ollama
-    volumes:
-      - ./ollama:/root/.ollama
-    networks:
-      - kowalski
   postgres:
     image: postgres:17
     container_name: kowalski-postgres

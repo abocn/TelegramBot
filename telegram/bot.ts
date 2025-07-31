@@ -120,27 +120,35 @@ import { createClient } from 'redis';
     }
     const valkeyUrl = `redis://${valkeyBaseUrl}:${valkeyPort}`;
 
-    try {
-      const client = createClient({ url: valkeyUrl });
-      await client.connect();
-      await client.ping();
-      console.log('[🟢  VK] Connected to Valkey');
-      await client.destroy();
-    } catch (err) {
-      console.error('[🔴  VK] Failed to connect to Valkey:', err);
-      process.exit(1);
+    while (true) {
+      try {
+        const client = createClient({ url: valkeyUrl });
+        await client.connect();
+        await client.ping();
+        console.log('[🟢  VK] Connected to Valkey');
+        await client.destroy();
+        break;
+      } catch (err) {
+        console.error('[🔴  VK] Failed to connect to Valkey:', err.message);
+        console.log('[🔄  VK] Retrying in 5 seconds...');
+        await new Promise(resolve => setTimeout(resolve, 5000));
+      }
     }
   }
 
   async function testDbConnection() {
-    try {
-      await db.query.usersTable.findMany({ limit: 1 });
-      const users = await db.query.usersTable.findMany({});
-      const userCount = users.length;
-      console.log(`[💽  DB] Connected [${userCount} users]`);
-    } catch (err) {
-      console.error('[💽  DB] Failed to connect:', err);
-      process.exit(1);
+    while (true) {
+      try {
+        await db.query.usersTable.findMany({ limit: 1 });
+        const users = await db.query.usersTable.findMany({});
+        const userCount = users.length;
+        console.log(`[💽  DB] Connected [${userCount} users]`);
+        break;
+      } catch (err) {
+        console.error('[💽  DB] Failed to connect:', err.message);
+        console.log('[🔄  DB] Retrying in 5 seconds...');
+        await new Promise(resolve => setTimeout(resolve, 5000));
+      }
     }
   }
 

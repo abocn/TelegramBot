@@ -74,7 +74,17 @@ Running Kowalski with Docker simplifies the setup, deployment, and management pr
 >
 > Further setup may be needed for GPUs. See the [Ollama documentation](https://github.com/ollama/ollama/blob/main/docs/gpu.md) for more.
 
-4. **Run the container**
+4. **Prepare the database**
+
+The WebUI and bot requires a Postgres database, which requires some setup. Again, don't worry as it's a pretty quick setup!
+
+**Migrate the schema to DB:**
+
+```bash
+bunx drizzle-kit push
+```
+
+5. **Run the container**
 
    You're all done! You can run the container with:
 

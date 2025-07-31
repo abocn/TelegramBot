@@ -1,25 +1,29 @@
+# Do NOT use this Compose file in production. It exposes Kowalski's internal API
+# and related services. In a server setup, it will expose everything to the
+# public internet. Use only for development purposes.
+
 services:
   kowalski:
     build: .
     container_name: kowalski
+    ports:
+      - "3000:3000"
     volumes:
       - ./telegram/props/lastfm.json:/usr/src/app/telegram/props/lastfm.json
     environment:
       - NODE_ENV=production
     env_file:
       - .env
-    networks:
-      - kowalski
     depends_on:
       - postgres
-      - ollama
-  ollama:
-    image: ollama/ollama
-    container_name: kowalski-ollama
-    volumes:
-      - ./ollama:/root/.ollama
-    networks:
-      - kowalski
+  # Uncomment the following to test AI features
+  #ollama:
+  #  image: ollama/ollama
+  #  container_name: kowalski-ollama
+  #  volumes:
+  #    - ./ollama:/root/.ollama
+  #  ports:
+  #    - "11434:11434"
   postgres:
     image: postgres:17
     container_name: kowalski-postgres
@@ -29,13 +33,10 @@ services:
       - POSTGRES_USER=kowalski
       - POSTGRES_PASSWORD=kowalski
       - POSTGRES_DB=kowalski
-    networks:
-      - kowalski
+    ports:
+      - "5432:5432"
   valkey:
     image: valkey/valkey
     container_name: kowalski-valkey
-    networks:
-      - kowalski
-
-networks:
-  kowalski:
+    ports:
+      - "6379:6379"
