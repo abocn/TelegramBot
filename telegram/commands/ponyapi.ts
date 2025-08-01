@@ -8,47 +8,9 @@ import { Telegraf, Context } from 'telegraf';
 import { languageCode } from '../utils/language-code';
 import { replyToMessageId } from '../utils/reply-to-message-id';
 import { isCommandDisabled } from '../utils/check-command-disabled';
+import { Character, Episode, Comic } from '../types/mlp';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
-
-interface Character {
-  id: string;
-  name: string;
-  alias: string;
-  url: string;
-  sex: string;
-  residence: string;
-  occupation: string;
-  kind: string;
-  image: string[];
-}
-
-interface Episode {
-  id: string;
-  name: string;
-  image: string;
-  url: string;
-  season: string;
-  episode: string;
-  overall: string;
-  airdate: string;
-  storyby: string;
-  writtenby: string;
-  storyboard: string;
-}
-
-interface Comic {
-  id: string;
-  name: string;
-  series: string;
-  image: string;
-  url: string;
-  writer: string;
-  artist: string;
-  colorist: string;
-  letterer: string;
-  editor: string;
-}
 
 function capitalizeFirstLetter(letter: string) {
   return letter.charAt(0).toUpperCase() + letter.slice(1);
@@ -99,7 +61,7 @@ export default (bot: Telegraf<Context>, db) => {
       const response = await axios(apiUrl);
       const data = response.data.data;
       if (Array.isArray(data) && data.length > 0) {
-        const character = data[0];
+        const character: Character = data[0];
         const aliases = Array.isArray(character.alias)
           ? character.alias.join(', ')
           : character.alias || Strings.varStrings.varNone;
@@ -215,7 +177,7 @@ export default (bot: Telegraf<Context>, db) => {
 
     // if special characters (max 30 characters)
     if (/[^a-zA-Z0-9\s]/.test(userInput) || userInput.length > 30) {
-      ctx.reply(Strings.mlpInvalidCharacter, {
+      ctx.reply(Strings.ponyApi.noComicName, {
         parse_mode: 'Markdown',
         ...(reply_to_message_id ? { reply_parameters: { message_id: reply_to_message_id } } : {})
       });
