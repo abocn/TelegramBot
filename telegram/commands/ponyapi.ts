@@ -8,47 +8,9 @@ import { Telegraf, Context } from 'telegraf';
 import { languageCode } from '../utils/language-code';
 import { replyToMessageId } from '../utils/reply-to-message-id';
 import { isCommandDisabled } from '../utils/check-command-disabled';
+import { Character, Episode, Comic } from '../types/mlp';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
-
-interface Character {
-  id: string;
-  name: string;
-  alias: string;
-  url: string;
-  sex: string;
-  residence: string;
-  occupation: string;
-  kind: string;
-  image: string[];
-}
-
-interface Episode {
-  id: string;
-  name: string;
-  image: string;
-  url: string;
-  season: string;
-  episode: string;
-  overall: string;
-  airdate: string;
-  storyby: string;
-  writtenby: string;
-  storyboard: string;
-}
-
-interface Comic {
-  id: string;
-  name: string;
-  series: string;
-  image: string;
-  url: string;
-  writer: string;
-  artist: string;
-  colorist: string;
-  letterer: string;
-  editor: string;
-}
 
 function capitalizeFirstLetter(letter: string) {
   return letter.charAt(0).toUpperCase() + letter.slice(1);
@@ -84,22 +46,22 @@ export default (bot: Telegraf<Context>, db) => {
     const { message } = ctx;
     const reply_to_message_id = replyToMessageId(ctx);
     const Strings = getStrings(languageCode(ctx) || 'en');
-    const userInput = message.text.split(' ').slice(1).join(' ').trim().replace(/\s+/g, '+');
+    const userInput = message.text.split(' ').slice(1).join(' ').trim();
     const { noCharName } = Strings.ponyApi;
 
     if (verifyInput(ctx, userInput, noCharName)) return;
-    if (!userInput || /[^a-zA-Z\s]/.test(userInput) || userInput.length > 30) {
+    if (!userInput || /[^a-zA-Z0-9\s]/.test(userInput) || userInput.length > 30) {
       return sendReply(ctx, Strings.mlpInvalidCharacter, reply_to_message_id);
     }
 
     const capitalizedInput = capitalizeFirstLetter(userInput);
-    const apiUrl = `${Resources.ponyApi}/character/${capitalizedInput}`;
+    const apiUrl = `${Resources.ponyApi}/character/${capitalizedInput.replace(/ /g, "+")}`;
 
     try {
       const response = await axios(apiUrl);
       const data = response.data.data;
       if (Array.isArray(data) && data.length > 0) {
-        const character = data[0];
+        const character: Character = data[0];
         const aliases = Array.isArray(character.alias)
           ? character.alias.join(', ')
           : character.alias || Strings.varStrings.varNone;
@@ -204,7 +166,7 @@ export default (bot: Telegraf<Context>, db) => {
     if (await isCommandDisabled(ctx, db, 'mlp-content')) return;
 
     const Strings = getStrings(languageCode(ctx) || 'en');
-    const userInput = ctx.message.text.split(' ').slice(1).join(' ').replace(" ", "+");
+    const userInput = ctx.message.text.split(' ').slice(1).join(' ');
     const reply_to_message_id = replyToMessageId(ctx);
 
     const { noComicName } = Strings.ponyApi
@@ -213,16 +175,16 @@ export default (bot: Telegraf<Context>, db) => {
       return;
     };
 
-    // if special characters or numbers (max 30 characters)
-    if (/[^a-zA-Z\s]/.test(userInput) || userInput.length > 30) {
-      ctx.reply(Strings.mlpInvalidCharacter, {
+    // if special characters (max 30 characters)
+    if (/[^a-zA-Z0-9\s]/.test(userInput) || userInput.length > 30) {
+      ctx.reply(Strings.ponyApi.noComicName, {
         parse_mode: 'Markdown',
         ...(reply_to_message_id ? { reply_parameters: { message_id: reply_to_message_id } } : {})
       });
       return;
     }
 
-    const apiUrl = `${Resources.ponyApi}/comics-story/${userInput}`;
+    const apiUrl = `${Resources.ponyApi}/comics-story/${userInput.replace(/ /g, "+")}`;
 
     try {
       const response = await axios(apiUrl);

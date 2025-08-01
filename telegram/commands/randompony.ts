@@ -13,7 +13,7 @@ const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 export const randomponyHandler = async (ctx: Context & { message: { text: string } }) => {
   const Strings = getStrings(languageCode(ctx));
   const reply_to_message_id = replyToMessageId(ctx);
-  ctx.reply(Strings.ponyApi.searching, {
+  const searchingMessage = await ctx.reply(Strings.ponyApi.searching, {
     parse_mode: 'Markdown',
     ...(reply_to_message_id ? { reply_parameters: { message_id: reply_to_message_id } } : {})
   });
@@ -29,16 +29,16 @@ export const randomponyHandler = async (ctx: Context & { message: { text: string
       }
     }
 
-    ctx.replyWithPhoto(response.data.pony.representations.full, {
+    await ctx.telegram.editMessageMedia(searchingMessage.chat.id, searchingMessage.message_id, undefined, {
+      type: 'photo',
+      media: response.data.pony.representations.full,
       caption: `${response.data.pony.sourceURL}\n\n${tags.length > 0 ? tags.join(', ') : ''}`,
-      parse_mode: 'Markdown',
-      ...(reply_to_message_id ? { reply_parameters: { message_id: reply_to_message_id } } : {})
+      parse_mode: 'Markdown'
     });
   } catch (error) {
     const message = Strings.ponyApi.apiErr.replace('{error}', error.message);
-    ctx.reply(message, {
-      parse_mode: 'Markdown',
-      ...(reply_to_message_id ? { reply_parameters: { message_id: reply_to_message_id } } : {})
+    await ctx.telegram.editMessageText(searchingMessage.chat.id, searchingMessage.message_id, undefined, message, {
+      parse_mode: 'Markdown'
     });
     return;
   }
