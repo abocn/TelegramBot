@@ -1,12 +1,15 @@
-import { getStrings } from '../plugins/checklang';
-import { isOnSpamWatch } from '../spamwatch/spamwatch';
-import spamwatchMiddlewareModule from '../spamwatch/Middleware';
-import { execFile } from 'child_process';
-import { isCommandDisabled } from '../utils/check-command-disabled';
 import os from 'os';
 import fs from 'fs';
 import path from 'path';
 import * as ytUrl from 'youtube-url';
+import { execFile } from 'child_process';
+
+import { isOnSpamWatch } from '../spamwatch/spamwatch';
+import spamwatchMiddlewareModule from '../spamwatch/Middleware';
+
+import { getStrings } from '../plugins/checklang';
+
+import { isCommandDisabled } from '../utils/check-command-disabled';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 
@@ -20,7 +23,6 @@ const getYtDlpPath = () => {
   const platform = os.platform();
   return ytDlpPaths[platform] || ytDlpPaths.linux;
 };
-
 
 const ffmpegPaths = {
   linux: '/usr/bin/ffmpeg',

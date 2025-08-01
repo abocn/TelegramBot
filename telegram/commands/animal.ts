@@ -1,12 +1,15 @@
-import Resources from '../props/resources.json';
-import { getStrings } from '../plugins/checklang';
-import { isOnSpamWatch } from '../spamwatch/spamwatch';
-import spamwatchMiddlewareModule from '../spamwatch/Middleware';
-import axios from 'axios';
 import { Context, Telegraf } from 'telegraf';
+import axios from 'axios';
+
+import spamwatchMiddlewareModule from '../spamwatch/Middleware';
+import { isOnSpamWatch } from '../spamwatch/spamwatch';
+
+import { getStrings } from '../plugins/checklang';
+import Resources from '../props/resources.json';
+
+import { isCommandDisabled } from '../utils/check-command-disabled';
 import { replyToMessageId } from '../utils/reply-to-message-id';
 import { languageCode } from '../utils/language-code';
-import { isCommandDisabled } from '../utils/check-command-disabled';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 

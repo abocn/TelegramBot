@@ -2,13 +2,16 @@
 // Copyright (c) 2024 BubbalooTeam. (https://github.com/BubbalooTeam)
 // Minor code changes by lucmsilva (https://github.com/lucmsilva651)
 
-import Resources from '../props/resources.json';
+import { Context, Telegraf } from 'telegraf';
 import axios from 'axios';
-import { getStrings } from '../plugins/checklang';
+
 import { isOnSpamWatch } from '../spamwatch/spamwatch';
 import spamwatchMiddlewareModule from '../spamwatch/Middleware';
+
+import Resources from '../props/resources.json';
+import { getStrings } from '../plugins/checklang';
+
 import verifyInput from '../plugins/verifyInput';
-import { Context, Telegraf } from 'telegraf';
 import { isCommandDisabled } from '../utils/check-command-disabled';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);

@@ -1,23 +1,22 @@
-import Resources from '../props/resources.json';
-import { getStrings } from '../plugins/checklang';
-import { isOnSpamWatch } from '../spamwatch/spamwatch';
-import spamwatchMiddlewareModule from '../spamwatch/Middleware';
-import axios from 'axios';
-import verifyInput from '../plugins/verifyInput';
 import { Context, Telegraf } from 'telegraf';
-import { replyToMessageId } from '../utils/reply-to-message-id';
+import axios from 'axios';
+
+import spamwatchMiddlewareModule from '../spamwatch/Middleware';
+import { isOnSpamWatch } from '../spamwatch/spamwatch';
+
+import { getStrings } from '../plugins/checklang';
+import Resources from '../props/resources.json';
+
 import * as schema from '../../database/schema';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+
 import { isCommandDisabled } from '../utils/check-command-disabled';
+import { replyToMessageId } from '../utils/reply-to-message-id';
+import verifyInput from '../plugins/verifyInput';
+
+import type { Device } from '../types/devices';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
-
-interface Device {
-  brand: string;
-  codename: string;
-  model: string;
-  name: string;
-}
 
 export async function getDeviceByCodename(codename: string): Promise<Device | null> {
   try {

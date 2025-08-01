@@ -14,7 +14,7 @@
     "node-html-parser": "^7.0.1",
     "nodemon": "^3.1.10",
     "pg": "^8.16.3",
-    "redis": "^5.6.1",
+    "redis": "^5.7.0",
     "telegraf": "^4.16.3",
     "youtube-url": "^0.5.0"
   },

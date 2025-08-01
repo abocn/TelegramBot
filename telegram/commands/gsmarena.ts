@@ -4,28 +4,21 @@
 // With some help from GPT (I don't really like AI but whatever)
 // If this were a kang, I would not be giving credits to him!
 
-import { isOnSpamWatch } from '../spamwatch/spamwatch';
-import spamwatchMiddlewareModule from '../spamwatch/Middleware';
 import axios from 'axios';
 import { parse } from 'node-html-parser';
+
+import { isOnSpamWatch } from '../spamwatch/spamwatch';
+import spamwatchMiddlewareModule from '../spamwatch/Middleware';
+
 import { getDeviceByCodename } from './codename';
 import { getStrings } from '../plugins/checklang';
+
 import { languageCode } from '../utils/language-code';
 import { isCommandDisabled } from '../utils/check-command-disabled';
 
+import type { PhoneSearchResult, PhoneDetails } from '../types/devices';
+
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
-
-interface PhoneSearchResult {
-  name: string;
-  url: string;
-}
-
-interface PhoneDetails {
-  specs: Record<string, Record<string, string>>;
-  name?: string;
-  url?: string;
-  picture?: string;
-}
 
 const HEADERS = {
   "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",

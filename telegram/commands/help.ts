@@ -1,7 +1,11 @@
-import { getStrings } from '../plugins/checklang';
+import type { Context } from 'telegraf';
+
 import { isOnSpamWatch } from '../spamwatch/spamwatch';
 import spamwatchMiddlewareModule from '../spamwatch/Middleware';
-import type { Context } from 'telegraf';
+
+import { getStrings } from '../plugins/checklang';
+
+import type { MessageOptions } from '../types/help';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 
@@ -27,15 +31,6 @@ function isAdmin(ctx: Context): boolean {
   if (!userId) return false;
   const adminArray = process.env.botAdmins ? process.env.botAdmins.split(',').map(id => parseInt(id.trim())) : [];
   return adminArray.includes(userId);
-}
-
-interface MessageOptions {
-  parse_mode: string;
-  disable_web_page_preview: boolean;
-  reply_markup: {
-    inline_keyboard: { text: string; callback_data: string; }[][];
-  };
-  reply_to_message_id?: number;
 }
 
 async function sendHelpMessage(ctx, isEditing, db) {

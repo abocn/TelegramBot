@@ -1,9 +1,12 @@
-import Resources from '../props/resources.json';
 import fs from 'fs';
 import axios from 'axios';
-import { getStrings } from '../plugins/checklang';
+
 import { isOnSpamWatch } from '../spamwatch/spamwatch';
 import spamwatchMiddlewareModule from '../spamwatch/Middleware';
+
+import Resources from '../props/resources.json';
+import { getStrings } from '../plugins/checklang';
+
 import { isCommandDisabled } from '../utils/check-command-disabled';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);

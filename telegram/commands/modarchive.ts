@@ -1,21 +1,21 @@
-import Resources from '../props/resources.json';
-import axios from 'axios';
-import fs from 'fs';
-import path from 'path';
-import { getStrings } from '../plugins/checklang';
-import { isOnSpamWatch } from '../spamwatch/spamwatch';
-import spamwatchMiddlewareModule from '../spamwatch/Middleware';
-import { languageCode } from '../utils/language-code';
 import { Context, Telegraf } from 'telegraf';
-import { replyToMessageId } from '../utils/reply-to-message-id';
+import axios from 'axios';
+import path from 'path';
+import fs from 'fs';
+
+import { getStrings } from '../plugins/checklang';
+import Resources from '../props/resources.json';
+
+import spamwatchMiddlewareModule from '../spamwatch/Middleware';
+import { isOnSpamWatch } from '../spamwatch/spamwatch';
+
 import { isCommandDisabled } from '../utils/check-command-disabled';
+import { replyToMessageId } from '../utils/reply-to-message-id';
+import { languageCode } from '../utils/language-code';
+
+import type { ModuleResult } from '../types/modarchive';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
-
-interface ModuleResult {
-  filePath: string;
-  fileName: string;
-}
 
 async function downloadModule(moduleId: string): Promise<ModuleResult | null> {
   try {

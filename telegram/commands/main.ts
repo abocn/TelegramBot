@@ -1,13 +1,18 @@
-import { getStrings } from '../plugins/checklang';
+import { Context, Telegraf } from 'telegraf';
+
 import { isOnSpamWatch } from '../spamwatch/spamwatch';
 import spamwatchMiddlewareModule from '../spamwatch/Middleware';
-import { Context, Telegraf } from 'telegraf';
-import { replyToMessageId } from '../utils/reply-to-message-id';
+
+import { getStrings } from '../plugins/checklang';
+
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from '../../database/schema';
 import { eq } from 'drizzle-orm';
+
+import { replyToMessageId } from '../utils/reply-to-message-id';
 import { ensureUserInDb } from '../utils/ensure-user';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { getModelLabelByName } from './ai';
+
 import { models } from '../../config/ai';
 import { langs } from '../locales/config';
 import { modelPageSize, seriesPageSize } from '../../config/settings';

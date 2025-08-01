@@ -28,13 +28,12 @@
 //
 // For more information, please refer to <https://unlicense.org/>
 
-import { isOnSpamWatch } from "../spamwatch/spamwatch"
-import spamwatchMiddlewareModule from "../spamwatch/Middleware"
-
 import { Telegraf, Context } from "telegraf"
 import type { Message } from "telegraf/types"
-
 import axios from "axios"
+
+import { isOnSpamWatch } from "../spamwatch/spamwatch"
+import spamwatchMiddlewareModule from "../spamwatch/Middleware"
 
 import { getStrings } from "../plugins/checklang"
 

@@ -37,4 +37,4 @@ interface Comic {
   editor: string;
 }
 
-export { Character, Episode, Comic };
+export type { Character, Episode, Comic }

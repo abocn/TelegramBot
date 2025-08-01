@@ -1,12 +1,15 @@
-import { getStrings } from '../plugins/checklang';
-import { isOnSpamWatch } from '../spamwatch/spamwatch';
-import spamwatchMiddlewareModule from '../spamwatch/Middleware';
 import os from 'os';
 import { exec } from 'child_process';
 import { error } from 'console';
 import { Context, Telegraf } from 'telegraf';
+
+import { isOnSpamWatch } from '../spamwatch/spamwatch';
+import spamwatchMiddlewareModule from '../spamwatch/Middleware';
+
 import * as schema from '../../database/schema';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+
+import { getStrings } from '../plugins/checklang';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 

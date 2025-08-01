@@ -1,10 +1,14 @@
-import Resources from '../props/resources.json';
-import { getStrings } from '../plugins/checklang';
+import { Context, Telegraf } from 'telegraf';
+
 import { isOnSpamWatch } from '../spamwatch/spamwatch';
 import spamwatchMiddlewareModule from '../spamwatch/Middleware';
-import { Context, Telegraf } from 'telegraf';
+
+import Resources from '../props/resources.json';
+import { getStrings } from '../plugins/checklang';
+
 import * as schema from '../../database/schema';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+
 import { isCommandDisabled } from '../utils/check-command-disabled';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);

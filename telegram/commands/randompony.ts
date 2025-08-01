@@ -1,9 +1,12 @@
-import Resources from '../props/resources.json';
-import { getStrings } from '../plugins/checklang';
+import { Telegraf, Context } from 'telegraf';
+import axios from 'axios';
+
 import { isOnSpamWatch } from '../spamwatch/spamwatch';
 import spamwatchMiddlewareModule from '../spamwatch/Middleware';
-import axios from 'axios';
-import { Telegraf, Context } from 'telegraf';
+
+import Resources from '../props/resources.json';
+import { getStrings } from '../plugins/checklang';
+
 import { languageCode } from '../utils/language-code';
 import { replyToMessageId } from '../utils/reply-to-message-id';
 import { isCommandDisabled } from '../utils/check-command-disabled';

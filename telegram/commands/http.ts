@@ -1,13 +1,18 @@
-import Resources from '../props/resources.json';
-import { getStrings } from '../plugins/checklang';
+import { Context, Telegraf } from 'telegraf';
+import axios from 'axios';
+
 import { isOnSpamWatch } from '../spamwatch/spamwatch';
 import spamwatchMiddlewareModule from '../spamwatch/Middleware';
-import axios from 'axios';
+
+import Resources from '../props/resources.json';
+import { getStrings } from '../plugins/checklang';
+
 import verifyInput from '../plugins/verifyInput';
-import { Context, Telegraf } from 'telegraf';
+
 import * as schema from '../../database/schema';
-import { languageCode } from '../utils/language-code';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+
+import { languageCode } from '../utils/language-code';
 import { isCommandDisabled } from '../utils/check-command-disabled';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
