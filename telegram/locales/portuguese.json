@@ -87,7 +87,7 @@
         "seriesDescription": "{seriesDescription}",
         "selectParameterSize": "Por favor, selecione um tamanho de parâmetro para {seriesLabel}.",
         "parameterSizeExplanation": "O tamanho do parâmetro (ex: 2B, 4B) refere-se ao número de parâmetros do modelo. Modelos maiores podem ser mais capazes, mas exigem mais recursos.",
-        "systemPrompt": "Você é um assistente de Telegram chamado {botName}.\nData/Hora atual (UTC): {date}\n\n---\n\nMensagem do usuário:\n{message}",
+        "systemPrompt": "Você é chamado {botName}.\nData/Hora atual (UTC): {date}\n\n---\n\nMensagem do usuário:\n{message}",
         "statusWaitingRender": "⏳ Transmitindo...",
         "statusRendering": "🖼️ Renderizando...",
         "statusComplete": "✅ Completo!",
