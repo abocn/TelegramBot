@@ -28,8 +28,6 @@
 //
 // For more information, please refer to <https://unlicense.org/>
 
-import { flash_model, thinking_model } from "../commands/ai"
-
 class Logger {
   private static instance: Logger
 

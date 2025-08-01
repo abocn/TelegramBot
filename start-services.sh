@@ -1,7 +1,7 @@
 #!/bin/bash
 
 cleanup() {
-  echo "\nShutting down services..."
+  echo -e "\nShutting down services..."
   if [ ! -z "$BOT_PID" ]; then
     echo "Stopping Bot (PID: $BOT_PID)..."
     kill $BOT_PID 2>/dev/null
@@ -14,7 +14,7 @@ cleanup() {
     echo "Stopping Valkey cleanup service (PID: $CLEANUP_PID)..."
     kill $CLEANUP_PID 2>/dev/null
   fi
-  echo "\nDone! Thanks for using Kowalski"
+  echo -e "\nDone! Thanks for using Kowalski"
   exit 0
 }
 

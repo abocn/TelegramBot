@@ -30,23 +30,38 @@
 
 import { isOnSpamWatch } from "../spamwatch/spamwatch"
 import spamwatchMiddlewareModule from "../spamwatch/Middleware"
+
 import { Telegraf, Context } from "telegraf"
 import type { Message } from "telegraf/types"
-import { replyToMessageId } from "../utils/reply-to-message-id"
-import { getStrings } from "../plugins/checklang"
+
 import axios from "axios"
+
+import { getStrings } from "../plugins/checklang"
+
+import { isCommandDisabled } from "../utils/check-command-disabled"
+import { replyToMessageId } from "../utils/reply-to-message-id"
+import { ensureUserInDb } from "../utils/ensure-user"
 import { rateLimiter } from "../utils/rate-limiter"
 import { logger } from "../utils/log"
-import { ensureUserInDb } from "../utils/ensure-user"
+
 import * as schema from '../../database/schema'
 import type { NodePgDatabase } from "drizzle-orm/node-postgres"
 import { eq, sql, and, gt, isNotNull } from 'drizzle-orm'
-import { models, unloadModelAfterB, maxUserQueueSize } from "../../config/ai"
-import { isCommandDisabled } from "../utils/check-command-disabled"
+
+import {
+  models,
+  unloadModelAfterB,
+  maxUserQueueSize,
+  defaultFlashModel,
+  defaultThinkingModel
+} from "../../config/ai"
+
+import type { TextContext, User, OllamaResponse, AiRequest } from "../types/ai"
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch)
-export const flash_model = process.env.flashModel || "gemma3:4b"
-export const thinking_model = process.env.thinkingModel || "qwen3:4b"
+
+const flash_model = process.env.flashModel || defaultFlashModel
+const thinking_model = process.env.thinkingModel || defaultThinkingModel
 
 function isAdmin(ctx: Context): boolean {
   const userId = ctx.from?.id;
@@ -95,14 +110,6 @@ async function checkUserTimeout(ctx: Context, db: NodePgDatabase<typeof schema>,
   }
 
   return false;
-}
-
-type TextContext = Context & { message: Message.TextMessage }
-
-type User = typeof schema.usersTable.$inferSelect
-
-interface OllamaResponse {
-  response: string;
 }
 
 async function usingSystemPrompt(ctx: TextContext, db: NodePgDatabase<typeof schema>, botName: string, message: string): Promise<string> {
@@ -706,15 +713,6 @@ export function getModelLabelByName(name: string): string {
 
 export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
   const botName = bot.botInfo?.first_name && bot.botInfo?.last_name ? `${bot.botInfo.first_name} ${bot.botInfo.last_name}` : "Kowalski"
-
-  interface AiRequest {
-    task: () => Promise<void>;
-    ctx: TextContext;
-    wasQueued: boolean;
-    userId: number;
-    model: string;
-    abortController?: AbortController;
-  }
 
   const requestQueue: AiRequest[] = [];
   let isProcessing = false;

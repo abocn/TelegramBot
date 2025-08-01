@@ -21,7 +21,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { models } from "./ai"
+import { models } from "@config/ai"
 
 interface ModelPickerProps {
   value?: string

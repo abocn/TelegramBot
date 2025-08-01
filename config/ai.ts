@@ -1,20 +1,9 @@
-export interface ModelInfo {
-  name: string;
-  label: string;
-  descriptionEn: string;
-  descriptionPt: string;
-  models: Array<{
-    name: string;
-    label: string;
-    parameterSize: string;
-    thinking: boolean;
-    uncensored: boolean;
-  }>;
-}
+import { ModelInfo } from "../telegram/types/ai"
 
 export const defaultFlashModel = "gemma3:4b"
 export const defaultThinkingModel = "qwen3:4b"
-export const unloadModelAfterB = 12 // how many billion params until model is auto-unloaded
+export const unloadModelAfterB = 12 /* max size of models which stay loaded (in billions of params)
+                                       ex: setting to 12 will unload a 14b model immediately, while keeping an 8b loaded */
 export const maxUserQueueSize = 3
 
 export const models: ModelInfo[] = [
