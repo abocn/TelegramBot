@@ -29,6 +29,8 @@
 // For more information, please refer to <https://unlicense.org/>
 
 import { usersTable } from '../../database/schema';
+import { getStrings } from '../plugins/checklang';
+type NewUser = typeof usersTable.$inferInsert;
 
 export async function ensureUserInDb(ctx, db) {
   if (!ctx.from) return;
@@ -37,10 +39,11 @@ export async function ensureUserInDb(ctx, db) {
   const firstName = ctx.from.first_name || ' ';
   const lastName = ctx.from.last_name || ' ';
   const languageCode = ctx.from.language_code || 'en';
+  const Strings = getStrings(languageCode);
 
   const existing = await db.query.usersTable.findMany({ where: (fields, { eq }) => eq(fields.telegramId, telegramId), limit: 1 });
   if (existing.length === 0) {
-    const userToInsert = {
+    const userToInsert: NewUser = {
       telegramId,
       username,
       firstName,
@@ -49,10 +52,12 @@ export async function ensureUserInDb(ctx, db) {
       aiEnabled: false,
       showThinking: false,
       customAiModel: "deepseek-r1:1.5b",
+      customSystemPrompt: Strings.ai.systemPrompt,
       aiTemperature: 0.9,
       aiRequests: 0,
       aiCharacters: 0,
       disabledCommands: [],
+      timezone: "UTC",
       aiTimeoutUntil: null,
       aiMaxExecutionTime: 0,
     };

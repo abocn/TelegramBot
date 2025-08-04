@@ -25,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className="scroll-smooth">
-      <body className={`${sora.variable} antialiased`}>
+      <body className={`${sora.variable} antialiased lg:p-2 p-0 m-0 w-full h-full`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -35,9 +35,9 @@ export default function RootLayout({
           <AuthProvider>
             <SidebarProvider>
               <AppSidebar />
-              <SidebarInset className="h-[calc(100vh-16px)] overflow-hidden rounded-lg border bg-background flex flex-col">
+              <SidebarInset className="h-screen lg:h-[calc(100vh-16px)] overflow-hidden lg:rounded-lg lg:border border-0 bg-background flex flex-col">
                 <header className="flex h-16 shrink-0 items-center gap-2 px-4 border-b bg-background">
-                  <SidebarTrigger className="-ml-1" />
+                  <SidebarTrigger className="ml-1 cursor-pointer" />
                   <div className="flex flex-row items-center gap-3 ml-auto">
                     <HeaderAuth />
                     <LanguageChooser />

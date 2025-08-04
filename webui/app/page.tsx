@@ -14,7 +14,7 @@ import {
   Trash,
   Lock,
 } from "lucide-react";
-import { SiYoutube, SiForgejo } from "react-icons/si";
+import { SiYoutube, SiGithub } from "react-icons/si";
 import { RiTelegram2Line } from "react-icons/ri";
 import { TbEyeSpark } from "react-icons/tb";
 import Image from "next/image";
@@ -27,7 +27,7 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       <section className="flex flex-col items-center justify-center py-24 px-6 text-center bg-gradient-to-br from-background to-muted">
-        <div className="max-w-4xl mx-auto space-y-8">
+        <div className="sm:max-w-4xl mx-auto space-y-8">
           <div className="flex items-center justify-center mb-6">
             <div className="flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 p-4">
               <Image
@@ -49,19 +49,21 @@ export default function Home() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
             <Button size="lg" className="min-w-32" asChild>
-              <Link href="https://t.me/KowalskiNodeBot">
+              <Link href="https://t.me/KowalskiNodeBot" target="_blank" rel="noopener noreferrer">
                 <RiTelegram2Line />
                 Try on Telegram
               </Link>
             </Button>
-            <Button variant="outline" size="lg" className="min-w-32">
-              <Settings />
-              Documentation
+            <Button variant="outline" size="lg" className="min-w-32" asChild>
+              <Link href="https://github.com/abocn/TelegramBot/blob/main/README.md" target="_blank" rel="noopener noreferrer">
+                <Settings />
+                Documentation
+              </Link>
             </Button>
             <Button variant="outline" size="lg" className="min-w-32" asChild>
-              <Link href="https://git.p0ntus.com/ABOCN/TelegramBot">
-                <SiForgejo />
-                View on Forgejo
+              <Link href="https://github.com/abocn/TelegramBot" target="_blank" rel="noopener noreferrer">
+                <SiGithub />
+                View on GitHub
               </Link>
             </Button>
           </div>

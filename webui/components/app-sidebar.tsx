@@ -4,11 +4,10 @@ import * as React from "react"
 import {
   Home,
   MessageSquare,
-  Users,
-  Sparkles,
   User,
   Trash2,
-  LogOut
+  LogOut,
+  Command
 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
@@ -26,7 +25,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { SiYoutube } from "react-icons/si"
 import { RiTelegram2Line } from "react-icons/ri"
 import { useAuth } from "@/contexts/auth-context"
 import { Badge } from "@/components/ui/badge"
@@ -49,23 +47,10 @@ const navigation = [
     url: "/about",
     icon: MessageSquare,
   },
-]
-
-const features = [
   {
-    title: "AI Commands",
-    url: "/#ai-features",
-    icon: Sparkles,
-  },
-  {
-    title: "Video Download",
-    url: "/#youtube-features",
-    icon: SiYoutube,
-  },
-  {
-    title: "User Accounts & UI",
-    url: "/#user-features",
-    icon: Users,
+    title: "Commands",
+    url: "/commands",
+    icon: Command,
   },
 ]
 
@@ -121,8 +106,8 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <div className="flex flex-row justify-between gap-3">
-                <Link href="/" className="flex flex-row gap-2" onClick={handleMenuItemClick}>
+              <Link href="/" className="flex flex-row items-center gap-2" onClick={handleMenuItemClick}>
+                <div className="flex flex-row gap-3 items-center">
                   <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary/10 p-1">
                     <Image
                       src="/kowalski.svg"
@@ -135,9 +120,9 @@ export function AppSidebar() {
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold text-lg">Kowalski</span>
                   </div>
-                </Link>
-                <Badge className="text-xs">Beta</Badge>
-              </div>
+                  <Badge className="text-xs">Beta</Badge>
+                </div>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -145,7 +130,6 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navigation.map((item) => (
@@ -198,24 +182,6 @@ export function AppSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
         )}
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Features</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {features.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <Link href={item.url} onClick={handleMenuItemClick}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter>

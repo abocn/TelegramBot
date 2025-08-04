@@ -27,7 +27,7 @@ import {
   Music,
   Bot
 } from "lucide-react";
-import { SiTypescript, SiPostgresql, SiDocker, SiNextdotjs, SiBun, SiForgejo } from "react-icons/si";
+import { SiTypescript, SiPostgresql, SiDocker, SiNextdotjs, SiBun, SiGithub } from "react-icons/si";
 import { RiTelegram2Line } from "react-icons/ri";
 import { BsInfoLg } from "react-icons/bs";
 import { TbRocket, TbSparkles } from "react-icons/tb";
@@ -57,8 +57,8 @@ export default function About() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
             <Button size="lg" className="min-w-32" asChild>
-              <Link href="https://git.p0ntus.com/ABOCN/TelegramBot" target="_blank">
-                <SiForgejo />
+              <Link href="https://github.com/abocn/TelegramBot" target="_blank">
+                <SiGithub />
                 View Source Code
               </Link>
             </Button>
@@ -93,7 +93,7 @@ export default function About() {
                 <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-blue-500/10 text-blue-500">
                   <Code className="w-6 h-6" />
                 </div>
-                <h3 className="text-2xl font-semibold">Tech Stack</h3>
+                <h3 className="text-2xl font-semibold">The Stack</h3>
               </div>
 
               <p className="text-muted-foreground leading-relaxed">
@@ -106,7 +106,7 @@ export default function About() {
                   <SiTypescript className="w-5 h-5 mx-3 text-blue-500" />
                   <div>
                     <div className="font-medium">TypeScript + Node.js</div>
-                    <div className="text-sm text-muted-foreground">Type-safe backend w/ Telegraf</div>
+                    <div className="text-sm text-muted-foreground">A solid, type-safe backend w/ Telegraf</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
@@ -157,8 +157,8 @@ export default function About() {
                 <div className="flex items-center gap-2 p-3 rounded-lg bg-background border">
                   <Layers className="w-5 h-5 mx-3 text-green-500" />
                   <div>                                  {/* some ppl probably don't know what af means :( */}
-                    <div className="font-medium">Modular AF Backend</div>
-                    <div className="text-sm text-muted-foreground">Command-based structure for easy feature addition</div>
+                    <div className="font-medium">Modular AF</div>
+                    <div className="text-sm text-muted-foreground">We make it easy to extend and modify Kowalski</div>
                   </div>
                 </div>
               </div>
@@ -172,8 +172,8 @@ export default function About() {
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold mb-4">AI Integrations</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Powered by Ollama, Kowalski has support for 50+ AI models, with customizable
-              options for users and admins.
+              Kowalski has support for 50+ AI models, with customizable
+              options for users and admins through its Ollama backend.
             </p>
           </div>
 
@@ -187,8 +187,8 @@ export default function About() {
               </div>
 
               <p className="text-muted-foreground leading-relaxed">
-                Kowalski has support for 50+ models, both thinking and non-thinking. We have
-                good Markdown parsing, with customizable options for both users and admins.
+                Kowalski has built-in support for 50+ models, both thinking and non-thinking. We have
+                good Markdown parsing and customizable options for both users and admins.
               </p>
 
               <div className="space-y-3">
@@ -210,7 +210,7 @@ export default function About() {
                   <Bot className="w-5 h-5 mx-3 text-purple-500" />
                   <div>
                     <div className="font-medium">/ai - Your Custom Model!</div>
-                    <div className="text-sm text-muted-foreground">Use your personally configured AI model</div>
+                    <div className="text-sm text-muted-foreground">Users can configure and use their favorite model</div>
                   </div>
                 </div>
               </div>
@@ -226,7 +226,7 @@ export default function About() {
 
               <p className="text-muted-foreground leading-relaxed">
                 We have amazing Markdown V2 parsing, queue management, and usage statistics tracking.
-                It&apos;s hella private, too. AI is disabled by default for the best user experience.
+                It&apos;s hella private, too. AI is disabled by default for a good user and admin experience.
               </p>
 
               <div className="space-y-3">
@@ -234,7 +234,7 @@ export default function About() {
                   <Network className="w-5 h-5 mx-3 text-orange-500" />
                   <div>
                     <div className="font-medium">Streaming</div>
-                    <div className="text-sm text-muted-foreground">Real-time Markdown V2 message updates as the model generates</div>
+                    <div className="text-sm text-muted-foreground">Real-time streaming and parsing of messages during generation</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
@@ -316,8 +316,8 @@ export default function About() {
               </div>
 
               <p className="text-muted-foreground leading-relaxed">
-                Personalize your experience with custom AI preferences,
-                temperature settings, language selection, and detailed usage statistics.
+                Personalize your experience with our extensive suite of custom AI
+                preferences and detailed usage statistics.
               </p>
 
               <div className="space-y-3">
@@ -325,7 +325,7 @@ export default function About() {
                   <Bot className="w-5 h-5 mx-3 text-blue-500" />
                   <div>
                     <div className="font-medium">AI Preferences</div>
-                    <div className="text-sm text-muted-foreground">Choose default models and configure temperature</div>
+                    <div className="text-sm text-muted-foreground">Choose from 50+ models, with the chance to configure your system prompt and temperature</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 p-3 rounded-lg bg-background border">
@@ -353,7 +353,7 @@ export default function About() {
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold mb-4">There&apos;s <span className="text-5xl">WAYYYYY</span> more!</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Beyond AI, Kowalski has a ton of entertainment, utility, fun, configuration, and information
+              Kowalski has a ton of entertainment, utility, fun, configuration, and information
               commands.
             </p>
           </div>
@@ -453,19 +453,19 @@ export default function About() {
             <div className="space-y-6">
               <div className="flex items-center gap-3">
                 <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-purple-500/10 text-purple-500">
-                  <SiForgejo className="w-6 h-6" />
+                  <SiGithub className="w-6 h-6" />
                 </div>
                 <h3 className="text-2xl font-semibold">Open Development</h3>
               </div>
 
               <p className="text-muted-foreground leading-relaxed">
                 Kowalski is licensed under BSD-3-Clause with components under Unlicense. Our
-                codebase is available on our Forgejo and GitHub, with lots of documentation.
+                codebase is available on our GitHub, with lots of documentation.
               </p>
 
               <div className="space-y-3">
                 <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
-                  <SiForgejo className="w-5 h-5 mx-3 text-purple-500" />
+                  <SiGithub className="w-5 h-5 mx-3 text-purple-500" />
                   <div>
                     <div className="font-medium">Public Code</div>
                     <div className="text-sm text-muted-foreground">Feel free to contribute or review our code</div>
@@ -528,15 +528,12 @@ export default function About() {
           </div>
 
           <div className="mt-16 text-center">
-            <div className="inline-flex items-center gap-4 p-6 rounded-lg bg-muted/50 border">
-              <div className="flex items-center gap-2">
-                <SiForgejo className="w-5 h-5" />
-                <span className="font-medium">Ready to contribute?</span>
-              </div>
+            <div className="inline-flex items-center gap-4 md:gap-10 p-6 rounded-lg bg-muted/50 border">
+              <span className="font-medium">Ready to contribute?</span>
               <Button asChild>
-                <Link href="https://git.p0ntus.com/ABOCN/TelegramBot" target="_blank">
-                  <SiForgejo />
-                  View on Forgejo
+                <Link href="https://github.com/abocn/TelegramBot" target="_blank">
+                  <SiGithub />
+                  View on GitHub
                 </Link>
               </Button>
             </div>

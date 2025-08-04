@@ -81,6 +81,7 @@ The WebUI and bot requires a Postgres database, which requires some setup. Again
 **Migrate the schema to DB:**
 
 ```bash
+docker compose up postgres -d # Bring up just the database
 bunx drizzle-kit push
 ```
 

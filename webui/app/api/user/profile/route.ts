@@ -31,8 +31,10 @@ export async function GET(request: NextRequest) {
       aiTemperature: user.aiTemperature,
       aiRequests: user.aiRequests,
       aiCharacters: user.aiCharacters,
+      customSystemPrompt: user.customSystemPrompt,
       disabledCommands: user.disabledCommands,
       languageCode: user.languageCode,
+      timezone: user.timezone,
     };
 
     return NextResponse.json(sanitizedUser);

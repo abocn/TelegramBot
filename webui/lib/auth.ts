@@ -16,11 +16,13 @@ export interface SessionData {
     aiEnabled: boolean;
     showThinking: boolean;
     customAiModel: string;
+    customSystemPrompt: string;
     aiTemperature: number;
     aiRequests: number;
     aiCharacters: number;
     disabledCommands: string[];
     languageCode: string;
+    timezone: string;
   };
 }
 
@@ -114,11 +116,13 @@ export async function validateSession(sessionToken: string): Promise<SessionData
         aiEnabled: user.aiEnabled,
         showThinking: user.showThinking,
         customAiModel: user.customAiModel,
+        customSystemPrompt: user.customSystemPrompt,
         aiTemperature: user.aiTemperature,
         aiRequests: user.aiRequests,
         aiCharacters: user.aiCharacters,
         disabledCommands: user.disabledCommands || [],
         languageCode: user.languageCode,
+        timezone: user.timezone,
       },
     };
   } catch (error) {

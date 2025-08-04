@@ -15,17 +15,17 @@ export function LanguageChooser() {
 
     return (
         <Select value={i18n.language} onValueChange={handleLanguageChange}>
-            <SelectTrigger>
+            <SelectTrigger className="cursor-pointer">
                 <SelectValue placeholder="Language" />
             </SelectTrigger>
             <SelectContent>
-                <SelectItem value="en">
+                <SelectItem value="en" className="cursor-pointer">
                     <div className="flex items-center gap-2">
                         <Image src={USFlag} alt="English" width={20} height={20} />
                     </div>
                     English
                 </SelectItem>
-                <SelectItem value="pt">
+                <SelectItem value="pt" className="cursor-pointer">
                     <div className="flex items-center gap-2">
                         <Image src={BRFlag} alt="Portuguese" width={20} height={20} />
                     </div>

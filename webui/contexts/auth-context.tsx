@@ -10,11 +10,13 @@ interface UserData {
   aiEnabled: boolean;
   showThinking: boolean;
   customAiModel: string;
+  customSystemPrompt: string;
   aiTemperature: number;
   aiRequests: number;
   aiCharacters: number;
   disabledCommands: string[];
   languageCode: string;
+  timezone: string;
 }
 
 interface AuthContextType {

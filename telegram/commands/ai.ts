@@ -105,17 +105,22 @@ interface OllamaResponse {
   response: string;
 }
 
-async function usingSystemPrompt(ctx: TextContext, db: NodePgDatabase<typeof schema>, botName: string, message: string): Promise<string> {
+async function usingSystemPrompt(ctx: TextContext, db: NodePgDatabase<typeof schema>, botName: string): Promise<string> {
   const user = await db.query.usersTable.findMany({ where: (fields, { eq }) => eq(fields.telegramId, String(ctx.from!.id)), limit: 1 });
   if (user.length === 0) await ensureUserInDb(ctx, db);
   const userData = user[0];
   const lang = userData?.languageCode || "en";
   const Strings = getStrings(lang);
-  const utcDate = new Date().toISOString();
-  const prompt = Strings.ai.systemPrompt
-    .replace("{botName}", botName)
-    .replace("{date}", utcDate)
-    .replace("{message}", message);
+  const tz = userData?.timezone || "UTC";
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("en-CA", { timeZone: tz }); // YYYY-MM-DD
+  const timeStr = now.toLocaleTimeString("en-GB", { timeZone: tz }); // HH:MM:SS
+
+  const basePrompt = userData?.customSystemPrompt && userData.customSystemPrompt.trim() !== "" ? userData.customSystemPrompt : Strings.ai.systemPrompt;
+  const prompt = basePrompt
+    .replaceAll("{botName}", botName)
+    .replaceAll("{date}", dateStr)
+    .replaceAll("{time}", timeStr)
   return prompt;
 }
 
@@ -826,7 +831,7 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
         parse_mode: 'Markdown',
         ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
       });
-      const prompt = sanitizeForJson(await usingSystemPrompt(ctx, db, botName, fixedMsg));
+      const prompt = sanitizeForJson(await usingSystemPrompt(ctx, db, botName));
       await handleAiReply(ctx, model, prompt, replyGenerating, aiTemperature, fixedMsg, db, user.telegramId, Strings, showThinking, abortController);
     };
 

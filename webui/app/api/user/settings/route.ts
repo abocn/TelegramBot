@@ -12,6 +12,8 @@ interface UserUpdates {
   aiTemperature?: number;
   disabledCommands?: string[];
   languageCode?: string;
+  customSystemPrompt?: string;
+  timezone?: string;
   updatedAt?: Date;
 }
 
@@ -50,7 +52,9 @@ export async function PATCH(request: NextRequest) {
       'customAiModel',
       'aiTemperature',
       'disabledCommands',
-      'languageCode'
+      'languageCode',
+      'customSystemPrompt',
+      'timezone'
     ];
 
     const filteredUpdates: UserUpdates = {};
@@ -68,6 +72,18 @@ export async function PATCH(request: NextRequest) {
           }
         } else if (key === 'customAiModel' || key === 'languageCode') {
           if (typeof value === 'string' && value.length > 0 && value.length < 100) {
+            filteredUpdates[key] = value;
+          } else {
+            return NextResponse.json({ error: `Invalid ${key}` }, { status: 400 });
+          }
+        } else if (key === 'timezone') {
+          if (typeof value === 'string' && value.length > 0 && value.length <= 255) {
+            filteredUpdates[key] = value;
+          } else {
+            return NextResponse.json({ error: `Invalid ${key}` }, { status: 400 });
+          }
+        } else if (key === 'customSystemPrompt') {
+          if (typeof value === 'string' && value.length >= 0 && value.length <= 10000) {
             filteredUpdates[key] = value;
           } else {
             return NextResponse.json({ error: `Invalid ${key}` }, { status: 400 });

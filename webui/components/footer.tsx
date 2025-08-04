@@ -16,7 +16,7 @@ export default function Footer() {
           <span className="text-xl font-semibold">Kowalski</span>
         </div>
         <p className="text-muted-foreground">
-          Built with ❤️ by <Link href="https://git.p0ntus.com/ABOCN" className="underline hover:text-primary transition-all duration-300">ABOCN</Link> and contributors under open source licenses.
+          Built with ❤️ by <Link href="https://github.com/abocn" className="underline hover:text-primary transition-all duration-300">ABOCN</Link> and contributors under the BSD-3-Clause and Unlicense.
         </p>
       </div>
     </footer>

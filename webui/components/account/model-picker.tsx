@@ -60,21 +60,21 @@ export function ModelPicker({ value, onValueChange, disabled = false, className 
           role="combobox"
           aria-expanded={open}
           disabled={disabled}
-          className={cn("w-full justify-between h-auto p-4", className)}
+          className={cn("w-full justify-between h-auto p-4 overflow-hidden", className)}
         >
-          <div className="flex items-start gap-3 text-left flex-1">
+          <div className="flex items-start gap-3 text-left flex-1 overflow-hidden">
             <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 mt-0.5">
               <Cpu className="w-4 h-4 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
               {currentModel ? (
                 <>
-                  <div className="font-medium text-sm">{currentModel.model.label}</div>
-                  <div className="text-xs text-muted-foreground">{currentModel.category}</div>
-                  <div className="text-xs text-muted-foreground/70 mt-1 break-words">
+                  <div className="font-medium text-sm truncate">{currentModel.model.label}</div>
+                  <div className="text-xs text-muted-foreground truncate">{currentModel.category}</div>
+                  <div className="text-xs text-muted-foreground/70 mt-1 truncate">
                     {currentModel.categoryDescription}
                   </div>
-                  <div className="inline-flex items-center gap-1 mt-2 flex-wrap">
+                  <div className="flex items-center gap-1 mt-2 flex-wrap overflow-hidden">
                     <span className="px-2 py-0.5 bg-muted rounded text-xs font-mono">
                       {currentModel.model.parameterSize}
                     </span>
@@ -115,7 +115,7 @@ export function ModelPicker({ value, onValueChange, disabled = false, className 
                     key={model.name}
                     value={`${category.label} ${model.label} ${model.parameterSize}`}
                     onSelect={() => handleSelect(model.name)}
-                    className="flex items-center gap-3 py-3"
+                    className="flex items-center gap-3 py-3 cursor-pointer"
                   >
                     <CheckIcon
                       className={cn(
@@ -123,8 +123,8 @@ export function ModelPicker({ value, onValueChange, disabled = false, className 
                         value === model.name ? "opacity-100" : "opacity-0"
                       )}
                     />
-                    <div className="flex-1">
-                      <div className="font-medium text-sm">{model.label}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-sm truncate">{model.label}</div>
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
                         <span className="px-2 py-0.5 bg-muted rounded text-xs font-mono">
                           {model.parameterSize}
