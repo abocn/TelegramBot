@@ -831,7 +831,8 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
         parse_mode: 'Markdown',
         ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
       });
-      const prompt = sanitizeForJson(await usingSystemPrompt(ctx, db, botName));
+      const systemPrompt = await usingSystemPrompt(ctx, db, botName);
+      const prompt = sanitizeForJson(`${systemPrompt}\n\nUser: ${fixedMsg}\n\nAssistant:`);
       await handleAiReply(ctx, model, prompt, replyGenerating, aiTemperature, fixedMsg, db, user.telegramId, Strings, showThinking, abortController);
     };
 
