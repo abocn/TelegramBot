@@ -185,8 +185,6 @@ export default (bot, db) => {
         });
 
         num_plays = response_plays.data.track.userplaycount;
-        num_plays = Number(num_plays);
-        if (isNaN(num_plays)) num_plays = 0;
       } catch (err) {
         console.log(err)
         const message = Strings.lastFm.apiErr
@@ -199,6 +197,7 @@ export default (bot, db) => {
         });
       };
 
+      if (num_plays == 0) num_plays = 1;
       const suffix = getOrdinalSuffix(num_plays);
 
       const message = Strings.lastFm.listeningTo
