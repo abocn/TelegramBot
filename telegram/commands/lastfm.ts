@@ -197,7 +197,7 @@ export default (bot, db) => {
         });
       };
 
-      if (num_plays == 0) num_plays = 1;
+      if (num_plays === 0 || "0") num_plays = 1;
       const suffix = getOrdinalSuffix(num_plays);
 
       const message = Strings.lastFm.listeningTo
