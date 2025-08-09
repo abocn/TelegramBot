@@ -42,8 +42,7 @@
     "noUserSet": "*Você ainda não definiu seu nome de usuário do Last.fm.*\nUse o comando /setuser para definir.\n\nExemplo: `/setuser <username>`",
     "noRecentTracks": "*Nenhuma faixa recente encontrada para o usuário do Last.fm* `{lastfmUser}`*.*",
     "userHasBeenSet": "*Seu nome de usuário do Last.fm foi definido como:* `{lastUser}`.",
-    "listeningTo": "{lastfmUser} *{nowPlaying} ouvindo{playCount}*:\n\n{trackName} por {artistName}",
-    "playCount": " pela {plays}ª vez",
+    "listeningTo": "{lastfmUser} *{nowPlaying} ouvindo pela {plays}ª vez*:\n\n{trackName} por {artistName}",
     "apiErr": "*Erro ao recuperar dados para o usuário do Last.fm* {lastfmUser}.\n\n`{err}`"
   },
   "gitCurrentCommit": "*Commit atual:* `{commitHash}`",

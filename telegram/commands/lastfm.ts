@@ -55,6 +55,13 @@ async function getFromMusicBrainz(mbid: string) {
   }
 }
 
+function getOrdinalSuffix(n) {
+  const j = n % 10, k = n % 100;
+  if (j === 1 && k !== 11) return "st";
+  if (j === 2 && k !== 12) return "nd";
+  if (j === 3 && k !== 13) return "rd";
+  return "th";
+}
 
 function getFromLast(track) {
   if (!track || !track.image) return '';
@@ -178,6 +185,8 @@ export default (bot, db) => {
         });
 
         num_plays = response_plays.data.track.userplaycount;
+        num_plays = Number(num_plays);
+        if (isNaN(num_plays)) num_plays = 0;
       } catch (err) {
         console.log(err)
         const message = Strings.lastFm.apiErr
@@ -190,20 +199,17 @@ export default (bot, db) => {
         });
       };
 
-      let message = Strings.lastFm.listeningTo
+      const total_plays = num_plays + 1;
+      const suffix = getOrdinalSuffix(total_plays);
+
+      const message = Strings.lastFm.listeningTo
         .replace("{lastfmUser}", `[${lastfmUser}](${userUrl})`)
         .replace("{nowPlaying}", nowPlaying)
         .replace("{trackName}", `[${trackName}](${trackUrl})`)
         .replace("{artistName}", `[${artistName}](${artistUrl})`)
-
-      if (`${num_plays}` !== "0" && `${num_plays}` !== "1" && `${num_plays}` !== "2" && `${num_plays}` !== "3") {
-        message = message
-          .replace("{playCount}", Strings.lastFm.playCount)
-          .replace("{plays}", `${num_plays}`);
-      } else {
-        message = message
-          .replace("{playCount}", Strings.varStrings.varTo);
-      };
+        .replace("{playCount}", Strings.lastFm.playCount)
+        .replace("{plays}", total_plays)
+        .replace("{suffix}", suffix);
 
       if (imageUrl) {
         ctx.replyWithPhoto(imageUrl, {
