@@ -201,10 +201,10 @@ export default (bot, db) => {
       const suffix = getOrdinalSuffix(num_plays);
 
       const message = Strings.lastFm.listeningTo
-        .replace("{lastfmUser}", `[${lastfmUser}](${userUrl})`)
+        .replace("{lastfmUser}", `[${lastfmUser}](<${userUrl}>)`)
         .replace("{nowPlaying}", nowPlaying)
-        .replace("{trackName}", `[${trackName}](${trackUrl})`)
-        .replace("{artistName}", `[${artistName}](${artistUrl})`)
+        .replace("{trackName}", `[${trackName}](<${trackUrl}>)`)
+        .replace("{artistName}", `[${artistName}](<${artistUrl}>)`)
         .replace("{playCount}", Strings.lastFm.playCount)
         .replace("{plays}", num_plays)
         .replace("{suffix}", suffix);
