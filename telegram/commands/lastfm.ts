@@ -199,8 +199,7 @@ export default (bot, db) => {
         });
       };
 
-      const total_plays = num_plays + 1;
-      const suffix = getOrdinalSuffix(total_plays);
+      const suffix = getOrdinalSuffix(num_plays);
 
       const message = Strings.lastFm.listeningTo
         .replace("{lastfmUser}", `[${lastfmUser}](${userUrl})`)
@@ -208,7 +207,7 @@ export default (bot, db) => {
         .replace("{trackName}", `[${trackName}](${trackUrl})`)
         .replace("{artistName}", `[${artistName}](${artistUrl})`)
         .replace("{playCount}", Strings.lastFm.playCount)
-        .replace("{plays}", total_plays)
+        .replace("{plays}", num_plays)
         .replace("{suffix}", suffix);
 
       if (imageUrl) {
