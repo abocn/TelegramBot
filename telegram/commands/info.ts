@@ -1,35 +1,16 @@
-import { getStrings } from '../plugins/checklang';
 import { isOnSpamWatch } from '../spamwatch/spamwatch';
 import spamwatchMiddlewareModule from '../spamwatch/Middleware';
 import { Context, Telegraf } from 'telegraf';
-import * as schema from '../../database/schema';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { isCommandDisabled } from '../utils/check-command-disabled';
+import { trackCommand } from '../utils/track-command';
+
+import { getUserAndStrings } from '../utils/get-user-strings';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import * as schema from '../../database/schema';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 
-async function getUserAndStrings(ctx: Context, db?: NodePgDatabase<typeof schema>): Promise<{ Strings: any, languageCode: string }> {
-  let languageCode = 'en';
-  if (!ctx.from) {
-    const Strings = getStrings(languageCode);
-    return { Strings, languageCode };
-  }
-  const from = ctx.from;
-  if (db && from.id) {
-    const dbUser = await db.query.usersTable.findMany({ where: (fields, { eq }) => eq(fields.telegramId, String(from.id)), limit: 1 });
-    if (dbUser.length > 0) {
-      languageCode = dbUser[0].languageCode;
-    }
-  }
-  if (from.language_code && languageCode === 'en') {
-    languageCode = from.language_code;
-    console.warn('[WARN !] Falling back to Telegram language_code for user', from.id);
-  }
-  const Strings = getStrings(languageCode);
-  return { Strings, languageCode };
-}
-
-async function getUserInfo(ctx: Context & { message: { text: string } }, db: any) {
+async function getUserInfo(ctx: Context & { message: { text: string } }, db: NodePgDatabase<typeof schema>) {
   const { Strings } = await getUserAndStrings(ctx, db);
   let lastName = ctx.from?.last_name;
   if (lastName === undefined) {
@@ -44,7 +25,7 @@ async function getUserInfo(ctx: Context & { message: { text: string } }, db: any
   return userInfo;
 }
 
-async function getChatInfo(ctx: Context & { message: { text: string } }, db: any) {
+async function getChatInfo(ctx: Context & { message: { text: string } }, db: NodePgDatabase<typeof schema>) {
   const { Strings } = await getUserAndStrings(ctx, db);
   if ((ctx.chat?.type === 'group' || ctx.chat?.type === 'supergroup')) {
     const chat = ctx.chat as (typeof ctx.chat & { username?: string; is_forum?: boolean });
@@ -61,28 +42,44 @@ async function getChatInfo(ctx: Context & { message: { text: string } }, db: any
   }
 }
 
-export default (bot: Telegraf<Context>, db) => {
+export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
   bot.command('chatinfo', spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
+    const startTime = Date.now();
+
     if (await isCommandDisabled(ctx, db, 'info-commands')) return;
 
-    const chatInfo = await getChatInfo(ctx, db);
-    ctx.reply(
-      chatInfo, {
-        parse_mode: 'Markdown',
-        ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
-      }
-    );
+    try {
+      const chatInfo = await getChatInfo(ctx, db);
+      await ctx.reply(
+        chatInfo, {
+          parse_mode: 'Markdown',
+          ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
+        }
+      );
+      await trackCommand(db, ctx, 'chatinfo', true, undefined, startTime);
+    } catch (error) {
+      await trackCommand(db, ctx, 'chatinfo', false, error.message, startTime);
+      throw error;
+    }
   });
 
   bot.command('userinfo', spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
+    const startTime = Date.now();
+
     if (await isCommandDisabled(ctx, db, 'info-commands')) return;
 
-    const userInfo = await getUserInfo(ctx, db);
-    ctx.reply(
-      userInfo, {
-        parse_mode: 'Markdown',
-        ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
-      }
-    );
+    try {
+      const userInfo = await getUserInfo(ctx, db);
+      await ctx.reply(
+        userInfo, {
+          parse_mode: 'Markdown',
+          ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
+        }
+      );
+      await trackCommand(db, ctx, 'userinfo', true, undefined, startTime);
+    } catch (error) {
+      await trackCommand(db, ctx, 'userinfo', false, error.message, startTime);
+      throw error;
+    }
   });
 };

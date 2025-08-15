@@ -39,7 +39,7 @@ async function downloadYtDlp() {
 
       writer.on('finish', () => {
         if (os.platform() !== 'win32') {
-          fs.chmodSync(filePath, '-x');
+          fs.chmodSync(filePath, 0o755);
         }
       });
 

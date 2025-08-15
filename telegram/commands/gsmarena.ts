@@ -9,9 +9,12 @@ import spamwatchMiddlewareModule from '../spamwatch/Middleware';
 import axios from 'axios';
 import { parse } from 'node-html-parser';
 import { getDeviceByCodename } from './codename';
-import { getStrings } from '../plugins/checklang';
-import { languageCode } from '../utils/language-code';
 import { isCommandDisabled } from '../utils/check-command-disabled';
+import { trackCommand } from '../utils/track-command';
+
+import { getUserAndStrings } from '../utils/get-user-strings';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import * as schema from '../../database/schema';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 
@@ -213,55 +216,72 @@ function getUsername(ctx){
 const deviceSelectionCache: Record<number, { results: PhoneSearchResult[], timeout: NodeJS.Timeout }> = {};
 const lastSelectionMessageId: Record<number, number> = {};
 
-export default (bot, db) => {
+export default (bot, db: NodePgDatabase<typeof schema>) => {
   bot.command(['d', 'device'], spamwatchMiddleware, async (ctx) => {
+    const startTime = Date.now();
+
     if (await isCommandDisabled(ctx, db, 'device-specs')) return;
 
-    const userId = ctx.from.id;
-    const userName = getUsername(ctx);
-    const Strings = getStrings(languageCode(ctx));
+    try {
+      const userId = ctx.from.id;
+      const userName = getUsername(ctx);
+      const { Strings } = await getUserAndStrings(ctx, db);
 
-    const phone = ctx.message.text.split(" ").slice(1).join(" ");
-    if (!phone) {
-      return ctx.reply(Strings.gsmarenaProvidePhoneName || "[TODO: Add gsmarenaProvidePhoneName to locales] Please provide the phone name.", { ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {}) });
-    }
-
-    console.log("[GSMArena] Searching for", phone);
-    const statusMsg = await ctx.reply((Strings.gsmarenaSearchingFor || "[TODO: Add gsmarenaSearchingFor to locales] Searching for {phone}...").replace('{phone}', phone), { ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {}), parse_mode: 'Markdown' });
-
-    let results = await searchPhone(phone);
-    if (results.length === 0) {
-      const codenameResults = await getDeviceByCodename(phone.split(" ")[0]);
-      if (!codenameResults) {
-        await ctx.telegram.editMessageText(ctx.chat.id, statusMsg.message_id, undefined, (Strings.gsmarenaNoPhonesFound || "[TODO: Add gsmarenaNoPhonesFound to locales] No phones found for {phone}.").replace('{phone}', phone), { parse_mode: 'Markdown' });
-        return;
+      const phone = ctx.message.text.split(" ").slice(1).join(" ");
+      if (!phone) {
+        return ctx.reply(Strings.gsmarenaProvidePhoneName || "[TODO: Add gsmarenaProvidePhoneName to locales] Please provide the phone name.", { ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {}) });
       }
 
-      await ctx.telegram.editMessageText(ctx.chat.id, statusMsg.message_id, undefined, (Strings.gsmarenaSearchingFor || "[TODO: Add gsmarenaSearchingFor to locales] Searching for {phone}...").replace('{phone}', codenameResults.name), { parse_mode: 'Markdown' });
-      const nameResults = await searchPhone(codenameResults.name);
-      if (nameResults.length === 0) {
-        await ctx.telegram.editMessageText(ctx.chat.id, statusMsg.message_id, undefined, (Strings.gsmarenaNoPhonesFoundBoth || "[TODO: Add gsmarenaNoPhonesFoundBoth to locales] No phones found for {name} and {phone}.").replace('{name}', codenameResults.name).replace('{phone}', phone), { parse_mode: 'Markdown' });
-        return;
+      console.log("[GSMArena] Searching for", phone);
+      const statusMsg = await ctx.reply((Strings.gsmarenaSearchingFor || "[TODO: Add gsmarenaSearchingFor to locales] Searching for {phone}...").replace('{phone}', phone), { ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {}), parse_mode: 'Markdown' });
+
+      let results = await searchPhone(phone);
+      if (results.length === 0) {
+        const codenameResults = await getDeviceByCodename(phone.split(" ")[0]);
+        if (!codenameResults) {
+          await ctx.telegram.editMessageText(ctx.chat.id, statusMsg.message_id, undefined, (Strings.gsmarenaNoPhonesFound || "[TODO: Add gsmarenaNoPhonesFound to locales] No phones found for {phone}.").replace('{phone}', phone), { parse_mode: 'Markdown' });
+          return;
+        }
+
+        await ctx.telegram.editMessageText(ctx.chat.id, statusMsg.message_id, undefined, (Strings.gsmarenaSearchingFor || "[TODO: Add gsmarenaSearchingFor to locales] Searching for {phone}...").replace('{phone}', codenameResults.name), { parse_mode: 'Markdown' });
+        const nameResults = await searchPhone(codenameResults.name);
+        if (nameResults.length === 0) {
+          await ctx.telegram.editMessageText(ctx.chat.id, statusMsg.message_id, undefined, (Strings.gsmarenaNoPhonesFoundBoth || "[TODO: Add gsmarenaNoPhonesFoundBoth to locales] No phones found for {name} and {phone}.").replace('{name}', codenameResults.name).replace('{phone}', phone), { parse_mode: 'Markdown' });
+          return;
+        }
+        results = nameResults;
       }
-      results = nameResults;
-    }
 
-    if (deviceSelectionCache[userId]?.timeout) {
-      clearTimeout(deviceSelectionCache[userId].timeout);
-    }
-    deviceSelectionCache[userId] = {
-      results,
-      timeout: setTimeout(() => { delete deviceSelectionCache[userId]; }, 5 * 60 * 1000)
-    };
+      if (deviceSelectionCache[userId]?.timeout) {
+        clearTimeout(deviceSelectionCache[userId].timeout);
+      }
+      deviceSelectionCache[userId] = {
+        results,
+        timeout: setTimeout(() => { delete deviceSelectionCache[userId]; }, 5 * 60 * 1000)
+      };
 
-    if (lastSelectionMessageId[userId]) {
-      try {
-        await ctx.telegram.editMessageText(
-          ctx.chat.id,
-          lastSelectionMessageId[userId],
-          undefined,
-          Strings.gsmarenaSelectDevice || "[TODO: Add gsmarenaSelectDevice to locales] Please select your device:",
-          {
+      if (lastSelectionMessageId[userId]) {
+        try {
+          await ctx.telegram.editMessageText(
+            ctx.chat.id,
+            lastSelectionMessageId[userId],
+            undefined,
+            Strings.gsmarenaSelectDevice || "[TODO: Add gsmarenaSelectDevice to locales] Please select your device:",
+            {
+              parse_mode: 'HTML',
+              reply_to_message_id: ctx.message.message_id,
+              disable_web_page_preview: true,
+              reply_markup: {
+                inline_keyboard: results.map((result, idx) => {
+                  const callbackData = `gsmadetails:${idx}:${ctx.from.id}`;
+                  return [{ text: result.name, callback_data: callbackData }];
+                })
+              }
+            }
+          );
+        } catch (e) {
+          const testUser = `<a href=\"tg://user?id=${userId}\">${userName}</a>, ${Strings.gsmarenaSelectDevice || "[TODO: Add gsmarenaSelectDevice to locales] please select your device:"}`;
+          const options = {
             parse_mode: 'HTML',
             reply_to_message_id: ctx.message.message_id,
             disable_web_page_preview: true,
@@ -271,49 +291,43 @@ export default (bot, db) => {
                 return [{ text: result.name, callback_data: callbackData }];
               })
             }
-          }
-        );
-      } catch (e) {
+          };
+          const selectionMsg = await ctx.reply(testUser, options);
+          lastSelectionMessageId[userId] = selectionMsg.message_id;
+        }
+      } else {
         const testUser = `<a href=\"tg://user?id=${userId}\">${userName}</a>, ${Strings.gsmarenaSelectDevice || "[TODO: Add gsmarenaSelectDevice to locales] please select your device:"}`;
+        const inlineKeyboard = results.map((result, idx) => {
+          const callbackData = `gsmadetails:${idx}:${ctx.from.id}`;
+          return [{ text: result.name, callback_data: callbackData }];
+        });
         const options = {
           parse_mode: 'HTML',
           reply_to_message_id: ctx.message.message_id,
           disable_web_page_preview: true,
           reply_markup: {
-            inline_keyboard: results.map((result, idx) => {
-              const callbackData = `gsmadetails:${idx}:${ctx.from.id}`;
-              return [{ text: result.name, callback_data: callbackData }];
-            })
+            inline_keyboard: inlineKeyboard
           }
         };
         const selectionMsg = await ctx.reply(testUser, options);
         lastSelectionMessageId[userId] = selectionMsg.message_id;
       }
-    } else {
-      const testUser = `<a href=\"tg://user?id=${userId}\">${userName}</a>, ${Strings.gsmarenaSelectDevice || "[TODO: Add gsmarenaSelectDevice to locales] please select your device:"}`;
-      const inlineKeyboard = results.map((result, idx) => {
-        const callbackData = `gsmadetails:${idx}:${ctx.from.id}`;
-        return [{ text: result.name, callback_data: callbackData }];
-      });
-      const options = {
-        parse_mode: 'HTML',
-        reply_to_message_id: ctx.message.message_id,
-        disable_web_page_preview: true,
-        reply_markup: {
-          inline_keyboard: inlineKeyboard
-        }
-      };
-      const selectionMsg = await ctx.reply(testUser, options);
-      lastSelectionMessageId[userId] = selectionMsg.message_id;
+      await ctx.telegram.deleteMessage(ctx.chat.id, statusMsg.message_id).catch(() => {});
+
+      const commandName = ctx.message?.text?.startsWith('/d') ? 'd' : 'device';
+      await trackCommand(db, ctx, commandName, true, undefined, startTime);
+    } catch (error) {
+      const commandName = ctx.message?.text?.startsWith('/d') ? 'd' : 'device';
+      await trackCommand(db, ctx, commandName, false, error.message, startTime);
+      throw error;
     }
-    await ctx.telegram.deleteMessage(ctx.chat.id, statusMsg.message_id).catch(() => {});
   });
 
   bot.action(/gsmadetails:(\d+):(\d+)/, async (ctx) => {
     const idx = parseInt(ctx.match[1]);
     const userId = parseInt(ctx.match[2]);
     const userName = getUsername(ctx);
-    const Strings = getStrings(languageCode(ctx));
+    const { Strings } = await getUserAndStrings(ctx, db);
 
     const callbackQueryUserId = ctx.update.callback_query.from.id;
 

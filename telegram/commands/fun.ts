@@ -1,36 +1,17 @@
 import Resources from '../props/resources.json';
-import { getStrings } from '../plugins/checklang';
 import { isOnSpamWatch } from '../spamwatch/spamwatch';
 import spamwatchMiddlewareModule from '../spamwatch/Middleware';
 import { Context, Telegraf } from 'telegraf';
-import * as schema from '../../database/schema';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { isCommandDisabled } from '../utils/check-command-disabled';
+import { trackCommand } from '../utils/track-command';
+
+import { getUserAndStrings } from '../utils/get-user-strings';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import * as schema from '../../database/schema';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 
-async function getUserAndStrings(ctx: Context, db?: NodePgDatabase<typeof schema>): Promise<{ Strings: any, languageCode: string }> {
-  let languageCode = 'en';
-  if (!ctx.from) {
-    const Strings = getStrings(languageCode);
-    return { Strings, languageCode };
-  }
-  const from = ctx.from;
-  if (db && from.id) {
-    const dbUser = await db.query.usersTable.findMany({ where: (fields, { eq }) => eq(fields.telegramId, String(from.id)), limit: 1 });
-    if (dbUser.length > 0) {
-      languageCode = dbUser[0].languageCode;
-    }
-  }
-  if (from.language_code && languageCode === 'en') {
-    languageCode = from.language_code;
-    console.warn('[WARN !] Falling back to Telegram language_code for user', from.id);
-  }
-  const Strings = getStrings(languageCode);
-  return { Strings, languageCode };
-}
-
-function sendRandomReply(ctx: Context & { message: { text: string } }, gifUrl: string, textKey: string, db: any) {
+function sendRandomReply(ctx: Context & { message: { text: string } }, gifUrl: string, textKey: string, db: NodePgDatabase<typeof schema>) {
   getUserAndStrings(ctx, db).then(({ Strings }) => {
     const randomNumber = Math.floor(Math.random() * 100);
     const shouldSendGif = randomNumber > 50;
@@ -56,7 +37,7 @@ function sendRandomReply(ctx: Context & { message: { text: string } }, gifUrl: s
   });
 }
 
-async function handleDiceCommand(ctx: Context & { message: { text: string } }, emoji: string, delay: number, db: any) {
+async function handleDiceCommand(ctx: Context & { message: { text: string } }, emoji: string, delay: number, db: NodePgDatabase<typeof schema>) {
   const { Strings } = await getUserAndStrings(ctx, db);
 
   // @ts-ignore
@@ -77,64 +58,144 @@ function getRandomInt(max: number) {
   return Math.floor(Math.random() * (max + 1));
 }
 
-export default (bot: Telegraf<Context>, db) => {
+export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
   bot.command('random', spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
+    const startTime = Date.now();
+
     if (await isCommandDisabled(ctx, db, 'fun-random')) return;
 
-    const { Strings } = await getUserAndStrings(ctx, db);
-    const randomValue = getRandomInt(10);
-    const randomVStr = Strings.randomNum.replace('{number}', randomValue);
+    try {
+      const { Strings } = await getUserAndStrings(ctx, db);
+      const randomValue = getRandomInt(10);
+      const randomVStr = Strings.randomNum.replace('{number}', randomValue);
 
-    ctx.reply(
-      randomVStr, {
-      parse_mode: 'Markdown',
-      ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
-    });
+      await ctx.reply(
+        randomVStr, {
+        parse_mode: 'Markdown',
+        ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
+      });
+
+      await trackCommand(db, ctx, 'random', true, undefined, startTime);
+    } catch (error) {
+      await trackCommand(db, ctx, 'random', false, error.message, startTime);
+      throw error;
+    }
   });
 
   // TODO: maybe send custom stickers to match result of the roll? i think there are pre-existing ones
   bot.command('dice', spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
+    const startTime = Date.now();
+
     if (await isCommandDisabled(ctx, db, 'games-dice')) return;
-    await handleDiceCommand(ctx, '🎲', 4000, db);
+
+    try {
+      await handleDiceCommand(ctx, '🎲', 4000, db);
+      await trackCommand(db, ctx, 'dice', true, undefined, startTime);
+    } catch (error) {
+      await trackCommand(db, ctx, 'dice', false, error.message, startTime);
+      throw error;
+    }
   });
 
   bot.command('slot', spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
+    const startTime = Date.now();
+
     if (await isCommandDisabled(ctx, db, 'games-dice')) return;
-    await handleDiceCommand(ctx, '🎰', 3000, db);
+
+    try {
+      await handleDiceCommand(ctx, '🎰', 3000, db);
+      await trackCommand(db, ctx, 'slot', true, undefined, startTime);
+    } catch (error) {
+      await trackCommand(db, ctx, 'slot', false, error.message, startTime);
+      throw error;
+    }
   });
 
   bot.command('ball', spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
+    const startTime = Date.now();
+
     if (await isCommandDisabled(ctx, db, 'games-dice')) return;
-    await handleDiceCommand(ctx, '⚽', 3000, db);
+
+    try {
+      await handleDiceCommand(ctx, '⚽', 3000, db);
+      await trackCommand(db, ctx, 'ball', true, undefined, startTime);
+    } catch (error) {
+      await trackCommand(db, ctx, 'ball', false, error.message, startTime);
+      throw error;
+    }
   });
 
   bot.command('dart', spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
+    const startTime = Date.now();
+
     if (await isCommandDisabled(ctx, db, 'games-dice')) return;
-    await handleDiceCommand(ctx, '🎯', 3000, db);
+
+    try {
+      await handleDiceCommand(ctx, '🎯', 3000, db);
+      await trackCommand(db, ctx, 'dart', true, undefined, startTime);
+    } catch (error) {
+      await trackCommand(db, ctx, 'dart', false, error.message, startTime);
+      throw error;
+    }
   });
 
   bot.command('bowling', spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
+    const startTime = Date.now();
+
     if (await isCommandDisabled(ctx, db, 'games-dice')) return;
-    await handleDiceCommand(ctx, '🎳', 3000, db);
+
+    try {
+      await handleDiceCommand(ctx, '🎳', 3000, db);
+      await trackCommand(db, ctx, 'bowling', true, undefined, startTime);
+    } catch (error) {
+      await trackCommand(db, ctx, 'bowling', false, error.message, startTime);
+      throw error;
+    }
   });
 
   bot.command('idice', spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
+    const startTime = Date.now();
+
     if (await isCommandDisabled(ctx, db, 'infinite-dice')) return;
 
-    const { Strings } = await getUserAndStrings(ctx, db);
-    ctx.replyWithSticker(
-      Resources.infiniteDice, {
-      ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
-    });
+    try {
+      await ctx.replyWithSticker(
+        Resources.infiniteDice, {
+        ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
+      });
+
+      await trackCommand(db, ctx, 'idice', true, undefined, startTime);
+    } catch (error) {
+      await trackCommand(db, ctx, 'idice', false, error.message, startTime);
+      throw error;
+    }
   });
 
   bot.command('furry', spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
+    const startTime = Date.now();
+
     if (await isCommandDisabled(ctx, db, 'fun-random')) return;
-    sendRandomReply(ctx, Resources.furryGif, 'furryAmount', db);
+
+    try {
+      sendRandomReply(ctx, Resources.furryGif, 'furryAmount', db);
+      await trackCommand(db, ctx, 'furry', true, undefined, startTime);
+    } catch (error) {
+      await trackCommand(db, ctx, 'furry', false, error.message, startTime);
+      throw error;
+    }
   });
 
   bot.command('gay', spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
+    const startTime = Date.now();
+
     if (await isCommandDisabled(ctx, db, 'fun-random')) return;
-    sendRandomReply(ctx, Resources.gayFlag, 'gayAmount', db);
+
+    try {
+      sendRandomReply(ctx, Resources.gayFlag, 'gayAmount', db);
+      await trackCommand(db, ctx, 'gay', true, undefined, startTime);
+    } catch (error) {
+      await trackCommand(db, ctx, 'gay', false, error.message, startTime);
+      throw error;
+    }
   });
 };

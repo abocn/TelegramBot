@@ -1,14 +1,16 @@
 import Resources from '../props/resources.json';
-import { getStrings } from '../plugins/checklang';
 import { isOnSpamWatch } from '../spamwatch/spamwatch';
 import spamwatchMiddlewareModule from '../spamwatch/Middleware';
 import axios from 'axios';
 import verifyInput from '../plugins/verifyInput';
 import { Context, Telegraf } from 'telegraf';
 import { replyToMessageId } from '../utils/reply-to-message-id';
-import * as schema from '../../database/schema';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { isCommandDisabled } from '../utils/check-command-disabled';
+import { trackCommand } from '../utils/track-command';
+
+import { getUserAndStrings } from '../utils/get-user-strings';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import * as schema from '../../database/schema';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 
@@ -31,58 +33,48 @@ export async function getDeviceByCodename(codename: string): Promise<Device | nu
   }
 }
 
-async function getUserAndStrings(ctx: Context, db?: NodePgDatabase<typeof schema>): Promise<{ Strings: any, languageCode: string }> {
-  let languageCode = 'en';
-  if (!ctx.from) {
-    const Strings = getStrings(languageCode);
-    return { Strings, languageCode };
-  }
-  const from = ctx.from;
-  if (db && from.id) {
-    const dbUser = await db.query.usersTable.findMany({ where: (fields, { eq }) => eq(fields.telegramId, String(from.id)), limit: 1 });
-    if (dbUser.length > 0) {
-      languageCode = dbUser[0].languageCode;
-    }
-  }
-  if (from.language_code && languageCode === 'en') {
-    languageCode = from.language_code;
-    console.warn('[WARN !] Falling back to Telegram language_code for user', from.id);
-  }
-  const Strings = getStrings(languageCode);
-  return { Strings, languageCode };
-}
-
-export default (bot: Telegraf<Context>, db) => {
+export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
   bot.command(['codename', 'whatis'], spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
+    const startTime = Date.now();
+
     if (await isCommandDisabled(ctx, db, 'codename-lookup')) return;
 
-    const userInput = ctx.message.text.split(" ").slice(1).join(" ");
-    const { Strings } = await getUserAndStrings(ctx, db);
-    const { noCodename } = Strings.codenameCheck;
-    const reply_to_message_id = replyToMessageId(ctx);
+    try {
+      const userInput = ctx.message.text.split(" ").slice(1).join(" ");
+      const { Strings } = await getUserAndStrings(ctx, db);
+      const { noCodename } = Strings.codenameCheck;
+      const reply_to_message_id = replyToMessageId(ctx);
 
-    if (verifyInput(ctx, userInput, noCodename)) {
-      return;
-    }
+      if (verifyInput(ctx, userInput, noCodename)) {
+        return;
+      }
 
-    const device = await getDeviceByCodename(userInput);
+      const device = await getDeviceByCodename(userInput);
 
-    if (!device) {
-      return ctx.reply(Strings.codenameCheck.notFound, {
-        parse_mode: "Markdown",
+      if (!device) {
+        return ctx.reply(Strings.codenameCheck.notFound, {
+          parse_mode: "Markdown",
+          ...({ reply_to_message_id })
+        });
+      }
+
+      const message = Strings.codenameCheck.resultMsg
+        .replace('{brand}', device.brand)
+        .replace('{codename}', userInput)
+        .replace('{model}', device.model)
+        .replace('{name}', device.name);
+
+      await ctx.reply(message, {
+        parse_mode: 'Markdown',
         ...({ reply_to_message_id })
       });
+
+      const commandName = ctx.message?.text?.startsWith('/codename') ? 'codename' : 'whatis';
+      await trackCommand(db, ctx, commandName, true, undefined, startTime);
+    } catch (error) {
+      const commandName = ctx.message?.text?.startsWith('/codename') ? 'codename' : 'whatis';
+      await trackCommand(db, ctx, commandName, false, error.message, startTime);
+      throw error;
     }
-
-    const message = Strings.codenameCheck.resultMsg
-      .replace('{brand}', device.brand)
-      .replace('{codename}', userInput)
-      .replace('{model}', device.model)
-      .replace('{name}', device.name);
-
-    return ctx.reply(message, {
-      parse_mode: 'Markdown',
-      ...({ reply_to_message_id })
-    });
   })
 }

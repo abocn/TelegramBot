@@ -33,16 +33,18 @@ import spamwatchMiddlewareModule from "../spamwatch/Middleware"
 import { Telegraf, Context } from "telegraf"
 import type { Message } from "telegraf/types"
 import { replyToMessageId } from "../utils/reply-to-message-id"
-import { getStrings } from "../plugins/checklang"
 import axios from "axios"
 import { rateLimiter } from "../utils/rate-limiter"
 import { logger } from "../utils/log"
-import { ensureUserInDb } from "../utils/ensure-user"
-import * as schema from '../../database/schema'
-import type { NodePgDatabase } from "drizzle-orm/node-postgres"
+import { getStrings } from "../plugins/checklang"
 import { eq, sql, and, gt, isNotNull } from 'drizzle-orm'
 import { models, unloadModelAfterB, maxUserQueueSize } from "../../config/ai"
 import { isCommandDisabled } from "../utils/check-command-disabled"
+import { trackCommand } from '../utils/track-command';
+
+import { getUserAndStrings, getUserWithStringsAndModel } from '../utils/get-user-strings';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import * as schema from '../../database/schema';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch)
 export const flash_model = process.env.flashModel || "gemma3:4b"
@@ -99,24 +101,17 @@ async function checkUserTimeout(ctx: Context, db: NodePgDatabase<typeof schema>,
 
 type TextContext = Context & { message: Message.TextMessage }
 
-type User = typeof schema.usersTable.$inferSelect
-
 interface OllamaResponse {
   response: string;
 }
 
-async function usingSystemPrompt(ctx: TextContext, db: NodePgDatabase<typeof schema>, botName: string): Promise<string> {
-  const user = await db.query.usersTable.findMany({ where: (fields, { eq }) => eq(fields.telegramId, String(ctx.from!.id)), limit: 1 });
-  if (user.length === 0) await ensureUserInDb(ctx, db);
-  const userData = user[0];
-  const lang = userData?.languageCode || "en";
-  const Strings = getStrings(lang);
-  const tz = userData?.timezone || "UTC";
+async function usingSystemPrompt(userData: NonNullable<Awaited<ReturnType<typeof getUserWithStringsAndModel>>['user']>, Strings: ReturnType<typeof getStrings>, botName: string): Promise<string> {
+  const tz = userData.timezone || "UTC";
   const now = new Date();
   const dateStr = now.toLocaleDateString("en-CA", { timeZone: tz }); // YYYY-MM-DD
   const timeStr = now.toLocaleTimeString("en-GB", { timeZone: tz }); // HH:MM:SS
 
-  const basePrompt = userData?.customSystemPrompt && userData.customSystemPrompt.trim() !== "" ? userData.customSystemPrompt : Strings.ai.systemPrompt;
+  const basePrompt = userData.customSystemPrompt && userData.customSystemPrompt.trim() !== "" ? userData.customSystemPrompt : Strings.ai.systemPrompt;
   const prompt = basePrompt
     .replaceAll("{botName}", botName)
     .replaceAll("{date}", dateStr)
@@ -183,13 +178,13 @@ function processThinkingTags(text: string): string {
 
   const firstThinkIndex = processedText.indexOf('<think>');
   if (firstThinkIndex === -1) {
-      return processedText.replace(/<\/think>/g, '___THINK_END___');
+    return processedText.replace(/<\/think>/g, '___THINK_END___');
   }
 
   processedText = processedText.substring(0, firstThinkIndex) + '___THINK_START___' + processedText.substring(firstThinkIndex + '<think>'.length);
   const lastThinkEndIndex = processedText.lastIndexOf('</think>');
   if (lastThinkEndIndex !== -1) {
-      processedText = processedText.substring(0, lastThinkEndIndex) + '___THEND___' + processedText.substring(lastThinkEndIndex + '</think>'.length);
+    processedText = processedText.substring(0, lastThinkEndIndex) + '___THEND___' + processedText.substring(lastThinkEndIndex + '</think>'.length);
   }
   processedText = processedText.replace(/<think>/g, '');
   processedText = processedText.replace(/<\/think>/g, '');
@@ -685,20 +680,7 @@ async function handleAiReply(ctx: TextContext, model: string, prompt: string, re
     error,
     { parse_mode: 'Markdown' }
   );
-}
-
-async function getUserWithStringsAndModel(ctx: Context, db: NodePgDatabase<typeof schema>): Promise<{ user: User; Strings: ReturnType<typeof getStrings>; languageCode: string; customAiModel: string; aiTemperature: number, showThinking: boolean }> {
-  const userArr = await db.query.usersTable.findMany({ where: (fields, { eq }) => eq(fields.telegramId, String(ctx.from!.id)), limit: 1 });
-  let user = userArr[0];
-  if (!user) {
-    await ensureUserInDb(ctx, db);
-    const newUserArr = await db.query.usersTable.findMany({ where: (fields, { eq }) => eq(fields.telegramId, String(ctx.from!.id)), limit: 1 });
-    user = newUserArr[0];
-    const Strings = getStrings(user.languageCode);
-    return { user, Strings, languageCode: user.languageCode, customAiModel: user.customAiModel, aiTemperature: user.aiTemperature, showThinking: user.showThinking };
-  }
-  const Strings = getStrings(user.languageCode);
-  return { user, Strings, languageCode: user.languageCode, customAiModel: user.customAiModel, aiTemperature: user.aiTemperature, showThinking: user.showThinking };
+  throw new Error(aiResponse.error || 'AI request failed');
 }
 
 export function getModelLabelByName(name: string): string {
@@ -719,6 +701,8 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
     userId: number;
     model: string;
     abortController?: AbortController;
+    command: string;
+    startTime: number;
   }
 
   const requestQueue: AiRequest[] = [];
@@ -742,7 +726,7 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
     }
 
     const selectedRequest = requestQueue.splice(nextRequestIndex, 1)[0];
-    const { task, ctx, wasQueued, userId } = selectedRequest;
+    const { task, ctx, wasQueued, userId, command, startTime } = selectedRequest;
     currentRequest = selectedRequest;
 
     lastProcessedUserId = userId;
@@ -758,17 +742,19 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
         });
       }
       await task();
+      await trackCommand(db, ctx, command, true, undefined, startTime);
     } catch (error) {
       console.error("[✨ AI | !] Error processing task:", error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
       if (error.name === 'AbortError' || (error instanceof Error && error.message.toLowerCase().includes('aborted'))) {
         console.log("[✨ AI] Request was cancelled by user");
       } else {
-        const errorMessage = error instanceof Error ? error.message : String(error);
         await ctx.reply(Strings.unexpectedErr.replace("{error}", errorMessage), {
           ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } }),
           parse_mode: 'Markdown'
         });
       }
+      await trackCommand(db, ctx, command, false, errorMessage, startTime);
     } finally {
       currentRequest = null;
       isProcessing = false;
@@ -777,6 +763,7 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
   }
 
   async function aiCommandHandler(ctx: TextContext, command: 'ask' | 'think' | 'ai') {
+    const startTime = Date.now();
     const commandId = command === 'ask' || command === 'think' ? 'ai-ask-think' : 'ai-custom';
     if (await isCommandDisabled(ctx, db, commandId)) {
       return;
@@ -793,7 +780,7 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
 
     const model = command === 'ai'
       ? (customAiModel || flash_model)
-      : (command === 'ask' ? flash_model : thinking_model);
+      : (command === 'ask' ? (customAiModel || flash_model) : (customAiModel || thinking_model));
 
     const fixedMsg = message.replace(new RegExp(`^/${command}(@\\w+)?\\s*`), "").trim();
     logger.logCmdStart(author, command, model);
@@ -826,26 +813,30 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
 
     const abortController = new AbortController();
     const task = async () => {
-      const modelLabel = getModelLabelByName(model);
-      const replyGenerating = await ctx.reply(Strings.ai.askGenerating.replace("{model}", `\`${modelLabel}\``), {
-        parse_mode: 'Markdown',
-        ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
-      });
-      const systemPrompt = await usingSystemPrompt(ctx, db, botName);
-      const prompt = sanitizeForJson(`${systemPrompt}\n\nUser: ${fixedMsg}\n\nAssistant:`);
-      await handleAiReply(ctx, model, prompt, replyGenerating, aiTemperature, fixedMsg, db, user.telegramId, Strings, showThinking, abortController);
+      try {
+        const modelLabel = getModelLabelByName(model);
+        const replyGenerating = await ctx.reply(Strings.ai.askGenerating.replace("{model}", `\`${modelLabel}\``), {
+          parse_mode: 'Markdown',
+          ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
+        });
+        const systemPrompt = await usingSystemPrompt(user, Strings, botName);
+        const prompt = sanitizeForJson(`${systemPrompt}\n\nUser: ${fixedMsg}\n\nAssistant:`);
+        await handleAiReply(ctx, model, prompt, replyGenerating, aiTemperature, fixedMsg, db, user.telegramId, Strings, showThinking, abortController);
+      } catch (error) {
+        throw error;
+      }
     };
 
     if (isProcessing) {
-      requestQueue.push({ task, ctx, wasQueued: true, userId: ctx.from!.id, model, abortController });
+      requestQueue.push({ task, ctx, wasQueued: true, userId: ctx.from!.id, model, abortController, command, startTime });
       const position = requestQueue.length;
       await ctx.reply(Strings.ai.inQueue.replace("{position}", String(position)), {
         parse_mode: 'Markdown',
         ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
       });
     } else {
-      requestQueue.push({ task, ctx, wasQueued: false, userId: ctx.from!.id, model, abortController });
-      processQueue();
+      requestQueue.push({ task, ctx, wasQueued: false, userId: ctx.from!.id, model, abortController, command, startTime });
+      await processQueue();
     }
   }
 
@@ -861,284 +852,251 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
   });
 
   bot.command(["aistop"], spamwatchMiddleware, async (ctx) => {
+    const startTime = Date.now();
+
     if (await isCommandDisabled(ctx, db, 'ai-stop')) {
       return;
     }
 
-    const { Strings } = await getUserWithStringsAndModel(ctx, db);
-    const reply_to_message_id = replyToMessageId(ctx);
-    const userId = ctx.from!.id;
-
-    if (currentRequest && currentRequest.userId === userId) {
-      currentRequest.abortController?.abort();
-
-      try {
-        await axios.post(`${process.env.ollamaApi}/api/generate`, {
-          model: currentRequest.model,
-          keep_alive: 0,
-        }, { timeout: 5000 });
-      } catch (error) {
-        console.log("[✨ AI] Could not unload model after cancellation:", error.message);
-      }
-
-      await ctx.reply(Strings.ai.requestStopped, {
-        parse_mode: 'Markdown',
-        ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
-      });
-      return;
-    }
-
-    const queuedRequestIndex = requestQueue.findIndex(req => req.userId === userId);
-    if (queuedRequestIndex !== -1) {
-      const removedRequest = requestQueue.splice(queuedRequestIndex, 1)[0];
-      removedRequest.abortController?.abort();
-      await ctx.reply(Strings.ai.requestRemovedFromQueue, {
-        parse_mode: 'Markdown',
-        ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
-      });
-      return;
-    }
-
-    await ctx.reply(Strings.ai.noActiveRequest, {
-      parse_mode: 'Markdown',
-      ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
-    });
-  });
-
-  bot.command(["aistats"], spamwatchMiddleware, async (ctx) => {
-    if (await isCommandDisabled(ctx, db, 'ai-stats')) {
-      return;
-    }
-
-    const { user, Strings } = await getUserWithStringsAndModel(ctx, db);
-    if (!user) {
-      await ctx.reply(Strings.userNotFound || "User not found.");
-      return;
-    }
-    const bookCount = Math.max(1, Math.round(user.aiCharacters / 500000));
-    const bookWord = bookCount === 1 ? 'book' : 'books';
-    const msg = `${Strings.aiStats.header}\n\n${Strings.aiStats.requests.replace('{aiRequests}', user.aiRequests)}\n${Strings.aiStats.characters.replace('{aiCharacters}', user.aiCharacters).replace('{bookCount}', bookCount).replace('books', bookWord)}`;
-    await ctx.reply(msg, { parse_mode: 'Markdown' });
-  });
-
-  bot.command("queue", spamwatchMiddleware, async (ctx) => {
-    if (!isAdmin(ctx)) {
-      const { Strings } = await getUserWithStringsAndModel(ctx, db);
-      await ctx.reply(Strings.noPermission);
-      return;
-    }
-
-    const { Strings } = await getUserWithStringsAndModel(ctx, db);
-    const reply_to_message_id = replyToMessageId(ctx);
-
-    if (requestQueue.length === 0) {
-      await ctx.reply(Strings.ai.queueEmpty, {
-        parse_mode: 'Markdown',
-        ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
-      });
-      return;
-    }
-
-    let queueItems = "";
-    for (let i = 0; i < requestQueue.length; i++) {
-      const item = requestQueue[i];
-      const username = item.ctx.from?.username || item.ctx.from?.first_name || "Unknown";
-      const status = i === 0 && isProcessing ? "Processing" : "Queued";
-      const modelLabel = getModelLabelByName(item.model);
-      queueItems += Strings.ai.queueItem
-        .replace("{username}", username)
-        .replace("{userId}", String(item.userId))
-        .replace("{model}", modelLabel)
-        .replace("{status}", status);
-    }
-
-    const queueMsg = Strings.ai.queueList
-      .replace("{queueItems}", queueItems)
-      .replace("{totalItems}", String(requestQueue.length));
-
-    await ctx.reply(queueMsg, {
-      parse_mode: 'Markdown',
-      ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
-    });
-  });
-
-  bot.command("qdel", spamwatchMiddleware, async (ctx) => {
-    if (!isAdmin(ctx)) {
-      const { Strings } = await getUserWithStringsAndModel(ctx, db);
-      await ctx.reply(Strings.noPermission);
-      return;
-    }
-
-    const { Strings } = await getUserWithStringsAndModel(ctx, db);
-    const reply_to_message_id = replyToMessageId(ctx);
-    const args = ctx.message.text.split(' ');
-
-    if (args.length < 2) {
-      await ctx.reply(Strings.ai.invalidUserId, {
-        parse_mode: 'Markdown',
-        ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
-      });
-      return;
-    }
-
-    const targetUserId = parseInt(args[1]);
-    if (isNaN(targetUserId)) {
-      await ctx.reply(Strings.ai.invalidUserId, {
-        parse_mode: 'Markdown',
-        ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
-      });
-      return;
-    }
-
-    let stoppedCurrentRequest = false;
-    const initialLength = requestQueue.length;
-    const filteredQueue = requestQueue.filter(item => item.userId !== targetUserId);
-    const removedCount = initialLength - filteredQueue.length;
-
-    requestQueue.length = 0;
-    requestQueue.push(...filteredQueue);
-
-    if (currentRequest && currentRequest.userId === targetUserId) {
-      currentRequest.abortController?.abort();
-
-      try {
-        await axios.post(`${process.env.ollamaApi}/api/generate`, {
-          model: currentRequest.model,
-          keep_alive: 0,
-        }, { timeout: 5000 });
-      } catch (error) {
-        console.log("[✨ AI] Could not unload model after cancellation:", error.message);
-      }
-
-      stoppedCurrentRequest = true;
-    }
-
-    if (removedCount === 0 && !stoppedCurrentRequest) {
-      await ctx.reply(Strings.ai.noQueueItems.replace("{userId}", String(targetUserId)), {
-        parse_mode: 'Markdown',
-        ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
-      });
-      return;
-    }
-
-    let responseMessage = "";
-    if (stoppedCurrentRequest && removedCount > 0) {
-      responseMessage = Strings.ai.stoppedCurrentAndCleared.replace("{count}", String(removedCount)).replace("{userId}", String(targetUserId));
-    } else if (stoppedCurrentRequest) {
-      responseMessage = Strings.ai.stoppedCurrentRequestOnly.replace("{userId}", String(targetUserId));
-    } else {
-      responseMessage = Strings.ai.queueCleared.replace("{count}", String(removedCount)).replace("{userId}", String(targetUserId));
-    }
-
-    await ctx.reply(responseMessage, {
-      parse_mode: 'Markdown',
-      ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
-    });
-  });
-
-  bot.command("qlimit", spamwatchMiddleware, async (ctx) => {
-    if (!isAdmin(ctx)) {
-      const { Strings } = await getUserWithStringsAndModel(ctx, db);
-      await ctx.reply(Strings.noPermission);
-      return;
-    }
-
-    const { Strings } = await getUserWithStringsAndModel(ctx, db);
-    const reply_to_message_id = replyToMessageId(ctx);
-    const args = ctx.message.text.split(' ');
-
-    if (args.length < 3) {
-      await ctx.reply("Usage: /qlimit <user_id> <duration>\nExample: /qlimit 123456789 1h", {
-        parse_mode: 'Markdown',
-        ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
-      });
-      return;
-    }
-
-    const targetUserId = args[1];
-    const durationStr = args[2];
-
-    if (!/^\d+$/.test(targetUserId)) {
-      await ctx.reply(Strings.ai.invalidUserId, {
-        parse_mode: 'Markdown',
-        ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
-      });
-      return;
-    }
-
-    const durationSeconds = parseDuration(durationStr);
-    if (durationSeconds === -1) {
-      await ctx.reply(Strings.ai.invalidDuration, {
-        parse_mode: 'Markdown',
-        ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
-      });
-      return;
-    }
-
     try {
-      const user = await db.query.usersTable.findFirst({ where: (fields, { eq }) => eq(fields.telegramId, targetUserId) });
-      if (!user) {
-        await ctx.reply(Strings.ai.userNotFound.replace("{userId}", targetUserId), {
+      const { Strings } = await getUserWithStringsAndModel(ctx, db);
+      const reply_to_message_id = replyToMessageId(ctx);
+      const userId = ctx.from!.id;
+
+      if (currentRequest && currentRequest.userId === userId) {
+        currentRequest.abortController?.abort();
+
+        try {
+          await axios.post(`${process.env.ollamaApi}/api/generate`, {
+            model: currentRequest.model,
+            keep_alive: 0,
+          }, { timeout: 5000 });
+        } catch (error) {
+          console.log("[✨ AI] Could not unload model after cancellation:", error.message);
+        }
+
+        await ctx.reply(Strings.ai.requestStopped, {
           parse_mode: 'Markdown',
           ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
         });
         return;
       }
 
-      const timeoutEnd = new Date(Date.now() + (durationSeconds * 1000));
-      await db.update(schema.usersTable)
-        .set({ aiTimeoutUntil: timeoutEnd })
-        .where(eq(schema.usersTable.telegramId, targetUserId));
+      const queuedRequestIndex = requestQueue.findIndex(req => req.userId === userId);
+      if (queuedRequestIndex !== -1) {
+        const removedRequest = requestQueue.splice(queuedRequestIndex, 1)[0];
+        removedRequest.abortController?.abort();
+        await ctx.reply(Strings.ai.requestRemovedFromQueue, {
+          parse_mode: 'Markdown',
+          ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
+        });
+        return;
+      }
 
-      const filteredQueue = requestQueue.filter(item => item.userId !== parseInt(targetUserId));
-      requestQueue.length = 0;
-      requestQueue.push(...filteredQueue);
-
-      await ctx.reply(Strings.ai.userTimedOut.replace("{userId}", targetUserId).replace("{timeoutEnd}", timeoutEnd.toISOString()), {
+      await ctx.reply(Strings.ai.noActiveRequest, {
         parse_mode: 'Markdown',
         ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
       });
+
+      await trackCommand(db, ctx, 'aistop', true, undefined, startTime);
     } catch (error) {
-      await ctx.reply(Strings.ai.userTimeoutError.replace("{userId}", targetUserId).replace("{error}", error.message), {
-        parse_mode: 'Markdown',
-        ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
-      });
+      await trackCommand(db, ctx, 'aistop', false, error.message, startTime);
+      throw error;
     }
   });
 
-  bot.command("setexec", spamwatchMiddleware, async (ctx) => {
+  bot.command(["aistats"], spamwatchMiddleware, async (ctx) => {
+    const startTime = Date.now();
+
+    if (await isCommandDisabled(ctx, db, 'ai-stats')) {
+      return;
+    }
+
+    try {
+      const { user, Strings } = await getUserWithStringsAndModel(ctx, db);
+      if (!user) {
+        await ctx.reply(Strings.userNotFound || "User not found.");
+        return;
+      }
+      const bookCount = Math.max(1, Math.round(user.aiCharacters / 500000));
+      const bookWord = bookCount === 1 ? 'book' : 'books';
+      const msg = `${Strings.aiStats.header}\n\n${Strings.aiStats.requests.replace('{aiRequests}', user.aiRequests)}\n${Strings.aiStats.characters.replace('{aiCharacters}', user.aiCharacters).replace('{bookCount}', bookCount).replace('books', bookWord)}`;
+      await ctx.reply(msg, { parse_mode: 'Markdown' });
+
+      await trackCommand(db, ctx, 'aistats', true, undefined, startTime);
+    } catch (error) {
+      await trackCommand(db, ctx, 'aistats', false, error.message, startTime);
+      throw error;
+    }
+  });
+
+  bot.command("queue", spamwatchMiddleware, async (ctx) => {
+    const startTime = Date.now();
+
     if (!isAdmin(ctx)) {
       const { Strings } = await getUserWithStringsAndModel(ctx, db);
       await ctx.reply(Strings.noPermission);
       return;
     }
 
-    const { Strings } = await getUserWithStringsAndModel(ctx, db);
-    const reply_to_message_id = replyToMessageId(ctx);
-    const args = ctx.message.text.split(' ');
+    try {
+      const { Strings } = await getUserWithStringsAndModel(ctx, db);
+      const reply_to_message_id = replyToMessageId(ctx);
 
-    if (args.length < 3) {
-      await ctx.reply("Usage: /setexec <user_id> <duration>\nExample: /setexec 123456789 5m\nUse 'unlimited' to remove limit.", {
+      if (requestQueue.length === 0) {
+        await ctx.reply(Strings.ai.queueEmpty, {
+          parse_mode: 'Markdown',
+          ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
+        });
+        return;
+      }
+
+      let queueItems = "";
+      for (let i = 0; i < requestQueue.length; i++) {
+        const item = requestQueue[i];
+        const username = item.ctx.from?.username || item.ctx.from?.first_name || "Unknown";
+        const status = i === 0 && isProcessing ? "Processing" : "Queued";
+        const modelLabel = getModelLabelByName(item.model);
+        queueItems += Strings.ai.queueItem
+          .replace("{username}", username)
+          .replace("{userId}", String(item.userId))
+          .replace("{model}", modelLabel)
+          .replace("{status}", status);
+      }
+
+      const queueMsg = Strings.ai.queueList
+        .replace("{queueItems}", queueItems)
+        .replace("{totalItems}", String(requestQueue.length));
+
+      await ctx.reply(queueMsg, {
         parse_mode: 'Markdown',
         ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
       });
+
+      await trackCommand(db, ctx, 'queue', true, undefined, startTime);
+    } catch (error) {
+      await trackCommand(db, ctx, 'queue', false, error.message, startTime);
+      throw error;
+    }
+  });
+
+  bot.command("qdel", spamwatchMiddleware, async (ctx) => {
+    const startTime = Date.now();
+
+    if (!isAdmin(ctx)) {
+      const { Strings } = await getUserWithStringsAndModel(ctx, db);
+      await ctx.reply(Strings.noPermission);
       return;
     }
 
-    const targetUserId = args[1];
-    const durationStr = args[2];
+    try {
+      const { Strings } = await getUserWithStringsAndModel(ctx, db);
+      const reply_to_message_id = replyToMessageId(ctx);
+      const args = ctx.message.text.split(' ');
 
-    if (!/^\d+$/.test(targetUserId)) {
-      await ctx.reply(Strings.ai.invalidUserId, {
+      if (args.length < 2) {
+        await ctx.reply(Strings.ai.invalidUserId, {
+          parse_mode: 'Markdown',
+          ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
+        });
+        return;
+      }
+
+      const targetUserId = parseInt(args[1]);
+      if (isNaN(targetUserId)) {
+        await ctx.reply(Strings.ai.invalidUserId, {
+          parse_mode: 'Markdown',
+          ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
+        });
+        return;
+      }
+
+      let stoppedCurrentRequest = false;
+      const initialLength = requestQueue.length;
+      const filteredQueue = requestQueue.filter(item => item.userId !== targetUserId);
+      const removedCount = initialLength - filteredQueue.length;
+
+      requestQueue.length = 0;
+      requestQueue.push(...filteredQueue);
+
+      if (currentRequest && currentRequest.userId === targetUserId) {
+        currentRequest.abortController?.abort();
+
+        try {
+          await axios.post(`${process.env.ollamaApi}/api/generate`, {
+            model: currentRequest.model,
+            keep_alive: 0,
+          }, { timeout: 5000 });
+        } catch (error) {
+          console.log("[✨ AI] Could not unload model after cancellation:", error.message);
+        }
+
+        stoppedCurrentRequest = true;
+      }
+
+      if (removedCount === 0 && !stoppedCurrentRequest) {
+        await ctx.reply(Strings.ai.noQueueItems.replace("{userId}", String(targetUserId)), {
+          parse_mode: 'Markdown',
+          ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
+        });
+        return;
+      }
+
+      let responseMessage = "";
+      if (stoppedCurrentRequest && removedCount > 0) {
+        responseMessage = Strings.ai.stoppedCurrentAndCleared.replace("{count}", String(removedCount)).replace("{userId}", String(targetUserId));
+      } else if (stoppedCurrentRequest) {
+        responseMessage = Strings.ai.stoppedCurrentRequestOnly.replace("{userId}", String(targetUserId));
+      } else {
+        responseMessage = Strings.ai.queueCleared.replace("{count}", String(removedCount)).replace("{userId}", String(targetUserId));
+      }
+
+      await ctx.reply(responseMessage, {
         parse_mode: 'Markdown',
         ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
       });
+
+      await trackCommand(db, ctx, 'qdel', true, undefined, startTime);
+    } catch (error) {
+      await trackCommand(db, ctx, 'qdel', false, error.message, startTime);
+      throw error;
+    }
+  });
+
+  bot.command("qlimit", spamwatchMiddleware, async (ctx) => {
+    const startTime = Date.now();
+
+    if (!isAdmin(ctx)) {
+      const { Strings } = await getUserWithStringsAndModel(ctx, db);
+      await ctx.reply(Strings.noPermission);
       return;
     }
 
-    let durationSeconds = 0;
-    if (durationStr.toLowerCase() !== 'unlimited') {
-      durationSeconds = parseDuration(durationStr);
+    try {
+      const { Strings } = await getUserWithStringsAndModel(ctx, db);
+      const reply_to_message_id = replyToMessageId(ctx);
+      const args = ctx.message.text.split(' ');
+
+      if (args.length < 3) {
+        await ctx.reply("Usage: /qlimit <user_id> <duration>\nExample: /qlimit 123456789 1h", {
+          parse_mode: 'Markdown',
+          ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
+        });
+        return;
+      }
+
+      const targetUserId = args[1];
+      const durationStr = args[2];
+
+      if (!/^\d+$/.test(targetUserId)) {
+        await ctx.reply(Strings.ai.invalidUserId, {
+          parse_mode: 'Markdown',
+          ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
+        });
+        return;
+      }
+
+      const durationSeconds = parseDuration(durationStr);
       if (durationSeconds === -1) {
         await ctx.reply(Strings.ai.invalidDuration, {
           parse_mode: 'Markdown',
@@ -1146,177 +1104,282 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
         });
         return;
       }
+
+      try {
+        const user = await db.query.usersTable.findFirst({ where: (fields, { eq }) => eq(fields.telegramId, targetUserId) });
+        if (!user) {
+          await ctx.reply(Strings.ai.userNotFound.replace("{userId}", targetUserId), {
+            parse_mode: 'Markdown',
+            ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
+          });
+          return;
+        }
+
+        const timeoutEnd = new Date(Date.now() + (durationSeconds * 1000));
+        await db.update(schema.usersTable)
+          .set({ aiTimeoutUntil: timeoutEnd })
+          .where(eq(schema.usersTable.telegramId, targetUserId));
+
+        const filteredQueue = requestQueue.filter(item => item.userId !== parseInt(targetUserId));
+        requestQueue.length = 0;
+        requestQueue.push(...filteredQueue);
+
+        await ctx.reply(Strings.ai.userTimedOut.replace("{userId}", targetUserId).replace("{timeoutEnd}", timeoutEnd.toISOString()), {
+          parse_mode: 'Markdown',
+          ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
+        });
+      } catch (error) {
+        await ctx.reply(Strings.ai.userTimeoutError.replace("{userId}", targetUserId).replace("{error}", error.message), {
+          parse_mode: 'Markdown',
+          ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
+        });
+      }
+
+      await trackCommand(db, ctx, 'qlimit', true, undefined, startTime);
+    } catch (error) {
+      await trackCommand(db, ctx, 'qlimit', false, error.message, startTime);
+      throw error;
+    }
+  });
+
+  bot.command("setexec", spamwatchMiddleware, async (ctx) => {
+    const startTime = Date.now();
+
+    if (!isAdmin(ctx)) {
+      const { Strings } = await getUserWithStringsAndModel(ctx, db);
+      await ctx.reply(Strings.noPermission);
+      return;
     }
 
     try {
-      const user = await db.query.usersTable.findFirst({ where: (fields, { eq }) => eq(fields.telegramId, targetUserId) });
-      if (!user) {
-        await ctx.reply(Strings.ai.userNotFound.replace("{userId}", targetUserId), {
+      const { Strings } = await getUserWithStringsAndModel(ctx, db);
+      const reply_to_message_id = replyToMessageId(ctx);
+      const args = ctx.message.text.split(' ');
+
+      if (args.length < 3) {
+        await ctx.reply("Usage: /setexec <user_id> <duration>\nExample: /setexec 123456789 5m\nUse 'unlimited' to remove limit.", {
           parse_mode: 'Markdown',
           ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
         });
         return;
       }
 
-      await db.update(schema.usersTable)
-        .set({ aiMaxExecutionTime: durationSeconds })
-        .where(eq(schema.usersTable.telegramId, targetUserId));
+      const targetUserId = args[1];
+      const durationStr = args[2];
 
-      if (durationSeconds === 0) {
-        await ctx.reply(Strings.ai.userExecTimeRemoved.replace("{userId}", targetUserId), {
+      if (!/^\d+$/.test(targetUserId)) {
+        await ctx.reply(Strings.ai.invalidUserId, {
           parse_mode: 'Markdown',
           ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
         });
-      } else {
-        await ctx.reply(Strings.ai.userExecTimeSet.replace("{duration}", formatDuration(durationSeconds)).replace("{userId}", targetUserId), {
+        return;
+      }
+
+      let durationSeconds = 0;
+      if (durationStr.toLowerCase() !== 'unlimited') {
+        durationSeconds = parseDuration(durationStr);
+        if (durationSeconds === -1) {
+          await ctx.reply(Strings.ai.invalidDuration, {
+            parse_mode: 'Markdown',
+            ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
+          });
+          return;
+        }
+      }
+
+      try {
+        const user = await db.query.usersTable.findFirst({ where: (fields, { eq }) => eq(fields.telegramId, targetUserId) });
+        if (!user) {
+          await ctx.reply(Strings.ai.userNotFound.replace("{userId}", targetUserId), {
+            parse_mode: 'Markdown',
+            ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
+          });
+          return;
+        }
+
+        await db.update(schema.usersTable)
+          .set({ aiMaxExecutionTime: durationSeconds })
+          .where(eq(schema.usersTable.telegramId, targetUserId));
+
+        if (durationSeconds === 0) {
+          await ctx.reply(Strings.ai.userExecTimeRemoved.replace("{userId}", targetUserId), {
+            parse_mode: 'Markdown',
+            ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
+          });
+        } else {
+          await ctx.reply(Strings.ai.userExecTimeSet.replace("{duration}", formatDuration(durationSeconds)).replace("{userId}", targetUserId), {
+            parse_mode: 'Markdown',
+            ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
+          });
+        }
+      } catch (error) {
+        await ctx.reply(Strings.ai.userExecTimeError.replace("{userId}", targetUserId).replace("{error}", error.message), {
           parse_mode: 'Markdown',
           ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
         });
       }
+
+      await trackCommand(db, ctx, 'setexec', true, undefined, startTime);
     } catch (error) {
-      await ctx.reply(Strings.ai.userExecTimeError.replace("{userId}", targetUserId).replace("{error}", error.message), {
-        parse_mode: 'Markdown',
-        ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
-      });
+      await trackCommand(db, ctx, 'setexec', false, error.message, startTime);
+      throw error;
     }
   });
 
   bot.command("rlimit", spamwatchMiddleware, async (ctx) => {
+    const startTime = Date.now();
+
     if (!isAdmin(ctx)) {
       const { Strings } = await getUserWithStringsAndModel(ctx, db);
       await ctx.reply(Strings.noPermission);
       return;
     }
 
-    const { Strings } = await getUserWithStringsAndModel(ctx, db);
-    const reply_to_message_id = replyToMessageId(ctx);
-    const args = ctx.message.text.split(' ');
-
-    if (args.length < 2) {
-      await ctx.reply("Usage: /rlimit <user_id>\nExample: /rlimit 123456789", {
-        parse_mode: 'Markdown',
-        ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
-      });
-      return;
-    }
-
-    const targetUserId = args[1];
-
-    if (!/^\d+$/.test(targetUserId)) {
-      await ctx.reply(Strings.ai.invalidUserId, {
-        parse_mode: 'Markdown',
-        ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
-      });
-      return;
-    }
-
     try {
-      const user = await db.query.usersTable.findFirst({ where: (fields, { eq }) => eq(fields.telegramId, targetUserId) });
-      if (!user) {
-        await ctx.reply(Strings.ai.userNotFound.replace("{userId}", targetUserId), {
+      const { Strings } = await getUserWithStringsAndModel(ctx, db);
+      const reply_to_message_id = replyToMessageId(ctx);
+      const args = ctx.message.text.split(' ');
+
+      if (args.length < 2) {
+        await ctx.reply("Usage: /rlimit <user_id>\nExample: /rlimit 123456789", {
           parse_mode: 'Markdown',
           ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
         });
         return;
       }
 
-      await db.update(schema.usersTable)
-        .set({
-          aiTimeoutUntil: null,
-          aiMaxExecutionTime: 0
-        })
-        .where(eq(schema.usersTable.telegramId, targetUserId));
+      const targetUserId = args[1];
 
-      await ctx.reply(Strings.ai.userLimitsRemoved.replace("{userId}", targetUserId), {
-        parse_mode: 'Markdown',
-        ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
-      });
+      if (!/^\d+$/.test(targetUserId)) {
+        await ctx.reply(Strings.ai.invalidUserId, {
+          parse_mode: 'Markdown',
+          ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
+        });
+        return;
+      }
+
+      try {
+        const user = await db.query.usersTable.findFirst({ where: (fields, { eq }) => eq(fields.telegramId, targetUserId) });
+        if (!user) {
+          await ctx.reply(Strings.ai.userNotFound.replace("{userId}", targetUserId), {
+            parse_mode: 'Markdown',
+            ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
+          });
+          return;
+        }
+
+        await db.update(schema.usersTable)
+          .set({
+            aiTimeoutUntil: null,
+            aiMaxExecutionTime: 0
+          })
+          .where(eq(schema.usersTable.telegramId, targetUserId));
+
+        await ctx.reply(Strings.ai.userLimitsRemoved.replace("{userId}", targetUserId), {
+          parse_mode: 'Markdown',
+          ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
+        });
+      } catch (error) {
+        await ctx.reply(Strings.ai.userLimitRemoveError.replace("{userId}", targetUserId).replace("{error}", error.message), {
+          parse_mode: 'Markdown',
+          ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
+        });
+      }
+
+      await trackCommand(db, ctx, 'rlimit', true, undefined, startTime);
     } catch (error) {
-      await ctx.reply(Strings.ai.userLimitRemoveError.replace("{userId}", targetUserId).replace("{error}", error.message), {
-        parse_mode: 'Markdown',
-        ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
-      });
+      await trackCommand(db, ctx, 'rlimit', false, error.message, startTime);
+      throw error;
     }
   });
 
   bot.command("limits", spamwatchMiddleware, async (ctx) => {
+    const startTime = Date.now();
+
     if (!isAdmin(ctx)) {
       const { Strings } = await getUserWithStringsAndModel(ctx, db);
       await ctx.reply(Strings.noPermission);
       return;
     }
 
-    const { Strings } = await getUserWithStringsAndModel(ctx, db);
-    const reply_to_message_id = replyToMessageId(ctx);
-
     try {
-      const usersWithTimeouts = await db.query.usersTable.findMany({
-        where: and(
-          isNotNull(schema.usersTable.aiTimeoutUntil),
-          gt(schema.usersTable.aiTimeoutUntil, new Date())
-        ),
-        columns: {
-          telegramId: true,
-          username: true,
-          firstName: true,
-          aiTimeoutUntil: true
-        }
-      });
+      const { Strings } = await getUserWithStringsAndModel(ctx, db);
+      const reply_to_message_id = replyToMessageId(ctx);
 
-      const usersWithExecLimits = await db.query.usersTable.findMany({
-        where: gt(schema.usersTable.aiMaxExecutionTime, 0),
-        columns: {
-          telegramId: true,
-          username: true,
-          firstName: true,
-          aiMaxExecutionTime: true
-        }
-      });
+      try {
+        const usersWithTimeouts = await db.query.usersTable.findMany({
+          where: and(
+            isNotNull(schema.usersTable.aiTimeoutUntil),
+            gt(schema.usersTable.aiTimeoutUntil, new Date())
+          ),
+          columns: {
+            telegramId: true,
+            username: true,
+            firstName: true,
+            aiTimeoutUntil: true
+          }
+        });
 
-      if (usersWithTimeouts.length === 0 && usersWithExecLimits.length === 0) {
-        await ctx.reply(Strings.ai.noLimitsSet, {
+        const usersWithExecLimits = await db.query.usersTable.findMany({
+          where: gt(schema.usersTable.aiMaxExecutionTime, 0),
+          columns: {
+            telegramId: true,
+            username: true,
+            firstName: true,
+            aiMaxExecutionTime: true
+          }
+        });
+
+        if (usersWithTimeouts.length === 0 && usersWithExecLimits.length === 0) {
+          await ctx.reply(Strings.ai.noLimitsSet, {
+            parse_mode: 'Markdown',
+            ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
+          });
+          return;
+        }
+
+        let limitsText = Strings.ai.limitsHeader + "\n\n";
+
+        if (usersWithTimeouts.length > 0) {
+          limitsText += Strings.ai.timeoutLimitsHeader + "\n";
+          for (const user of usersWithTimeouts) {
+            const displayName = user.username || user.firstName || "Unknown";
+            const timeoutEnd = user.aiTimeoutUntil!.toISOString();
+            limitsText += Strings.ai.timeoutLimitItem
+              .replace("{displayName}", displayName)
+              .replace("{userId}", user.telegramId)
+              .replace("{timeoutEnd}", timeoutEnd) + "\n";
+          }
+          limitsText += "\n";
+        }
+
+        if (usersWithExecLimits.length > 0) {
+          limitsText += Strings.ai.execLimitsHeader + "\n";
+          for (const user of usersWithExecLimits) {
+            const displayName = user.username || user.firstName || "Unknown";
+            const execTime = formatDuration(user.aiMaxExecutionTime!);
+            limitsText += Strings.ai.execLimitItem
+              .replace("{displayName}", displayName)
+              .replace("{userId}", user.telegramId)
+              .replace("{execTime}", execTime) + "\n";
+          }
+        }
+
+        await ctx.reply(limitsText.trim(), {
           parse_mode: 'Markdown',
           ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
         });
-        return;
+      } catch (error) {
+        await ctx.reply(Strings.ai.limitsListError.replace("{error}", error.message), {
+          parse_mode: 'Markdown',
+          ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
+        });
       }
 
-      let limitsText = Strings.ai.limitsHeader + "\n\n";
-
-      if (usersWithTimeouts.length > 0) {
-        limitsText += Strings.ai.timeoutLimitsHeader + "\n";
-        for (const user of usersWithTimeouts) {
-          const displayName = user.username || user.firstName || "Unknown";
-          const timeoutEnd = user.aiTimeoutUntil!.toISOString();
-          limitsText += Strings.ai.timeoutLimitItem
-            .replace("{displayName}", displayName)
-            .replace("{userId}", user.telegramId)
-            .replace("{timeoutEnd}", timeoutEnd) + "\n";
-        }
-        limitsText += "\n";
-      }
-
-      if (usersWithExecLimits.length > 0) {
-        limitsText += Strings.ai.execLimitsHeader + "\n";
-        for (const user of usersWithExecLimits) {
-          const displayName = user.username || user.firstName || "Unknown";
-          const execTime = formatDuration(user.aiMaxExecutionTime!);
-          limitsText += Strings.ai.execLimitItem
-            .replace("{displayName}", displayName)
-            .replace("{userId}", user.telegramId)
-            .replace("{execTime}", execTime) + "\n";
-        }
-      }
-
-      await ctx.reply(limitsText.trim(), {
-        parse_mode: 'Markdown',
-        ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
-      });
+      await trackCommand(db, ctx, 'limits', true, undefined, startTime);
     } catch (error) {
-      await ctx.reply(Strings.ai.limitsListError.replace("{error}", error.message), {
-        parse_mode: 'Markdown',
-        ...(reply_to_message_id && { reply_parameters: { message_id: reply_to_message_id } })
-      });
+      await trackCommand(db, ctx, 'limits', false, error.message, startTime);
+      throw error;
     }
   });
 }

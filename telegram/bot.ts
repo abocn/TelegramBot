@@ -13,6 +13,7 @@ import { ensureUserInDb } from './utils/ensure-user';
 import { getSpamwatchBlockedCount } from './spamwatch/spamwatch';
 import { startServer } from './api/server';
 import { createClient } from 'redis';
+import { syncAdminStatus } from './utils/sync-admin-status';
 
 (async function main() {
   const { botToken, handlerTimeout, maxRetries, databaseUrl, ollamaEnabled } = process.env;
@@ -27,9 +28,35 @@ import { createClient } from 'redis';
     }
   }
 
-  const client = new Client({ connectionString: databaseUrl });
-  await client.connect();
-  const db = drizzle(client, { schema });
+  async function connectToDatabase(): Promise<{ client: Client; db: any }> {
+    const maxDbRetries = Number(maxRetries) || 5;
+    let retryCount = 0;
+
+    while (retryCount < maxDbRetries) {
+      try {
+        const client = new Client({ connectionString: databaseUrl });
+        await client.connect();
+        const db = drizzle(client, { schema });
+        console.log('[💽  DB] Initial connection successful');
+        return { client, db };
+      } catch (error) {
+        retryCount++;
+        console.error(`[💽  DB] Connection attempt ${retryCount} failed:`, error.message);
+        if (retryCount < maxDbRetries) {
+          console.log(`[🔄  DB] Retrying in 5 seconds... (attempt ${retryCount}/${maxDbRetries})`);
+          await new Promise(resolve => setTimeout(resolve, 5000));
+        } else {
+          console.error('[💽  DB] Maximum retry attempts reached. Exiting.');
+          process.exit(1);
+        }
+      }
+    }
+
+    // should not be reached
+    throw new Error('Database connection failed');
+  }
+
+  const { db } = await connectToDatabase();
 
   const bot = new Telegraf(
     botToken,
@@ -119,8 +146,10 @@ import { createClient } from 'redis';
       process.exit(1);
     }
     const valkeyUrl = `redis://${valkeyBaseUrl}:${valkeyPort}`;
+    const maxValkeyRetries = Number(maxRetries) || 5;
+    let retryCount = 0;
 
-    while (true) {
+    while (retryCount < maxValkeyRetries) {
       try {
         const client = createClient({ url: valkeyUrl });
         await client.connect();
@@ -129,9 +158,15 @@ import { createClient } from 'redis';
         await client.destroy();
         break;
       } catch (err) {
-        console.error('[🔴  VK] Failed to connect to Valkey:', err.message);
-        console.log('[🔄  VK] Retrying in 5 seconds...');
-        await new Promise(resolve => setTimeout(resolve, 5000));
+        retryCount++;
+        console.error(`[🔴  VK] Connection attempt ${retryCount} failed:`, err.message);
+        if (retryCount < maxValkeyRetries) {
+          console.log(`[🔄  VK] Retrying in 5 seconds... (attempt ${retryCount}/${maxValkeyRetries})`);
+          await new Promise(resolve => setTimeout(resolve, 5000));
+        } else {
+          console.error('[🔴  VK] Maximum retry attempts reached. Exiting.');
+          process.exit(1);
+        }
       }
     }
   }
@@ -154,6 +189,7 @@ import { createClient } from 'redis';
 
   await testValkeyConnection();
   await testDbConnection();
+  await syncAdminStatus(db);
 
   if (isSpamwatchConnected()) {
     const blockedCount = getSpamwatchBlockedCount();

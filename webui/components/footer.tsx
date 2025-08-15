@@ -1,7 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { useTranslation } from "react-i18next";
 
 export default function Footer() {
+  const { t } = useTranslation();
   return (
     <footer className="py-12 px-6 border-t bg-background">
       <div className="max-w-6xl mx-auto text-center">
@@ -16,7 +20,7 @@ export default function Footer() {
           <span className="text-xl font-semibold">Kowalski</span>
         </div>
         <p className="text-muted-foreground">
-          Built with ❤️ by <Link href="https://github.com/abocn" className="underline hover:text-primary transition-all duration-300">ABOCN</Link> and contributors under the BSD-3-Clause and Unlicense.
+          {t('footer.builtWith')} <Link href="https://github.com/abocn" className="underline hover:text-primary transition-all duration-300">ABOCN</Link> {t('footer.andContributors')}
         </p>
       </div>
     </footer>

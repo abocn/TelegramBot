@@ -29,17 +29,20 @@
 // For more information, please refer to <https://unlicense.org/>
 
 import { usersTable } from '../../database/schema';
-import { getStrings } from '../plugins/checklang';
 type NewUser = typeof usersTable.$inferInsert;
 
-export async function ensureUserInDb(ctx, db) {
+import { getUserAndStrings } from '../utils/get-user-strings';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import * as schema from '../../database/schema';
+
+export async function ensureUserInDb(ctx, db: NodePgDatabase<typeof schema>) {
   if (!ctx.from) return;
   const telegramId = String(ctx.from.id);
   const username = ctx.from.username || '';
   const firstName = ctx.from.first_name || ' ';
   const lastName = ctx.from.last_name || ' ';
   const languageCode = ctx.from.language_code || 'en';
-  const Strings = getStrings(languageCode);
+  const { Strings } = await getUserAndStrings(ctx, db);
 
   const existing = await db.query.usersTable.findMany({ where: (fields, { eq }) => eq(fields.telegramId, telegramId), limit: 1 });
   if (existing.length === 0) {

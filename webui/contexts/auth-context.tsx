@@ -1,6 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
+import i18n from "@/lib/i18n";
 
 interface UserData {
   telegramId: string;
@@ -15,6 +16,8 @@ interface UserData {
   aiRequests: number;
   aiCharacters: number;
   disabledCommands: string[];
+  disabledAdminCommands: string[];
+  isAdmin: boolean;
   languageCode: string;
   timezone: string;
 }
@@ -32,10 +35,18 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [lastFetch, setLastFetch] = useState<number>(0);
 
-  const isAuthenticated = !!user;
+  useEffect(() => {
+    const storedLang = localStorage.getItem('kowalski-language');
+    if (storedLang && ['en', 'pt'].includes(storedLang)) {
+      i18n.changeLanguage(storedLang);
+    }
+  }, []);
 
-  const fetchUser = async () => {
+  const isAuthenticated = useMemo(() => !!user, [user]);
+
+  const fetchUser = useCallback(async (force = false) => {
     try {
       if (typeof window === 'undefined') {
         setUser(null);
@@ -43,26 +54,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const sessionToken = localStorage.getItem('kowalski-session');
-
-      if (!sessionToken) {
-        setUser(null);
+      const now = Date.now();
+      if (!force && now - lastFetch < 30000 && user) {
         setLoading(false);
         return;
       }
 
+      const sessionToken = localStorage.getItem('kowalski-session');
+
       const response = await fetch('/api/user/profile', {
-        headers: {
+        headers: sessionToken ? {
           'Authorization': `Bearer ${sessionToken}`
-        }
+        } : {},
+        credentials: 'include'
       });
 
       if (response.ok) {
         const userData = await response.json();
-        setUser(userData);
+        setUser(prevUser => {
+          if (JSON.stringify(prevUser) !== JSON.stringify(userData)) {
+            return userData;
+          }
+          return prevUser;
+        });
+        setLastFetch(now);
+
+        if (userData.languageCode) {
+          const lang = userData.languageCode === 'portuguese' ? 'pt' : userData.languageCode;
+          i18n.changeLanguage(lang);
+          localStorage.setItem('kowalski-language', lang);
+        }
       } else {
         setUser(null);
-        if (typeof window !== 'undefined') {
+        if (typeof window !== 'undefined' && sessionToken) {
           localStorage.removeItem('kowalski-session');
         }
       }
@@ -72,7 +96,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [lastFetch, user]);
 
   const logout = async () => {
     try {
@@ -100,24 +124,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const refreshUser = async () => {
-    await fetchUser();
-  };
+  const refreshUser = useCallback(async () => {
+    await fetchUser(true);
+  }, [fetchUser]);
 
   useEffect(() => {
     fetchUser();
-  }, []);
+  }, [fetchUser]);
+
+  const contextValue = useMemo(() => ({
+    user,
+    loading,
+    isAuthenticated,
+    logout,
+    refreshUser,
+  }), [user, loading, isAuthenticated, logout, refreshUser]);
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        isAuthenticated,
-        logout,
-        refreshUser,
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

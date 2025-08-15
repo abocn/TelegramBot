@@ -21,8 +21,10 @@ export const usersTable = pgTable("users", {
   aiRequests: integer().notNull().default(0),
   aiCharacters: integer().notNull().default(0),
   disabledCommands: varchar({ length: 255 }).array().notNull().default([]),
-  timezone: varchar({ length: 255 }).notNull().default("UTC"),
+  disabledAdminCommands: varchar({ length: 255 }).array().notNull().default([]),
+  isAdmin: boolean().notNull().default(false),
   languageCode: varchar({ length: 255 }).notNull(),
+  timezone: varchar({ length: 255 }).notNull().default("UTC"),
   aiTimeoutUntil: timestamp(),
   aiMaxExecutionTime: integer().default(0),
   createdAt: timestamp().notNull().defaultNow(),
@@ -51,4 +53,40 @@ export const sessionsTable = pgTable("sessions", {
 }, (table) => [
   index("idx_sessions_user_id").on(table.userId),
   index("idx_sessions_expires_at").on(table.expiresAt),
+]);
+
+export const wikiCacheTable = pgTable("wiki_cache", {
+  id: varchar({ length: 255 }).notNull().primaryKey(),
+  query: varchar({ length: 500 }).notNull(),
+  content: varchar().notNull(),
+  url: varchar({ length: 1000 }).notNull(),
+  cacheAge: integer().notNull().default(7200000),
+  createdAt: timestamp().notNull().defaultNow(),
+  updatedAt: timestamp().notNull().defaultNow(),
+}, (table) => [
+  index("idx_wiki_cache_query").on(table.query),
+  index("idx_wiki_cache_updated_at").on(table.updatedAt),
+]);
+
+export const wikiPaginationTable = pgTable("wiki_pagination", {
+  id: varchar({ length: 255 }).notNull().primaryKey(),
+  userId: varchar({ length: 255 }).notNull(),
+  pages: varchar().array().notNull(),
+  expiresAt: timestamp().notNull(),
+  createdAt: timestamp().notNull().defaultNow(),
+}, (table) => [
+  index("idx_wiki_pagination_expires_at").on(table.expiresAt),
+]);
+
+export const commandUsageTable = pgTable("command_usage", {
+  id: varchar({ length: 255 }).notNull().primaryKey(),
+  commandName: varchar({ length: 255 }).notNull(),
+  chatType: varchar({ length: 50 }).notNull(),
+  isSuccess: boolean().notNull().default(true),
+  errorMessage: varchar({ length: 1000 }),
+  executionTime: integer(),
+  createdAt: timestamp().notNull().defaultNow(),
+}, (table) => [
+  index("idx_command_usage_command_name").on(table.commandName),
+  index("idx_command_usage_created_at").on(table.createdAt),
 ]);

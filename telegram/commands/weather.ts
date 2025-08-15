@@ -4,12 +4,16 @@
 
 import Resources from '../props/resources.json';
 import axios from 'axios';
-import { getStrings } from '../plugins/checklang';
 import { isOnSpamWatch } from '../spamwatch/spamwatch';
 import spamwatchMiddlewareModule from '../spamwatch/Middleware';
 import verifyInput from '../plugins/verifyInput';
 import { Context, Telegraf } from 'telegraf';
 import { isCommandDisabled } from '../utils/check-command-disabled';
+import { trackCommand } from '../utils/track-command';
+
+import { getUserAndStrings } from '../utils/get-user-strings';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import * as schema from '../../database/schema';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 
@@ -35,13 +39,15 @@ function getLocaleUnit(countryCode: string) {
   }
 }
 
-export default (bot: Telegraf<Context>, db: any) => {
+export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
   bot.command(['weather', 'clima'], spamwatchMiddleware, async (ctx: Context & { message: { text: string } }) => {
+    const startTime = Date.now();
+
     if (await isCommandDisabled(ctx, db, 'weather')) return;
 
     const reply_to_message_id = ctx.message.message_id;
     const userLang = ctx.from?.language_code || "en-US";
-    const Strings = getStrings(userLang);
+    const { Strings } = await getUserAndStrings(ctx, db);
     const userInput = ctx.message.text.split(' ').slice(1).join(' ');
     const { provideLocation } = Strings.weatherStatus
 
@@ -109,16 +115,18 @@ export default (bot: Telegraf<Context>, db: any) => {
         .replace('{windSpeed}', windSpeed)
         .replace('{speedUnit}', speedUnit);
 
-      ctx.reply(weatherMessage, {
+      await ctx.reply(weatherMessage, {
         parse_mode: "Markdown",
         ...({ reply_to_message_id })
       });
+      await trackCommand(db, ctx, 'weather', true, undefined, startTime);
     } catch (error) {
       const message = Strings.weatherStatus.apiErr.replace('{error}', error.message);
-      ctx.reply(message, {
+      await ctx.reply(message, {
         parse_mode: "Markdown",
         ...({ reply_to_message_id })
       });
+      await trackCommand(db, ctx, 'weather', false, error.message, startTime);
     }
   });
 };

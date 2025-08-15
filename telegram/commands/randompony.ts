@@ -1,17 +1,20 @@
 import Resources from '../props/resources.json';
-import { getStrings } from '../plugins/checklang';
 import { isOnSpamWatch } from '../spamwatch/spamwatch';
 import spamwatchMiddlewareModule from '../spamwatch/Middleware';
 import axios from 'axios';
 import { Telegraf, Context } from 'telegraf';
-import { languageCode } from '../utils/language-code';
 import { replyToMessageId } from '../utils/reply-to-message-id';
 import { isCommandDisabled } from '../utils/check-command-disabled';
+import { trackCommand } from '../utils/track-command';
+
+import { getUserAndStrings } from '../utils/get-user-strings';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import * as schema from '../../database/schema';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 
-export const randomponyHandler = async (ctx: Context & { message: { text: string } }) => {
-  const Strings = getStrings(languageCode(ctx));
+export const randomponyHandler = async (ctx: Context & { message: { text: string } }, db: NodePgDatabase<typeof schema>) => {
+  const { Strings } = await getUserAndStrings(ctx, db);
   const reply_to_message_id = replyToMessageId(ctx);
   const searchingMessage = await ctx.reply(Strings.ponyApi.searching, {
     parse_mode: 'Markdown',
@@ -44,9 +47,22 @@ export const randomponyHandler = async (ctx: Context & { message: { text: string
   }
 };
 
-export default (bot: Telegraf<Context>, db) => {
+export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
   bot.command(["rpony", "randompony", "mlpart"], spamwatchMiddleware, async (ctx) => {
+    const startTime = Date.now();
+
     if (await isCommandDisabled(ctx, db, 'random-pony')) return;
-    await randomponyHandler(ctx);
+
+    try {
+      await randomponyHandler(ctx, db);
+      const commandName = ctx.message?.text?.startsWith('/rpony') ? 'rpony' : 
+                         ctx.message?.text?.startsWith('/randompony') ? 'randompony' : 'mlpart';
+      await trackCommand(db, ctx, commandName, true, undefined, startTime);
+    } catch (error) {
+      const commandName = ctx.message?.text?.startsWith('/rpony') ? 'rpony' : 
+                         ctx.message?.text?.startsWith('/randompony') ? 'randompony' : 'mlpart';
+      await trackCommand(db, ctx, commandName, false, error.message, startTime);
+      throw error;
+    }
   });
 }

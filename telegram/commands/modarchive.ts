@@ -2,13 +2,16 @@ import Resources from '../props/resources.json';
 import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
-import { getStrings } from '../plugins/checklang';
 import { isOnSpamWatch } from '../spamwatch/spamwatch';
 import spamwatchMiddlewareModule from '../spamwatch/Middleware';
-import { languageCode } from '../utils/language-code';
 import { Context, Telegraf } from 'telegraf';
 import { replyToMessageId } from '../utils/reply-to-message-id';
 import { isCommandDisabled } from '../utils/check-command-disabled';
+import { trackCommand } from '../utils/track-command';
+
+import { getUserAndStrings } from '../utils/get-user-strings';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import * as schema from '../../database/schema';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 
@@ -45,8 +48,8 @@ async function downloadModule(moduleId: string): Promise<ModuleResult | null> {
   }
 }
 
-export const modarchiveHandler = async (ctx: Context) => {
-  const Strings = getStrings(languageCode(ctx));
+export const modarchiveHandler = async (ctx: Context, db: NodePgDatabase<typeof schema>) => {
+  const { Strings } = await getUserAndStrings(ctx, db);
   const reply_to_message_id = replyToMessageId(ctx);
   const moduleId = ctx.message && 'text' in ctx.message && typeof ctx.message.text === 'string'
     ? ctx.message.text.split(' ')[1]?.trim()
@@ -80,9 +83,20 @@ export const modarchiveHandler = async (ctx: Context) => {
   });
 };
 
-export default (bot: Telegraf<Context>, db) => {
+export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
   bot.command(['modarchive', 'tma'], spamwatchMiddleware, async (ctx) => {
+    const startTime = Date.now();
+
     if (await isCommandDisabled(ctx, db, 'modarchive')) return;
-    await modarchiveHandler(ctx);
+
+    try {
+      await modarchiveHandler(ctx, db);
+      const commandName = ctx.message?.text?.startsWith('/modarchive') ? 'modarchive' : 'tma';
+      await trackCommand(db, ctx, commandName, true, undefined, startTime);
+    } catch (error) {
+      const commandName = ctx.message?.text?.startsWith('/modarchive') ? 'modarchive' : 'tma';
+      await trackCommand(db, ctx, commandName, false, error.message, startTime);
+      throw error;
+    }
   });
 };

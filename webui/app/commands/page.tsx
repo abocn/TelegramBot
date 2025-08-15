@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from "@/components/ui/switch"
 import { useAuth } from '@/contexts/auth-context'
-import { 
+import { useTranslation } from 'react-i18next'
+import {
   Filter,
   Command,
   Brain,
@@ -25,7 +26,9 @@ import {
   Download,
   Database,
   Archive,
-  Rainbow
+  Rainbow,
+  Shield,
+  Settings
 } from 'lucide-react'
 import {
   TiInfinity
@@ -45,7 +48,7 @@ interface CommandCard {
   enabled: boolean
 }
 
-const allCommands: CommandCard[] = [
+const regularCommands: CommandCard[] = [
   {
     id: "ai-ask-think",
     icon: <Brain className="w-6 h-6" />,
@@ -238,29 +241,84 @@ const allCommands: CommandCard[] = [
   },
 ];
 
+const adminCommands: CommandCard[] = [
+  {
+    id: "admin-stats",
+    icon: <BarChart3 className="w-6 h-6" />,
+    title: "Bot Statistics",
+    description: "Get system stats and performance metrics",
+    commands: ["/getbotstats"],
+    category: "admin",
+    gradient: "from-red-500/10 to-orange-500/10",
+    enabled: true
+  },
+  {
+    id: "admin-commit",
+    icon: <Settings className="w-6 h-6" />,
+    title: "Git Information",
+    description: "Get current git commit hash",
+    commands: ["/getbotcommit"],
+    category: "admin",
+    gradient: "from-green-500/10 to-teal-500/10",
+    enabled: true
+  },
+  {
+    id: "admin-config",
+    icon: <Shield className="w-6 h-6" />,
+    title: "Bot Configuration",
+    description: "Manage bot name and description",
+    commands: ["/setbotname", "/setbotdesc"],
+    category: "admin",
+    gradient: "from-purple-500/10 to-pink-500/10",
+    enabled: true
+  },
+  {
+    id: "admin-leave",
+    icon: <Shield className="w-6 h-6" />,
+    title: "Leave Chat",
+    description: "Make the bot leave current chat",
+    commands: ["/botkickme"],
+    category: "admin",
+    gradient: "from-gray-500/10 to-slate-500/10",
+    enabled: true
+  }
+];
+
 const categoryColors = {
   'AI': 'bg-purple-500/10 text-purple-700 dark:text-purple-300',
   'Entertainment': 'bg-pink-500/10 text-pink-700 dark:text-pink-300',
   'Utility': 'bg-blue-500/10 text-blue-700 dark:text-blue-300',
-  'Media': 'bg-green-500/10 text-green-700 dark:text-green-300'
+  'Media': 'bg-green-500/10 text-green-700 dark:text-green-300',
+  'Admin': 'bg-red-500/10 text-red-700 dark:text-red-300'
 }
 
 export default function CommandsPage() {
   const { user, loading, refreshUser } = useAuth()
-  const [commands, setCommands] = useState<CommandCard[]>(allCommands)
+  const { t } = useTranslation()
+  const [commands, setCommands] = useState<CommandCard[]>(regularCommands)
+  const [adminCommandsList, setAdminCommandsList] = useState<CommandCard[]>(adminCommands)
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [isLoading, setIsLoading] = useState(true)
 
+  const allCommands = user?.isAdmin ? [...regularCommands, ...adminCommands] : regularCommands
   const categories = ['all', ...Array.from(new Set(allCommands.map(cmd => cmd.category)))]
   const totalCommands = allCommands.reduce((total, cmd) => total + cmd.commands.length, 0)
 
   useEffect(() => {
     if (user) {
-      const updatedCommands = allCommands.map(cmd => ({
+      const updatedRegularCommands = regularCommands.map(cmd => ({
         ...cmd,
         enabled: !user.disabledCommands.includes(cmd.id)
       }))
-      setCommands(updatedCommands)
+      setCommands(updatedRegularCommands)
+
+      if (user.isAdmin) {
+        const updatedAdminCommands = adminCommands.map(cmd => ({
+          ...cmd,
+          enabled: !user.disabledAdminCommands.includes(cmd.id)
+        }))
+        setAdminCommandsList(updatedAdminCommands)
+      }
     }
     setIsLoading(false)
   }, [user])
@@ -268,22 +326,38 @@ export default function CommandsPage() {
   const toggleCommand = async (commandId: string) => {
     if (!user) return
 
-    const commandToToggle = commands.find(cmd => cmd.id === commandId)
+    const isAdminCommand = commandId.startsWith('admin-')
+    const commandList = isAdminCommand ? adminCommandsList : commands
+    const setCommandList = isAdminCommand ? setAdminCommandsList : setCommands
+
+    const commandToToggle = commandList.find(cmd => cmd.id === commandId)
     if (!commandToToggle) return
 
     const newEnabledState = !commandToToggle.enabled
 
-    setCommands(prev => prev.map(cmd =>
+    setCommandList(prev => prev.map(cmd =>
       cmd.id === commandId ? { ...cmd, enabled: newEnabledState } : cmd
     ))
 
     try {
-      let newDisabledCommands: string[]
+      const updateData: Record<string, string[]> = {}
 
-      if (newEnabledState) {
-        newDisabledCommands = user.disabledCommands.filter(id => id !== commandId)
+      if (isAdminCommand) {
+        let newDisabledAdminCommands: string[]
+        if (newEnabledState) {
+          newDisabledAdminCommands = user.disabledAdminCommands.filter(id => id !== commandId)
+        } else {
+          newDisabledAdminCommands = [...user.disabledAdminCommands, commandId]
+        }
+        updateData.disabledAdminCommands = newDisabledAdminCommands
       } else {
-        newDisabledCommands = [...user.disabledCommands, commandId]
+        let newDisabledCommands: string[]
+        if (newEnabledState) {
+          newDisabledCommands = user.disabledCommands.filter(id => id !== commandId)
+        } else {
+          newDisabledCommands = [...user.disabledCommands, commandId]
+        }
+        updateData.disabledCommands = newDisabledCommands
       }
 
       const response = await fetch('/api/user/settings', {
@@ -291,36 +365,37 @@ export default function CommandsPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ disabledCommands: newDisabledCommands }),
+        body: JSON.stringify(updateData),
         credentials: 'include'
       })
 
       if (response.ok) {
         await refreshUser()
       } else {
-        setCommands(prev => prev.map(cmd =>
+        setCommandList(prev => prev.map(cmd =>
           cmd.id === commandId ? { ...cmd, enabled: !newEnabledState } : cmd
         ))
         console.error('Failed to update command state')
       }
     } catch (error) {
-      setCommands(prev => prev.map(cmd =>
+      setCommandList(prev => prev.map(cmd =>
         cmd.id === commandId ? { ...cmd, enabled: !newEnabledState } : cmd
       ))
       console.error('Error updating command state:', error)
     }
   }
 
+  const displayCommands = user?.isAdmin ? [...commands, ...adminCommandsList] : commands
   const filteredCommands = selectedCategory === 'all' 
-    ? commands 
-    : commands.filter(cmd => cmd.category === selectedCategory)
+    ? displayCommands 
+    : displayCommands.filter(cmd => cmd.category === selectedCategory)
 
   if (loading || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading commands...</p>
+          <p className="text-muted-foreground">{t('commands.loadingCommands')}</p>
         </div>
       </div>
     )
@@ -340,8 +415,8 @@ export default function CommandsPage() {
               <Command className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
             </div>
             <div className="flex-1">
-              <h1 className="text-2xl sm:text-3xl font-bold truncate">Commands</h1>
-              <p className="text-sm sm:text-base text-muted-foreground">Choose from {totalCommands} different commands</p>
+              <h1 className="text-2xl sm:text-3xl font-bold truncate">{t('commands.title')}</h1>
+              <p className="text-sm sm:text-base text-muted-foreground">{t('commands.description', { count: totalCommands })}</p>
             </div>
           </div>
         </motion.div>
@@ -354,7 +429,7 @@ export default function CommandsPage() {
         >
           <div className="flex items-center gap-2 mb-3 sm:mb-4">
             <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
-            <span className="text-xs sm:text-sm font-medium text-muted-foreground">Filter by category:</span>
+            <span className="text-xs sm:text-sm font-medium text-muted-foreground">{t('commands.filterByCategory')}</span>
           </div>
           <div className="flex flex-wrap gap-1.5 sm:gap-2">
             {categories.map((category) => (
@@ -365,7 +440,7 @@ export default function CommandsPage() {
                 onClick={() => setSelectedCategory(category)}
                 className="transition-all duration-200 cursor-pointer text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3"
               >
-                {category}
+                {category === 'all' ? t('commands.all') : t(`commands.${category.toLowerCase()}`)}
               </Button>
             ))}
           </div>
@@ -388,9 +463,9 @@ export default function CommandsPage() {
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-lg sm:text-xl font-semibold truncate">{command.title}</h3>
+                  <h3 className="text-lg sm:text-xl font-semibold truncate">{t(`commands.cards.${command.id}.title`)}</h3>
                   <Badge className={`${categoryColors[command.category as keyof typeof categoryColors]} text-xs`}>
-                    {command.category}
+                    {t(`commands.${command.category}`)}
                   </Badge>
                 </div>
                 {user && (
@@ -403,14 +478,14 @@ export default function CommandsPage() {
                   </div>
                 )}
               </div>
-              
+
               <p className="text-muted-foreground text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2">
-                {command.description}
+                {t(`commands.cards.${command.id}.description`)}
               </p>
-              
+
               <div className="space-y-2 sm:space-y-3">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  Commands:
+                  {t('commands.commandsList')}
                 </p>
                 <div className="flex flex-wrap gap-1">
                   {command.commands.map((cmd) => (
@@ -431,9 +506,9 @@ export default function CommandsPage() {
             className="text-center py-8 sm:py-12"
           >
             <Command className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
-            <h3 className="text-base sm:text-lg font-semibold mb-2">No commands found</h3>
+            <h3 className="text-base sm:text-lg font-semibold mb-2">{t('commands.noCommandsFound')}</h3>
             <p className="text-sm sm:text-base text-muted-foreground px-4">
-              No commands match the selected category filter.
+              {t('commands.noCommandsDescription')}
             </p>
           </motion.div>
         )}

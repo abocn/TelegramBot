@@ -36,6 +36,28 @@
   "chatInfo": "*Chat info*\n\n*Name:* `{chatName}`\n*Chat ID:* `{chatId}`\n*Handle:* `{chatHandle}`\n*Type:* `{chatType}`\n*Members:* `{chatMembersCount}`\n*Is a forum:* `{isForum}`",
   "funEmojiResult": "*You rolled {emoji} and got* `{value}`*!*\nYou don't know what that means? Me neither!",
   "gifErr": "*Something went wrong while sending the GIF. Please try again later.*\n\n{err}",
+  "wiki": {
+    "helpEntry": "📚 Wikipedia",
+    "helpDesc": "📚 *Wikipedia*\n\n- /wiki `<search term>`: Search for a term on Wikipedia.",
+    "noSearchTerm": "Please provide a search term.",
+    "error": "Failed to fetch Wikipedia article.",
+    "noContent": "No content found.",
+    "showMore": "Show More (Page {current}/{total})",
+    "previous": "⬅️ Previous",
+    "next": "Next ➡️ (Page {current}/{total})",
+    "endPage": "Page {current}/{total} (End)",
+    "pageInfo": "Page {current} of {total}",
+    "alreadyOnPage": "Already on page {current} of {total}",
+    "contentUnavailable": "Content no longer available. Please search again.",
+    "sentAsNewMessage": "Sent as new message",
+    "updateFailed": "Failed to update content. Please try again.",
+    "endReached": "You've reached the end of the article."
+  },
+  "quote": {
+    "helpEntry": "💭 Quotes",
+    "helpDesc": "💭 *Quotes*\n\n- /quote: Get a random inspirational quote.",
+    "error": "*Failed to fetch a quote. Please try again later.*"
+  },
   "lastFm": {
     "helpEntry": "🎵 Last.fm",
     "helpDesc": "🎵 *Last.fm*\n\n- /lt | /lmu | /last | /lfm: Shows the last song from your Last.fm profile + the number of plays.\n- /setuser `<user>`: Sets the user for the command above.",
@@ -48,6 +70,8 @@
   },
   "gitCurrentCommit": "*Current commit:* `{commitHash}`",
   "gitErrRetrievingCommit": "*Error retrieving commit:* {error}",
+  "errorRetrievingStats": "*Error retrieving stats:* {error}",
+  "kickedMyself": "*Left the chat successfully.*",
   "weatherStatus": {
     "provideLocation": "*Please provide a location.*",
     "invalidLocation": "*Invalid location. Try again.*",
@@ -56,7 +80,7 @@
     "apiKeyErr": "*An API key was not set by the bot owner. Please try again later.*"
   },
   "mainCommands": "ℹ️ Main Commands",
-  "mainCommandsDesc": "ℹ️ *Main Commands*\n\n- /help: Show bot's help\n- /start: Start the bot\n- /privacy: Read the bot's Privacy Policy\n- /settings: Show your user settings",
+  "mainCommandsDesc": "ℹ️ *Main Commands*\n\n- /help: Show bot's help\n- /help verbose: Show all commands in list format\n- /start: Start the bot\n- /privacy: Read the bot's Privacy Policy\n- /settings: Show your user settings",
   "usefulCommands": "🛠️ Useful Commands",
   "usefulCommandsDesc": "🛠️ *Useful commands*\n\n- /chatinfo: Send information about the group\n- /userinfo: Send information about yourself\n- /d | /device `<model>`: Search for a device on GSMArena and show its specs.\n/codename | /whatis `<device codename>`: Shows what device is based on the codename. Example: `/codename begonia`\n- /weather | /clima `<city>`: See weather status for a specific location.\n- /modarchive | /tma `<module id>`: Download a module from The Mod Archive.\n- /http `<HTTP code>`: Send details about a specific HTTP code. Example: `/http 404`",
   "funnyCommands": "😂 Funny Commands",
@@ -65,6 +89,8 @@
   "interactiveEmojisDesc": "🎲 *Interactive emojis*\n\n- /dice: Roll a dice\n- /idice: Infinitely roll a colored dice\n- /slot: Try to combine the figures!\n- /ball: Try to kick the ball into the goal!\n- /bowling: Try to hit the pins!\n- /dart: Try to hit the target!",
   "animalCommands": "🐱 Animals",
   "animalCommandsDesc": "🐱 *Animals*\n\n- /soggy | /soggycat `<1 | 2 | 3 | 4 | orig | thumb | sticker | alt>`: Sends the [Soggy cat meme](https://knowyourmeme.com/memes/soggy-cat)\n- /cat: Sends a random picture of a cat.\n- /fox: Sends a random picture of a fox.\n- /duck: Sends a random picture of a duck.\n- /dog: Sends a random picture of a dog.\n- /httpcat `<http code>`: Send cat memes from http.cat with your specified HTTP code. Example: `/httpcat 404`",
+  "adminSettings": "⚙️ Admin Settings",
+  "adminSettingsDesc": "⚙️ *Admin Settings*\n\n*Bot Management:*\n- /getbotstats: Get server statistics and system information\n- /getbotcommit: Get the current git commit hash of the bot\n- /setbotname `<name>`: Change the bot's display name\n- /setbotdesc `<description>`: Change the bot's description\n- /botkickme: Make the bot leave the current chat\n\n*AI Management:*\n- /queue: List current AI request queue\n- /qdel `<user_id>`: Clear queue items for a specific user\n- /qlimit `<user_id>` `<duration>`: Timeout user from AI commands\n- /setexec `<user_id>` `<duration>`: Set max execution time for user\n- /rlimit `<user_id>`: Remove all AI limits for user\n- /limits: List all current AI limits and timeouts",
   "ai": {
     "helpEntry": "✨ AI Commands",
     "helpDesc": "✨ *AI Commands*\n\n- /ask `<prompt>`: Ask a question to an AI model\n- /think `<prompt>`: Ask a thinking model about a question\n- /ai `<prompt>`: Ask your custom-set AI model a question\n- /aistop: Stop your current AI request\n- /aistats: Show your AI usage stats",
@@ -172,7 +198,6 @@
     "unknownAction": "Unknown action."
   },
   "botUpdated": "Bot updated with success.\n\n```{result}```",
-  "errorUpdatingBot": "Error updating bot\n\n{error}",
   "catImgErr": "Sorry, but I couldn't get the cat photo you wanted.",
   "catGifErr": "Sorry, but I couldn't get the cat GIF you wanted.",
   "dogImgErr": "Sorry, but I couldn't get the dog photo you wanted.",

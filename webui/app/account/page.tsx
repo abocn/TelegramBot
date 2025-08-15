@@ -28,6 +28,10 @@ import { RiTelegram2Line } from "react-icons/ri";
 import { motion } from "framer-motion";
 import { ModelPicker } from "@/components/account/model-picker";
 import { useAuth } from "@/contexts/auth-context";
+import { useTranslation } from "react-i18next";
+import { useUserSettings } from "@/hooks/use-user-settings";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { ErrorMessage } from "@/components/ui/error-message";
 
 const languageOptions = [
   { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -42,7 +46,9 @@ export default function AccountPage() {
   const [reportTab, setReportTab] = useState("bug");
   const [timezoneValue, setTimezoneValue] = useState("");
 
-  const { user, loading, logout, refreshUser } = useAuth();
+  const { user, loading, logout } = useAuth();
+  const { i18n, t } = useTranslation();
+  const { updateSetting, isUpdating, getError, clearError } = useUserSettings();
 
   useEffect(() => {
     if (user) {
@@ -52,24 +58,6 @@ export default function AccountPage() {
     }
   }, [user]);
 
-  const updateSetting = async (setting: string, value: boolean | number | string) => {
-    try {
-      const response = await fetch('/api/user/settings', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ [setting]: value }),
-        credentials: 'include'
-      });
-
-      if (response.ok) {
-        await refreshUser();
-      }
-    } catch (error) {
-      console.error('Error updating setting:', error);
-    }
-  };
 
   const saveTemperature = () => {
     const temp = parseFloat(tempValue);
@@ -96,9 +84,9 @@ export default function AccountPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Authentication Required</h1>
+          <h1 className="text-2xl font-bold mb-4">{t('account.authenticationRequired')}</h1>
           <Button onClick={() => window.location.href = '/login'}>
-            Go to Login
+            {t('account.goToLogin')}
           </Button>
         </div>
       </div>
@@ -114,13 +102,13 @@ export default function AccountPage() {
             <User className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-primary" />
           </div>
           <div className="min-w-0 flex-1">
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold truncate">Welcome back, {user.firstName}!</h1>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold truncate">{t('account.welcomeBack', { name: user.firstName })}</h1>
             <p className="text-muted-foreground text-sm sm:text-base truncate">@{user.username}</p>
           </div>
         </div>
         <Button variant="outline" onClick={logout} className="gap-2 cursor-pointer shrink-0 w-full sm:w-auto">
           <LogOut className="w-4 h-4" />
-          <span className="sm:inline">Logout</span>
+          <span className="sm:inline">{t('navigation.logout')}</span>
         </Button>
       </div>
 
@@ -133,13 +121,13 @@ export default function AccountPage() {
         >
           <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
             <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600 shrink-0" />
-            <h3 className="text-lg sm:text-xl font-semibold">AI Usage</h3>
+            <h3 className="text-lg sm:text-xl font-semibold">{t('account.aiUsage')}</h3>
           </div>
           <div className="space-y-2">
             <p className="text-xl sm:text-2xl font-bold">{user.aiRequests}</p>
-            <p className="text-xs sm:text-sm text-muted-foreground">Total AI Requests</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">{t('account.totalAiRequests')}</p>
             <p className="text-base sm:text-lg">{user.aiCharacters.toLocaleString()}</p>
-            <p className="text-xs sm:text-sm text-muted-foreground">Characters Generated</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">{t('account.charactersGenerated')}</p>
           </div>
         </motion.div>
 
@@ -151,29 +139,48 @@ export default function AccountPage() {
         >
           <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
             <Settings className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 shrink-0" />
-            <h3 className="text-lg sm:text-xl font-semibold">AI Settings</h3>
+            <h3 className="text-lg sm:text-xl font-semibold">{t('account.aiSettings')}</h3>
           </div>
           <div className="space-y-3">
+            {(getError('aiEnabled') || getError('showThinking')) && (
+              <ErrorMessage
+                message={getError('aiEnabled') || getError('showThinking') || ''}
+                onDismiss={() => {
+                  clearError('aiEnabled');
+                  clearError('showThinking');
+                }}
+              />
+            )}
             <div className="flex items-center justify-between gap-2">
-              <span className="text-xs sm:text-sm flex-1">AI Enabled</span>
+              <span className="text-xs sm:text-sm flex-1">{t('account.aiEnabled')}</span>
               <Button
                 size="sm"
                 variant={user.aiEnabled ? "default" : "outline"}
                 onClick={() => updateSetting('aiEnabled', !user.aiEnabled)}
+                disabled={isUpdating('aiEnabled')}
                 className="h-7 sm:h-8 px-2 sm:px-3 cursor-pointer text-xs sm:text-sm shrink-0"
               >
-                {user.aiEnabled ? "ON" : "OFF"}
+                {isUpdating('aiEnabled') ? (
+                  <LoadingSpinner size="sm" />
+                ) : (
+                  user.aiEnabled ? "ON" : "OFF"
+                )}
               </Button>
             </div>
             <div className="flex items-center justify-between gap-2">
-              <span className="text-xs sm:text-sm flex-1">Show Thinking</span>
+              <span className="text-xs sm:text-sm flex-1">{t('account.showThinking')}</span>
               <Button
                 size="sm"
                 variant={user.showThinking ? "default" : "outline"}
                 onClick={() => updateSetting('showThinking', !user.showThinking)}
+                disabled={isUpdating('showThinking')}
                 className="h-7 sm:h-8 px-2 sm:px-3 cursor-pointer text-xs sm:text-sm shrink-0"
               >
-                {user.showThinking ? "ON" : "OFF"}
+                {isUpdating('showThinking') ? (
+                  <LoadingSpinner size="sm" />
+                ) : (
+                  user.showThinking ? "ON" : "OFF"
+                )}
               </Button>
             </div>
           </div>
@@ -187,7 +194,7 @@ export default function AccountPage() {
         >
           <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
             <Thermometer className="w-6 h-6 sm:w-8 sm:h-8 text-green-600 shrink-0" />
-            <h3 className="text-lg sm:text-xl font-semibold">Temperature</h3>
+            <h3 className="text-lg sm:text-xl font-semibold">{t('account.temperature')}</h3>
           </div>
           <div className="space-y-3">
             <div className="flex items-center gap-2">
@@ -224,7 +231,7 @@ export default function AccountPage() {
                 </>
               )}
             </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">Controls randomness in AI responses. Lower values (0.1-0.5) = more focused, higher values (0.7-2.0) = more creative.</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">{t('account.temperatureDescription')}</p>
           </div>
         </motion.div>
 
@@ -236,7 +243,7 @@ export default function AccountPage() {
         >
           <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
             <Languages className="w-6 h-6 sm:w-8 sm:h-8 text-teal-600 shrink-0" />
-            <h3 className="text-lg sm:text-xl font-semibold">Language Options</h3>
+            <h3 className="text-lg sm:text-xl font-semibold">{t('account.languageOptions')}</h3>
           </div>
           <div className="space-y-3">
             <div className="grid grid-cols-1 gap-2">
@@ -244,7 +251,11 @@ export default function AccountPage() {
                 <Button
                   key={lang.code}
                   variant={user.languageCode === lang.code ? "default" : "outline"}
-                  onClick={() => updateSetting('languageCode', lang.code)}
+                  onClick={() => {
+                    updateSetting('languageCode', lang.code);
+                    i18n.changeLanguage(lang.code);
+                    localStorage.setItem('kowalski-language', lang.code);
+                  }}
                   className="justify-start gap-2 sm:gap-3 h-9 sm:h-10 cursor-pointer text-sm sm:text-base"
                 >
                   <span className="text-base sm:text-lg">{lang.flag}</span>
@@ -252,7 +263,7 @@ export default function AccountPage() {
                 </Button>
               ))}
             </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">Choose your preferred language for bot responses and interface text.</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">{t('account.choosePreferredLanguage')}</p>
           </div>
         </motion.div>
 
@@ -264,7 +275,7 @@ export default function AccountPage() {
         >
           <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
             <Cpu className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-600 shrink-0" />
-            <h3 className="text-lg sm:text-xl font-semibold">My Model</h3>
+            <h3 className="text-lg sm:text-xl font-semibold">{t('account.myModel')}</h3>
           </div>
           <div className="space-y-3">
             <ModelPicker
@@ -272,7 +283,7 @@ export default function AccountPage() {
               onValueChange={(newModel) => updateSetting('customAiModel', newModel)}
               className="w-full cursor-pointer"
             />
-            <p className="text-xs text-muted-foreground leading-relaxed">Your selected AI model for custom /ai commands. Different models have varying capabilities, speeds, and response styles.</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">{t('account.differentModelsDescription')}</p>
           </div>
         </motion.div>
 
@@ -284,25 +295,25 @@ export default function AccountPage() {
         >
           <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
             <Bug className="w-6 h-6 sm:w-8 sm:h-8 text-orange-600 shrink-0" />
-            <h3 className="text-lg sm:text-xl font-semibold">Report An Issue</h3>
+            <h3 className="text-lg sm:text-xl font-semibold">{t('account.reportAnIssue')}</h3>
           </div>
           <div className="space-y-4">
             <Tabs value={reportTab} onValueChange={setReportTab}>
               <TabsList className="grid w-full grid-cols-2 gap-1 sm:gap-2 h-9 sm:h-10">
                 <TabsTrigger value="bug" className="gap-1 sm:gap-2 cursor-pointer text-xs sm:text-sm px-2 sm:px-3">
                   <Bug className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
-                  <span className="hidden xs:inline sm:inline">Report Bug</span>
-                  <span className="xs:hidden sm:hidden">Bug</span>
+                  <span className="hidden xs:inline sm:inline">{t('account.reportBug')}</span>
+                  <span className="xs:hidden sm:hidden">{t('account.reportBug')}</span>
                 </TabsTrigger>
                 <TabsTrigger value="feature" className="gap-1 sm:gap-2 cursor-pointer text-xs sm:text-sm px-2 sm:px-3">
                   <Lightbulb className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
-                  <span className="hidden xs:inline sm:inline">Feature Request</span>
-                  <span className="xs:hidden sm:hidden">Feature</span>
+                  <span className="hidden xs:inline sm:inline">{t('account.suggestFeature')}</span>
+                  <span className="xs:hidden sm:hidden">{t('account.suggestFeature')}</span>
                 </TabsTrigger>
               </TabsList>
               <div className="mt-3 sm:mt-4">
                 <TabsContent value="bug" className="space-y-3 sm:space-y-4">
-                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">Found a bug or issue? Report it to help us improve Kowalski.</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{t('account.reportBugDescription')}</p>
                   <Button asChild className="w-full gap-2 h-9 sm:h-10">
                     <a
                       href="https://libre-cloud.atlassian.net/jira/software/c/form/4a535b59-dc7e-4b55-b905-a79ff831928e?atlOrigin=eyJpIjoiNzQwYTcxZDdmMjJkNDljNzgzNTY2MjliYjliMjMzMDkiLCJwIjoiaiJ9"
@@ -310,13 +321,13 @@ export default function AccountPage() {
                       rel="noopener noreferrer"
                     >
                       <Bug className="w-4 h-4" />
-                      <span className="text-sm sm:text-base">Report Bug</span>
+                      <span className="text-sm sm:text-base">{t('account.reportBug')}</span>
                       <ExternalLink className="w-4 h-4" />
                     </a>
                   </Button>
                 </TabsContent>
                 <TabsContent value="feature" className="space-y-3 sm:space-y-4">
-                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">Have an idea for a new feature? Let us know what you&apos;d like to see!</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{t('account.featureRequestDescription')}</p>
                   <Button asChild className="w-full gap-2 h-9 sm:h-10">
                     <a
                       href="https://libre-cloud.atlassian.net/jira/software/c/form/5ce1e6e9-9618-4b46-94ee-122e7bde2ba1?atlOrigin=eyJpIjoiZjMwZTc3MDVlY2MwNDBjODliYWNhMTgzN2ZjYzI5MDAiLCJwIjoiaiJ9"
@@ -324,7 +335,7 @@ export default function AccountPage() {
                       rel="noopener noreferrer"
                     >
                       <Lightbulb className="w-4 h-4" />
-                      <span className="text-sm sm:text-base">Request Feature</span>
+                      <span className="text-sm sm:text-base">{t('account.featureRequest')}</span>
                       <ExternalLink className="w-4 h-4" />
                     </a>
                   </Button>
@@ -342,7 +353,7 @@ export default function AccountPage() {
         >
           <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
             <AlignLeft className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600 shrink-0" />
-            <h3 className="text-lg sm:text-xl font-semibold">System Prompt</h3>
+            <h3 className="text-lg sm:text-xl font-semibold">{t('account.systemPrompt')}</h3>
           </div>
           <div className="space-y-3">
             {editingPrompt ? (
@@ -352,30 +363,30 @@ export default function AccountPage() {
                   value={promptValue}
                   onChange={(e) => setPromptValue(e.target.value)}
                   maxLength={10000}
-                  placeholder="Enter your custom system prompt..."
+                  placeholder={t('account.customPromptPlaceholder')}
                 />
                 <div className="flex flex-col sm:flex-row gap-2">
                   <Button size="sm" onClick={savePrompt} className="gap-2 h-9">
                     <Save className="w-4 h-4" />
-                    <span>Save</span>
+                    <span>{t('account.savePrompt')}</span>
                   </Button>
                   <Button size="sm" variant="outline" onClick={() => setEditingPrompt(false)} className="h-9">
-                    Cancel
+                    {t('account.cancel')}
                   </Button>
                 </div>
               </>
             ) : (
               <>
                 <div className="text-xs sm:text-sm whitespace-pre-wrap break-words max-h-32 sm:max-h-40 overflow-auto border p-3 rounded-md bg-muted/20 leading-relaxed">
-                  {promptValue ? promptValue : 'No custom system prompt set.'}
+                  {promptValue ? promptValue : t('account.noCustomPromptSet')}
                 </div>
                 <Button size="sm" variant="outline" onClick={() => setEditingPrompt(true)} className="gap-2 cursor-pointer h-9">
                   <Edit3 className="w-4 h-4" />
-                  <span>Edit Prompt</span>
+                  <span>{t('account.editPrompt')}</span>
                 </Button>
               </>
             )}
-            <p className="text-xs text-muted-foreground leading-relaxed">Override the default system prompt used for AI queries. You can use placeholders (see the sidebar) to customize the prompt with live information.</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">{t('account.systemPromptOverride')}</p>
           </div>
         </motion.div>
 
@@ -387,11 +398,11 @@ export default function AccountPage() {
         >
           <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
             <Info className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600 shrink-0" />
-            <h3 className="text-lg sm:text-xl font-semibold">Placeholders</h3>
+            <h3 className="text-lg sm:text-xl font-semibold">{t('account.placeholders')}</h3>
           </div>
           <div className="space-y-3 sm:space-y-4">
             <div>
-              <label className="block text-xs sm:text-sm font-medium mb-2">Timezone</label>
+              <label className="block text-xs sm:text-sm font-medium mb-2">{t('account.timezone')}</label>
               <TimezoneCombobox
                 value={timezoneValue}
                 onValueChange={(value) => {
@@ -402,7 +413,7 @@ export default function AccountPage() {
               />
             </div>
             <div className="space-y-3">
-              <p className="font-medium text-xs sm:text-sm">Available Placeholders:</p>
+              <p className="font-medium text-xs sm:text-sm">{t('account.availablePlaceholders')}</p>
               <div className="grid grid-cols-1 gap-2">
                 <div className="p-2 sm:p-3 rounded-lg border bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800 shadow-sm">
                   <div className="flex items-center gap-1 sm:gap-2">
@@ -410,7 +421,7 @@ export default function AccountPage() {
                       <User className="w-2 h-2 sm:w-3 sm:h-3 text-white" />
                     </div>
                     <code className="text-xs sm:text-sm font-mono text-blue-700 dark:text-blue-300">{`{botName}`}</code>
-                    <span className="text-xs text-muted-foreground hidden sm:inline">Bot display name</span>
+                    <span className="text-xs text-muted-foreground hidden sm:inline">{t('account.botDisplayName')}</span>
                   </div>
                 </div>
                 <div className="p-2 sm:p-3 rounded-lg border bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-800 shadow-sm">
@@ -419,7 +430,7 @@ export default function AccountPage() {
                       <Calendar className="w-2 h-2 sm:w-3 sm:h-3 text-white" />
                     </div>
                     <code className="text-xs sm:text-sm font-mono text-green-700 dark:text-green-300">{`{date}`}</code>
-                    <span className="text-xs text-muted-foreground hidden sm:inline">Current date</span>
+                    <span className="text-xs text-muted-foreground hidden sm:inline">{t('account.currentDate')}</span>
                   </div>
                 </div>
                 <div className="p-2 sm:p-3 rounded-lg border bg-gradient-to-r from-purple-50 to-violet-50 dark:from-purple-950/20 dark:to-violet-950/20 border-purple-200 dark:border-purple-800 shadow-sm">
@@ -428,7 +439,7 @@ export default function AccountPage() {
                       <Clock className="w-2 h-2 sm:w-3 sm:h-3 text-white" />
                     </div>
                     <code className="text-xs sm:text-sm font-mono text-purple-700 dark:text-purple-300">{`{time}`}</code>
-                    <span className="text-xs text-muted-foreground hidden sm:inline">Current time</span>
+                    <span className="text-xs text-muted-foreground hidden sm:inline">{t('account.currentTime')}</span>
                   </div>
                 </div>
               </div>
@@ -445,11 +456,11 @@ export default function AccountPage() {
       >
         <div className="mx-auto max-w-4xl">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 lg:gap-20 p-4 sm:p-6 lg:p-8 rounded-xl bg-gradient-to-r from-muted/30 to-muted/60 border border-border/50 shadow-lg backdrop-blur-sm">
-            <h3 className="font-semibold text-base sm:text-lg lg:text-xl text-center sm:text-left flex-1 sm:flex-none">Ready to start using Kowalski?</h3>
+            <h3 className="font-semibold text-base sm:text-lg lg:text-xl text-center sm:text-left flex-1 sm:flex-none">{t('account.readyToStart')}</h3>
             <Button asChild size="lg" className="shrink-0 shadow-md hover:shadow-lg transition-all duration-200 w-full sm:w-auto">
               <a href="https://t.me/KowalskiNodeBot" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
                 <RiTelegram2Line className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span className="text-sm sm:text-base">Open on Telegram</span>
+                <span className="text-sm sm:text-base">{t('account.openOnTelegram')}</span>
               </a>
             </Button>
           </div>

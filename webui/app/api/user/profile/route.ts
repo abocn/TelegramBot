@@ -33,6 +33,8 @@ export async function GET(request: NextRequest) {
       aiCharacters: user.aiCharacters,
       customSystemPrompt: user.customSystemPrompt,
       disabledCommands: user.disabledCommands,
+      disabledAdminCommands: user.disabledAdminCommands,
+      isAdmin: user.isAdmin,
       languageCode: user.languageCode,
       timezone: user.timezone,
     };

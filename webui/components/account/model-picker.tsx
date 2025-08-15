@@ -22,6 +22,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { models } from "./ai"
+import { useTranslation } from "react-i18next"
 
 interface ModelPickerProps {
   value?: string
@@ -32,6 +33,7 @@ interface ModelPickerProps {
 
 export function ModelPicker({ value, onValueChange, disabled = false, className }: ModelPickerProps) {
   const [open, setOpen] = React.useState(false)
+  const { t, i18n } = useTranslation()
 
   const currentModel = React.useMemo(() => {
     for (const category of models) {
@@ -40,12 +42,12 @@ export function ModelPicker({ value, onValueChange, disabled = false, className 
         return {
           model,
           category: category.label,
-          categoryDescription: category.descriptionEn
+          categoryDescription: i18n.language === 'pt' ? category.descriptionPt : category.descriptionEn
         }
       }
     }
     return null
-  }, [value])
+  }, [value, i18n.language])
 
   const handleSelect = (modelName: string) => {
     onValueChange?.(modelName)
@@ -81,19 +83,19 @@ export function ModelPicker({ value, onValueChange, disabled = false, className 
                     {currentModel.model.thinking && (
                       <span className="px-2 py-0.5 bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300 rounded text-xs font-medium flex items-center gap-1">
                         <Brain />
-                        Thinking
+                        {t('account.thinking', { defaultValue: 'Thinking' })}
                       </span>
                     )}
                     {currentModel.model.uncensored && (
                       <span className="px-2 py-0.5 bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300 rounded text-xs font-medium flex items-center gap-1">
                         <ShieldOff />
-                        Uncensored
+                        {t('account.uncensored', { defaultValue: 'Uncensored' })}
                       </span>
                     )}
                   </div>
                 </>
               ) : (
-                <div className="text-muted-foreground">Select a model...</div>
+                <div className="text-muted-foreground">{t('account.selectModel')}</div>
               )}
             </div>
           </div>
@@ -102,13 +104,13 @@ export function ModelPicker({ value, onValueChange, disabled = false, className 
       </PopoverTrigger>
       <PopoverContent className="w-[400px] p-0" align="start">
         <Command>
-          <CommandInput placeholder="Search models..." />
+          <CommandInput placeholder={t('account.searchModels', { defaultValue: 'Search models...' })} />
           <CommandList className="max-h-[300px]">
-            <CommandEmpty>No model found.</CommandEmpty>
+            <CommandEmpty>{t('account.noModelFound', { defaultValue: 'No model found.' })}</CommandEmpty>
             {models.map((category) => (
               <CommandGroup key={category.name} heading={category.label}>
                 <div className="pb-2 ml-2 mb-1 text-xs text-muted-foreground/70">
-                  {category.descriptionEn}
+                  {i18n.language === 'pt' ? category.descriptionPt : category.descriptionEn}
                 </div>
                 {category.models.map((model) => (
                   <CommandItem
@@ -132,13 +134,13 @@ export function ModelPicker({ value, onValueChange, disabled = false, className 
                         {model.thinking && (
                           <span className="px-2 py-0.5 bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300 rounded text-xs font-medium flex items-center gap-1">
                             <Brain />
-                            Thinking
+                            {t('account.thinking', { defaultValue: 'Thinking' })}
                           </span>
                         )}
                         {model.uncensored && (
                           <span className="px-2 py-0.5 bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300 rounded text-xs font-medium flex items-center gap-1">
                             <ShieldOff />
-                            Uncensored
+                            {t('account.uncensored', { defaultValue: 'Uncensored' })}
                           </span>
                         )}
                       </div>

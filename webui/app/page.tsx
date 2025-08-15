@@ -40,7 +40,7 @@ export default function Home() {
             </div>
           </div>
           <h1 className="text-6xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            Kowalski
+            {t('home.heroTitle')}
           </h1>
 
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
@@ -51,19 +51,19 @@ export default function Home() {
             <Button size="lg" className="min-w-32" asChild>
               <Link href="https://t.me/KowalskiNodeBot" target="_blank" rel="noopener noreferrer">
                 <RiTelegram2Line />
-                Try on Telegram
+                {t('home.tryOnTelegram')}
               </Link>
             </Button>
             <Button variant="outline" size="lg" className="min-w-32" asChild>
               <Link href="https://github.com/abocn/TelegramBot/blob/main/README.md" target="_blank" rel="noopener noreferrer">
                 <Settings />
-                Documentation
+                {t('home.documentation')}
               </Link>
             </Button>
             <Button variant="outline" size="lg" className="min-w-32" asChild>
               <Link href="https://github.com/abocn/TelegramBot" target="_blank" rel="noopener noreferrer">
                 <SiGithub />
-                View on GitHub
+                {t('home.viewOnGitHub')}
               </Link>
             </Button>
           </div>
@@ -73,9 +73,9 @@ export default function Home() {
       <section className="py-24 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16" id="ai-features">
-            <h2 className="text-4xl font-bold mb-4">Features You&apos;ll Love</h2>
+            <h2 className="text-4xl font-bold mb-4">{t('home.featuresTitle')}</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Powered by TypeScript, Telegraf, Next.js, and AI.
+              {t('home.featuresSubtitle')}
             </p>
           </div>
 
@@ -85,12 +85,11 @@ export default function Home() {
                 <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary">
                   <Sparkles className="w-6 h-6" />
                 </div>
-                <h3 className="text-2xl font-semibold">AI Commands</h3>
+                <h3 className="text-2xl font-semibold">{t('home.aiCommands')}</h3>
               </div>
 
               <p className="text-muted-foreground leading-relaxed">
-                Interact with over 50 AI models through simple commands. Get intelligent responses,
-                assistance, or problem-solving help right in Telegram.
+                {t('home.aiCommandsDescription')}
               </p>
 
               <div className="space-y-3">
@@ -98,21 +97,21 @@ export default function Home() {
                   <Bot className="w-5 h-5 mx-3 text-primary" />
                   <div>
                     <div className="font-medium">/ai</div>
-                    <div className="text-sm text-muted-foreground">Ask questions to a custom AI model of your choice</div>
+                    <div className="text-sm text-muted-foreground">{t('home.aiCustomDescription')}</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
                   <Zap className="w-5 h-5 mx-3 text-primary" />
                   <div>
                     <div className="font-medium">/ask</div>
-                    <div className="text-sm text-muted-foreground">Quick AI responses for everyday questions</div>
+                    <div className="text-sm text-muted-foreground">{t('home.askDescription')}</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
                   <Brain className="w-5 h-5 mx-3 text-primary" />
                   <div>
                     <div className="font-medium">/think</div>
-                    <div className="text-sm text-muted-foreground">Deep reasoning with optional visible thinking</div>
+                    <div className="text-sm text-muted-foreground">{t('home.thinkDescription')}</div>
                   </div>
                 </div>
               </div>
@@ -123,12 +122,11 @@ export default function Home() {
                 <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-red-500/10 text-red-500">
                   <SiYoutube className="w-6 h-6" />
                 </div>
-                <h3 className="text-2xl font-semibold">YouTube/Video Downloads</h3>
+                <h3 className="text-2xl font-semibold">{t('home.youtubeDownloads')}</h3>
               </div>
 
               <p className="text-muted-foreground leading-relaxed">
-                Download videos directly from YouTube and other platforms and watch them in Telegram.
-                Supports thousands of sites with integrated yt-dlp.
+                {t('home.youtubeDescription')}
               </p>
 
               <div className="space-y-3">
@@ -136,21 +134,21 @@ export default function Home() {
                   <Download className="w-5 h-5 mx-3 text-red-500" />
                   <div>
                     <div className="font-medium">/yt [URL]</div>
-                    <div className="text-sm text-muted-foreground">Quickly download videos up to 50MB</div>
+                    <div className="text-sm text-muted-foreground">{t('home.ytDescription')}</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
                   <Shield className="w-5 h-5 mx-3 text-red-500" />
                   <div>
-                    <div className="font-medium">Automatic Ratelimit Detection</div>
-                    <div className="text-sm text-muted-foreground">We&apos;ll notify you if something goes wrong</div>
+                    <div className="font-medium">{t('home.ratelimitTitle')}</div>
+                    <div className="text-sm text-muted-foreground">{t('home.ratelimitDescription')}</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
                   <Tv className="w-5 h-5 mx-3 text-red-500" />
                   <div>
-                    <div className="font-medium">High Quality Downloads</div>
-                    <div className="text-sm text-muted-foreground">Kowalski automatically chooses the best quality for you</div>
+                    <div className="font-medium">{t('home.qualityTitle')}</div>
+                    <div className="text-sm text-muted-foreground">{t('home.qualityDescription')}</div>
                   </div>
                 </div>
               </div>
@@ -163,11 +161,10 @@ export default function Home() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold mb-4">
-              Control <span className="italic mr-1.5">and</span> Fun
+              {t('home.controlAndFun')}
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Your user data is always minimized and under your control. That certainly
-              doesn&apos;t mean the experience is lacking!
+              {t('home.controlDescription')}
             </p>
           </div>
 
@@ -177,34 +174,33 @@ export default function Home() {
                 <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-blue-500/10 text-blue-500">
                   <Users className="w-6 h-6" />
                 </div>
-                <h3 className="text-2xl font-semibold">User Accounts</h3>
+                <h3 className="text-2xl font-semibold">{t('home.userAccounts')}</h3>
               </div>
 
               <p className="text-muted-foreground leading-relaxed">
-                Your user data is linked only by your Telegram ID. No data is ever sent to third parties
-                or used for anything other than providing you with the best experience.
+                {t('home.userAccountsDescription')}
               </p>
 
               <div className="space-y-3">
                 <div className="flex items-center gap-2 p-3 rounded-lg bg-background border">
                   <Settings className="w-5 h-5 mx-3 text-blue-500" />
                   <div>
-                    <div className="font-medium">Personal Settings</div>
-                    <div className="text-sm text-muted-foreground">Custom AI models, temperature, and language preferences</div>
+                    <div className="font-medium">{t('home.personalSettingsTitle')}</div>
+                    <div className="text-sm text-muted-foreground">{t('home.personalSettingsDescription')}</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 p-3 rounded-lg bg-background border">
                   <Brain className="w-5 h-5 mx-3 text-blue-500" />
                   <div>
-                    <div className="font-medium">Account Statistics</div>
-                    <div className="text-sm text-muted-foreground">Track AI requests, characters processed, and more</div>
+                    <div className="font-medium">{t('home.accountStatisticsTitle')}</div>
+                    <div className="text-sm text-muted-foreground">{t('home.accountStatisticsDescription')}</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 p-3 rounded-lg bg-background border">
                   <Trash className="w-5 h-5 mx-3 text-blue-500" />
                   <div>
-                    <div className="font-medium">Leave at Any Time</div>
-                    <div className="text-sm text-muted-foreground">We make it easy to delete your account at any time</div>
+                    <div className="font-medium">{t('home.leaveAnytimeTitle')}</div>
+                    <div className="text-sm text-muted-foreground">{t('home.leaveAnytimeDescription')}</div>
                   </div>
                 </div>
               </div>
@@ -215,34 +211,33 @@ export default function Home() {
                 <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-green-500/10 text-green-500">
                   <Bot className="w-6 h-6" />
                 </div>
-                <h3 className="text-2xl font-semibold">Web Interface</h3>
+                <h3 className="text-2xl font-semibold">{t('home.webInterface')}</h3>
               </div>
 
               <p className="text-muted-foreground leading-relaxed">
-                Kowalski includes a web interface, made with Next.js, to make it easier to manage your
-                bot, user account, and more. It&apos;s tailored to both users and admins.
+                {t('home.webInterfaceDescription')}
               </p>
 
               <div className="space-y-3">
                 <div className="flex items-center gap-2 p-3 rounded-lg bg-background border">
                   <TbEyeSpark className="w-5 h-5 mx-3 text-green-500" />
                   <div>
-                    <div className="font-medium">Everything&apos;s Clean</div>
-                    <div className="text-sm text-muted-foreground">We don&apos;t clutter your view with ads or distractions.</div>
+                    <div className="font-medium">{t('home.cleanInterfaceTitle')}</div>
+                    <div className="text-sm text-muted-foreground">{t('home.cleanInterfaceDescription')}</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 p-3 rounded-lg bg-background border">
                   <Sparkles className="w-5 h-5 mx-3 text-green-500" />
                   <div>
-                    <div className="font-medium">Do Everything!</div>
-                    <div className="text-sm text-muted-foreground">We aim to integrate every feature into the web interface.</div>
+                    <div className="font-medium">{t('home.doEverythingTitle')}</div>
+                    <div className="text-sm text-muted-foreground">{t('home.doEverythingDescription')}</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 p-3 rounded-lg bg-background border">
                   <Lock className="w-5 h-5 mx-3 text-green-500" />
                   <div>
-                    <div className="font-medium">Private</div>
-                    <div className="text-sm text-muted-foreground">We don&apos;t use any analytics, tracking, or third-party scripts.</div>
+                    <div className="font-medium">{t('home.privateTitle')}</div>
+                    <div className="text-sm text-muted-foreground">{t('home.privateDescription')}</div>
                   </div>
                 </div>
               </div>

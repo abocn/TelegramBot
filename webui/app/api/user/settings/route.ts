@@ -11,6 +11,7 @@ interface UserUpdates {
   customAiModel?: string;
   aiTemperature?: number;
   disabledCommands?: string[];
+  disabledAdminCommands?: string[];
   languageCode?: string;
   customSystemPrompt?: string;
   timezone?: string;
@@ -46,6 +47,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
     }
 
+    const isAdmin = sessionData.user.isAdmin || false;
     const allowedFields = [
       'aiEnabled',
       'showThinking',
@@ -56,6 +58,10 @@ export async function PATCH(request: NextRequest) {
       'customSystemPrompt',
       'timezone'
     ];
+
+    if (isAdmin) {
+      allowedFields.push('disabledAdminCommands');
+    }
 
     const filteredUpdates: UserUpdates = {};
 
@@ -88,11 +94,11 @@ export async function PATCH(request: NextRequest) {
           } else {
             return NextResponse.json({ error: `Invalid ${key}` }, { status: 400 });
           }
-        } else if (key === 'disabledCommands') {
+        } else if (key === 'disabledCommands' || key === 'disabledAdminCommands') {
           if (Array.isArray(value) && value.every(item => typeof item === 'string' && item.length < 50) && value.length < 100) {
             filteredUpdates[key] = value;
           } else {
-            return NextResponse.json({ error: "Invalid disabled commands" }, { status: 400 });
+            return NextResponse.json({ error: `Invalid ${key}` }, { status: 400 });
           }
         }
       }

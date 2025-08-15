@@ -1,50 +1,21 @@
-import { getStrings } from '../plugins/checklang';
 import { isOnSpamWatch } from '../spamwatch/spamwatch';
 import spamwatchMiddlewareModule from '../spamwatch/Middleware';
 import { Context, Telegraf } from 'telegraf';
 import { replyToMessageId } from '../utils/reply-to-message-id';
-import * as schema from '../../database/schema';
 import { eq } from 'drizzle-orm';
-import { ensureUserInDb } from '../utils/ensure-user';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { getModelLabelByName } from './ai';
 import { models } from '../../config/ai';
 import { langs } from '../locales/config';
 import { modelPageSize, seriesPageSize } from '../../config/settings';
+import { trackCommand } from '../utils/track-command';
+
+import { getUserAndStrings } from '../utils/get-user-strings';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import * as schema from '../../database/schema';
 
 type UserRow = typeof schema.usersTable.$inferSelect;
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
-
-async function getUserAndStrings(ctx: Context, db: NodePgDatabase<typeof schema>): Promise<{ user: UserRow | null, Strings: any, languageCode: string }> {
-  let user: UserRow | null = null;
-  let languageCode = 'en';
-  if (!ctx.from) {
-    const Strings = getStrings(languageCode);
-    return { user, Strings, languageCode };
-  }
-  const { id, language_code } = ctx.from;
-  if (id) {
-    const dbUser = await db.query.usersTable.findMany({ where: (fields, { eq }) => eq(fields.telegramId, String(id)), limit: 1 });
-    if (dbUser.length === 0) {
-      await ensureUserInDb(ctx, db);
-      const newUser = await db.query.usersTable.findMany({ where: (fields, { eq }) => eq(fields.telegramId, String(id)), limit: 1 });
-      if (newUser.length > 0) {
-        user = newUser[0];
-        languageCode = user.languageCode;
-      }
-    } else {
-      user = dbUser[0];
-      languageCode = user.languageCode;
-    }
-  }
-  if (!user && language_code) {
-    languageCode = language_code;
-    console.warn('[WARN !] Falling back to Telegram language_code for user', id);
-  }
-  const Strings = getStrings(languageCode);
-  return { user, Strings, languageCode };
-}
 
 type SettingsMenu = { text: string, reply_markup: any };
 function getSettingsMenu(user: UserRow, Strings: any): SettingsMenu {
@@ -106,50 +77,68 @@ function handleTelegramError(err: any, context: string) {
 
 export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
   bot.start(spamwatchMiddleware, async (ctx: Context) => {
-    const { user, Strings } = await getUserAndStrings(ctx, db);
-    const botInfo = await ctx.telegram.getMe();
-    const reply_to_message_id = replyToMessageId(ctx);
-    const startMsg = Strings.botWelcome.replace(/{botName}/g, botInfo.first_name);
-    if (!user) return;
-    ctx.reply(
-      startMsg.replace(
-        /{aiEnabled}/g,
-        user.aiEnabled ? Strings.settings.enabled : Strings.settings.disabled
-      ).replace(
-        /{aiModel}/g,
-        getModelLabelByName(user.customAiModel)
-      ).replace(
-        /{aiTemperature}/g,
-        user.aiTemperature.toString()
-      ).replace(
-        /{aiRequests}/g,
-        user.aiRequests.toString()
-      ).replace(
-        /{aiCharacters}/g,
-        user.aiCharacters.toString()
-      ).replace(
-        /{languageCode}/g,
-        user.languageCode
-      ), {
-        parse_mode: 'Markdown',
-        ...({ reply_to_message_id })
-      }
-    );
+    const startTime = Date.now();
+
+    try {
+      const { user, Strings } = await getUserAndStrings(ctx, db);
+      const botInfo = await ctx.telegram.getMe();
+      const reply_to_message_id = replyToMessageId(ctx);
+      const startMsg = Strings.botWelcome.replace(/{botName}/g, botInfo.first_name);
+      if (!user) return;
+      await ctx.reply(
+        startMsg.replace(
+          /{aiEnabled}/g,
+          user.aiEnabled ? Strings.settings.enabled : Strings.settings.disabled
+        ).replace(
+          /{aiModel}/g,
+          getModelLabelByName(user.customAiModel)
+        ).replace(
+          /{aiTemperature}/g,
+          user.aiTemperature.toString()
+        ).replace(
+          /{aiRequests}/g,
+          user.aiRequests.toString()
+        ).replace(
+          /{aiCharacters}/g,
+          user.aiCharacters.toString()
+        ).replace(
+          /{languageCode}/g,
+          user.languageCode
+        ), {
+          parse_mode: 'Markdown',
+          ...({ reply_to_message_id })
+        }
+      );
+
+      await trackCommand(db, ctx, 'start', true, undefined, startTime);
+    } catch (error) {
+      await trackCommand(db, ctx, 'start', false, error.message, startTime);
+      throw error;
+    }
   });
 
   bot.command(["settings"], spamwatchMiddleware, async (ctx: Context) => {
-    const reply_to_message_id = replyToMessageId(ctx);
-    const { user, Strings } = await getUserAndStrings(ctx, db);
-    if (!user) return;
-    const menu = getSettingsMenu(user, Strings);
-    await ctx.reply(
-      menu.text,
-      {
-        reply_markup: menu.reply_markup,
-        parse_mode: 'Markdown',
-        ...({ reply_to_message_id })
-      }
-    );
+    const startTime = Date.now();
+
+    try {
+      const reply_to_message_id = replyToMessageId(ctx);
+      const { user, Strings } = await getUserAndStrings(ctx, db);
+      if (!user) return;
+      const menu = getSettingsMenu(user, Strings);
+      await ctx.reply(
+        menu.text,
+        {
+          reply_markup: menu.reply_markup,
+          parse_mode: 'Markdown',
+          ...({ reply_to_message_id })
+        }
+      );
+
+      await trackCommand(db, ctx, 'settings', true, undefined, startTime);
+    } catch (error) {
+      await trackCommand(db, ctx, 'settings', false, error.message, startTime);
+      throw error;
+    }
   });
 
   const updateSettingsKeyboard = async (ctx: Context, user: UserRow, Strings: any) => {
@@ -522,35 +511,44 @@ export default (bot: Telegraf<Context>, db: NodePgDatabase<typeof schema>) => {
       .set({ languageCode: lang })
       .where(eq(schema.usersTable.telegramId, String(user.telegramId)));
     const updatedUser = (await db.query.usersTable.findMany({ where: (fields, { eq }) => eq(fields.telegramId, String(user.telegramId)), limit: 1 }))[0];
-    const updatedStrings = getStrings(updatedUser.languageCode);
-    const menu = getSettingsMenu(updatedUser, updatedStrings);
+    const { Strings: updatedStrings } = await getUserAndStrings(ctx, db);
     try {
-      if (ctx.callbackQuery.message) {
-        await ctx.editMessageText(
-          menu.text,
-          {
-            reply_markup: menu.reply_markup,
-            parse_mode: 'Markdown'
+      await ctx.editMessageText(
+        updatedStrings.settings.selectLanguage,
+        {
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: langs.map(l => [{
+              text: l.label,
+              callback_data: `setlang_${l.code}_${updatedUser.telegramId}`
+            }]).concat([[{
+              text: `${updatedStrings.varStrings.varBack}`,
+              callback_data: `settings_back_${updatedUser.telegramId}`
+            }]])
           }
-        );
-      } else {
-        await ctx.reply(menu.text, {
-          reply_markup: menu.reply_markup,
-          parse_mode: 'Markdown'
-        });
-      }
+        }
+      );
     } catch (err) {
       handleTelegramError(err, 'setlang');
     }
   });
 
   bot.command('privacy', spamwatchMiddleware, async (ctx: Context) => {
-    const { Strings } = await getUserAndStrings(ctx, db);
-    if (!ctx.from || !ctx.message) return;
-    const message = Strings.botPrivacy.replace("{botPrivacy}", process.env.botPrivacy ?? "");
-    ctx.reply(message, {
-      parse_mode: 'Markdown',
-      reply_to_message_id: ctx.message.message_id
-    } as any);
+    const startTime = Date.now();
+
+    try {
+      const { Strings } = await getUserAndStrings(ctx, db);
+      if (!ctx.from || !ctx.message) return;
+      const message = Strings.botPrivacy.replace("{botPrivacy}", process.env.botPrivacy ?? "");
+      await ctx.reply(message, {
+        parse_mode: 'Markdown',
+        reply_to_message_id: ctx.message.message_id
+      } as any);
+
+      await trackCommand(db, ctx, 'privacy', true, undefined, startTime);
+    } catch (error) {
+      await trackCommand(db, ctx, 'privacy', false, error.message, startTime);
+      throw error;
+    }
   });
 };

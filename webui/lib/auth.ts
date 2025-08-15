@@ -21,6 +21,8 @@ export interface SessionData {
     aiRequests: number;
     aiCharacters: number;
     disabledCommands: string[];
+    disabledAdminCommands: string[];
+    isAdmin: boolean;
     languageCode: string;
     timezone: string;
   };
@@ -121,6 +123,8 @@ export async function validateSession(sessionToken: string): Promise<SessionData
         aiRequests: user.aiRequests,
         aiCharacters: user.aiCharacters,
         disabledCommands: user.disabledCommands || [],
+        disabledAdminCommands: user.disabledAdminCommands || [],
+        isAdmin: user.isAdmin || false,
         languageCode: user.languageCode,
         timezone: user.timezone,
       },

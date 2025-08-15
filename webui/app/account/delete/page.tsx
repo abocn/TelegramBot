@@ -16,12 +16,14 @@ import { Trash2, ArrowLeft, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/auth-context";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 export default function DeleteAccountPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const { user, isAuthenticated, loading } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
 
   const handleDeleteAccount = async () => {
     if (!user) return;
@@ -35,15 +37,15 @@ export default function DeleteAccountPage() {
       });
 
       if (response.ok) {
-        alert('Your account has been deleted. You will now be redirected to the home page. Thanks for using Kowalski!');
+        alert(t('deleteAccount.successMessage'));
         window.location.href = '/';
       } else {
         const error = await response.json();
-        alert(`Failed to delete account: ${error.message || 'Unknown error'}`);
+        alert(`${t('deleteAccount.failedToDelete')}: ${error.message || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error deleting account:', error);
-      alert('An error occurred while deleting your account. Please try again.');
+      alert(t('deleteAccount.errorOccurred'));
     } finally {
       setIsDeleting(false);
       setDialogOpen(false);
@@ -75,7 +77,7 @@ export default function DeleteAccountPage() {
             <Button variant="outline" size="sm" asChild>
               <Link href="/account">
                 <ArrowLeft className="w-4 h-4" />
-                Back to Account
+                {t('deleteAccount.backToAccount')}
               </Link>
             </Button>
           </div>
@@ -86,8 +88,8 @@ export default function DeleteAccountPage() {
                 <Trash2 className="w-8 h-8 text-red-600" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold">Delete Account</h1>
-                <p className="text-muted-foreground">Permanently remove your account and data</p>
+                <h1 className="text-3xl font-bold">{t('deleteAccount.title')}</h1>
+                <p className="text-muted-foreground">{t('deleteAccount.subtitle')}</p>
               </div>
             </div>
 
@@ -96,39 +98,39 @@ export default function DeleteAccountPage() {
                 <AlertTriangle className="w-6 h-6 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
                 <div className="space-y-2">
                   <h3 className="font-semibold text-yellow-800 dark:text-yellow-200">
-                    This action cannot be undone
+                    {t('deleteAccount.cannotBeUndone')}
                   </h3>
                   <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                    Deleting your account will permanently remove all your data, including:
+                    {t('deleteAccount.deletingWillRemove')}
                   </p>
                   <ul className="text-sm text-yellow-700 dark:text-yellow-300 list-disc list-inside space-y-1 ml-2">
-                    <li>Your user profile and settings</li>
-                    <li>AI usage statistics and request history</li>
-                    <li>Custom AI model preferences</li>
-                    <li>Command configuration and disabled commands</li>
-                    <li>All associated sessions and authentication data</li>
+                    <li>{t('deleteAccount.yourProfile')}</li>
+                    <li>{t('deleteAccount.aiUsageStats')}</li>
+                    <li>{t('deleteAccount.customAiPreferences')}</li>
+                    <li>{t('deleteAccount.commandConfiguration')}</li>
+                    <li>{t('deleteAccount.allSessions')}</li>
                   </ul>
                 </div>
               </div>
             </div>
 
             <div className="bg-card border rounded-lg p-6">
-              <h3 className="text-lg font-semibold mb-4">Account Information</h3>
+              <h3 className="text-lg font-semibold mb-4">{t('deleteAccount.accountInformation')}</h3>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Username:</span>
+                  <span className="text-muted-foreground">{t('deleteAccount.username')}:</span>
                   <span className="font-medium">@{user?.username}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Name:</span>
+                  <span className="text-muted-foreground">{t('deleteAccount.name')}:</span>
                   <span className="font-medium">{user?.firstName} {user?.lastName}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Telegram ID:</span>
+                  <span className="text-muted-foreground">{t('deleteAccount.telegramId')}:</span>
                   <span className="font-medium">{user?.telegramId}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">AI Requests:</span>
+                  <span className="text-muted-foreground">{t('deleteAccount.aiRequests')}:</span>
                   <span className="font-medium">{user?.aiRequests.toLocaleString()}</span>
                 </div>
               </div>
@@ -137,9 +139,9 @@ export default function DeleteAccountPage() {
             <div className="pt-6 border-t">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold">Ready to delete your account?</h3>
+                  <h3 className="text-lg font-semibold">{t('deleteAccount.readyToDelete')}</h3>
                   <p className="text-sm text-muted-foreground">
-                    This will immediately and permanently delete your account.
+                    {t('deleteAccount.thisWillImmediately')}
                   </p>
                 </div>
 
@@ -147,21 +149,21 @@ export default function DeleteAccountPage() {
                   <DialogTrigger asChild>
                     <Button variant="destructive" className="gap-2">
                       <Trash2 className="w-4 h-4" />
-                      Delete Account
+                      {t('deleteAccount.title')}
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
                       <DialogTitle className="flex items-center gap-2">
                         <AlertTriangle className="w-5 h-5 text-red-600" />
-                        Confirm Account Deletion
+                        {t('deleteAccount.confirmDeletion')}
                       </DialogTitle>
                       <DialogDescription className="space-y-2">
                         <p>
-                          Are you absolutely sure you want to delete your account? This action cannot be undone.
+                          {t('deleteAccount.areYouSure')}
                         </p>
                         <p className="font-medium">
-                          Your account <span className="font-bold">@{user?.username}</span> and all associated data will be permanently removed.
+                          {t('deleteAccount.yourAccountWillBeRemoved', { username: user?.username })}
                         </p>
                       </DialogDescription>
                     </DialogHeader>
@@ -171,7 +173,7 @@ export default function DeleteAccountPage() {
                         onClick={() => setDialogOpen(false)}
                         disabled={isDeleting}
                       >
-                        Cancel
+                        {t('account.cancel')}
                       </Button>
                       <Button
                         variant="destructive"
@@ -182,12 +184,12 @@ export default function DeleteAccountPage() {
                         {isDeleting ? (
                           <>
                             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                            Deleting...
+                            {t('deleteAccount.deleting')}
                           </>
                         ) : (
                           <>
                             <Trash2 className="w-4 h-4" />
-                            Yes, Delete Account
+                            {t('deleteAccount.yesDeleteAccount')}
                           </>
                         )}
                       </Button>

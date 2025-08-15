@@ -1,10 +1,14 @@
 import Resources from '../props/resources.json';
 import fs from 'fs';
 import axios from 'axios';
-import { getStrings } from '../plugins/checklang';
 import { isOnSpamWatch } from '../spamwatch/spamwatch';
 import spamwatchMiddlewareModule from '../spamwatch/Middleware';
 import { isCommandDisabled } from '../utils/check-command-disabled';
+import { trackCommand } from '../utils/track-command';
+
+import { getUserAndStrings } from '../utils/get-user-strings';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import * as schema from '../../database/schema';
 
 const spamwatchMiddleware = spamwatchMiddlewareModule(isOnSpamWatch);
 
@@ -73,166 +77,191 @@ function getFromLast(track) {
   return imageUrl;
 }
 
-export default (bot, db) => {
+export default (bot, db: NodePgDatabase<typeof schema>) => {
   loadUsers();
 
   bot.command('setuser', async (ctx) => {
+    const startTime = Date.now();
+
     if (await isCommandDisabled(ctx, db, 'lastfm')) return;
-
-    const userId = ctx.from.id;
-    const Strings = getStrings(ctx.from.language_code);
-    const lastUser = ctx.message.text.split(' ')[1];
-
-    if (!lastUser) {
-      return ctx.reply(Strings.lastFm.noUser, {
-        parse_mode: "Markdown",
-        disable_web_page_preview: true,
-        ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
-      });
-    };
-
-    users[userId] = lastUser;
-    saveUsers();
-
-    const message = Strings.lastFm.userHasBeenSet.replace('{lastUser}', lastUser);
-
-    ctx.reply(message, {
-      parse_mode: "Markdown",
-      disable_web_page_preview: true,
-      ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
-    });
-  });
-
-  bot.command(['lt', 'lmu', 'last', 'lfm'], spamwatchMiddleware, async (ctx) => {
-    if (await isCommandDisabled(ctx, db, 'lastfm')) return;
-
-    const userId = ctx.from.id;
-    const Strings = getStrings(ctx.from.language_code);
-    const lastfmUser = users[userId];
-    const genericImg = Resources.lastFmGenericImg;
-    const botInfo = await ctx.telegram.getMe();
-
-    if (!lastfmUser) {
-      return ctx.reply(Strings.lastFm.noUserSet, {
-        parse_mode: "Markdown",
-        disable_web_page_preview: true,
-        ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
-      });
-    };
 
     try {
-      const response = await axios.get(scrobbler_url, {
-        params: {
-          method: 'user.getRecentTracks',
-          user: lastfmUser,
-          api_key,
-          format: 'json',
-          limit: 1
-        },
-        headers: {
-          'User-Agent': `@${botInfo.username}-node-telegram-bot`
-        }
-      });
+      const userId = ctx.from.id;
+      const { Strings } = await getUserAndStrings(ctx, db);
+      const lastUser = ctx.message.text.split(' ')[1];
 
-      const track = response.data.recenttracks.track[0];
-
-      if (!track) {
-        const noRecent = Strings.lastFm.noRecentTracks.replace('{lastfmUser}', lastfmUser);
-        return ctx.reply(noRecent, {
+      if (!lastUser) {
+        return ctx.reply(Strings.lastFm.noUser, {
           parse_mode: "Markdown",
           disable_web_page_preview: true,
           ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
         });
       };
 
-      const trackName = track.name;
-      const artistName = track.artist['#text'];
-      const nowPlaying = track['@attr'] && track['@attr'].nowplaying ? Strings.varStrings.varIs : Strings.varStrings.varWas;
-      const albumMbid = track.album.mbid;
+      users[userId] = lastUser;
+      saveUsers();
 
-      let imageUrl = "";
+      const message = Strings.lastFm.userHasBeenSet.replace('{lastUser}', lastUser);
 
-      if (albumMbid) {
-        imageUrl = await getFromMusicBrainz(albumMbid);
-      }
+      await ctx.reply(message, {
+        parse_mode: "Markdown",
+        disable_web_page_preview: true,
+        ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
+      });
 
-      if (!imageUrl) {
-        imageUrl = getFromLast(track);
-      }
+      await trackCommand(db, ctx, 'setuser', true, undefined, startTime);
+    } catch (error) {
+      await trackCommand(db, ctx, 'setuser', false, error.message, startTime);
+      throw error;
+    }
+  });
 
-      if (imageUrl == genericImg) {
-        imageUrl = "";
-      }
+  bot.command(['lt', 'lmu', 'last', 'lfm'], spamwatchMiddleware, async (ctx) => {
+    const startTime = Date.now();
 
-      const trackUrl = `https://www.last.fm/music/${encodeURIComponent(artistName)}/_/${encodeURIComponent(trackName)}`;
-      const artistUrl = `https://www.last.fm/music/${encodeURIComponent(artistName)}`;
-      const userUrl = `https://www.last.fm/user/${encodeURIComponent(lastfmUser)}`;
+    if (await isCommandDisabled(ctx, db, 'lastfm')) return;
 
-      let num_plays = 0;
+    try {
+      const userId = ctx.from.id;
+      const { Strings } = await getUserAndStrings(ctx, db);
+      const lastfmUser = users[userId];
+      const genericImg = Resources.lastFmGenericImg;
+      const botInfo = await ctx.telegram.getMe();
+
+      if (!lastfmUser) {
+        return ctx.reply(Strings.lastFm.noUserSet, {
+          parse_mode: "Markdown",
+          disable_web_page_preview: true,
+          ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
+        });
+      };
+
       try {
-        const response_plays = await axios.get(scrobbler_url, {
+        const response = await axios.get(scrobbler_url, {
           params: {
-            method: 'track.getInfo',
+            method: 'user.getRecentTracks',
+            user: lastfmUser,
             api_key,
-            track: trackName,
-            artist: artistName,
-            username: lastfmUser,
             format: 'json',
+            limit: 1
           },
           headers: {
             'User-Agent': `@${botInfo.username}-node-telegram-bot`
           }
         });
 
-        num_plays = response_plays.data.track.userplaycount;
+        const track = response.data.recenttracks.track[0];
+
+        if (!track) {
+          const noRecent = Strings.lastFm.noRecentTracks.replace('{lastfmUser}', lastfmUser);
+          return ctx.reply(noRecent, {
+            parse_mode: "Markdown",
+            disable_web_page_preview: true,
+            ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
+          });
+        };
+
+        const trackName = track.name;
+        const artistName = track.artist['#text'];
+        const nowPlaying = track['@attr'] && track['@attr'].nowplaying ? Strings.varStrings.varIs : Strings.varStrings.varWas;
+        const albumMbid = track.album.mbid;
+
+        let imageUrl = "";
+
+        if (albumMbid) {
+          imageUrl = await getFromMusicBrainz(albumMbid);
+        }
+
+        if (!imageUrl) {
+          imageUrl = getFromLast(track);
+        }
+
+        if (imageUrl == genericImg) {
+          imageUrl = "";
+        }
+
+        const trackUrl = `https://www.last.fm/music/${encodeURIComponent(artistName)}/_/${encodeURIComponent(trackName)}`;
+        const artistUrl = `https://www.last.fm/music/${encodeURIComponent(artistName)}`;
+        const userUrl = `https://www.last.fm/user/${encodeURIComponent(lastfmUser)}`;
+
+        let num_plays = 0;
+        try {
+          const response_plays = await axios.get(scrobbler_url, {
+            params: {
+              method: 'track.getInfo',
+              api_key,
+              track: trackName,
+              artist: artistName,
+              username: lastfmUser,
+              format: 'json',
+            },
+            headers: {
+              'User-Agent': `@${botInfo.username}-node-telegram-bot`
+            }
+          });
+
+          num_plays = response_plays.data.track.userplaycount;
+        } catch (err) {
+          console.log(err)
+          const message = Strings.lastFm.apiErr
+            .replace("{lastfmUser}", `[${lastfmUser}](${userUrl})`)
+            .replace("{err}", err);
+          ctx.reply(message, {
+            parse_mode: "Markdown",
+            disable_web_page_preview: true,
+            ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
+          });
+        };
+
+        if (num_plays === 0 || "0") num_plays = 1;
+        const suffix = getOrdinalSuffix(num_plays);
+
+        const message = Strings.lastFm.listeningTo
+          .replace("{lastfmUser}", `[${lastfmUser}](<${userUrl}>)`)
+          .replace("{nowPlaying}", nowPlaying)
+          .replace("{trackName}", `[${trackName}](<${trackUrl}>)`)
+          .replace("{artistName}", `[${artistName}](<${artistUrl}>)`)
+          .replace("{playCount}", Strings.lastFm.playCount)
+          .replace("{plays}", num_plays)
+          .replace("{suffix}", suffix);
+
+        if (imageUrl) {
+          ctx.replyWithPhoto(imageUrl, {
+            caption: message,
+            parse_mode: "Markdown",
+            disable_web_page_preview: true,
+            ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
+          });
+        } else {
+          ctx.reply(message, {
+            parse_mode: "Markdown",
+            disable_web_page_preview: true,
+            ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
+          });
+        };
       } catch (err) {
-        console.log(err)
+        const userUrl = `https://www.last.fm/user/${encodeURIComponent(lastfmUser)}`;
         const message = Strings.lastFm.apiErr
           .replace("{lastfmUser}", `[${lastfmUser}](${userUrl})`)
           .replace("{err}", err);
-        ctx.reply(message, {
+        await ctx.reply(message, {
           parse_mode: "Markdown",
           disable_web_page_preview: true,
           ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
         });
-      };
+        throw err;
+      }
 
-      if (num_plays === 0 || "0") num_plays = 1;
-      const suffix = getOrdinalSuffix(num_plays);
-
-      const message = Strings.lastFm.listeningTo
-        .replace("{lastfmUser}", `[${lastfmUser}](<${userUrl}>)`)
-        .replace("{nowPlaying}", nowPlaying)
-        .replace("{trackName}", `[${trackName}](<${trackUrl}>)`)
-        .replace("{artistName}", `[${artistName}](<${artistUrl}>)`)
-        .replace("{playCount}", Strings.lastFm.playCount)
-        .replace("{plays}", num_plays)
-        .replace("{suffix}", suffix);
-
-      if (imageUrl) {
-        ctx.replyWithPhoto(imageUrl, {
-          caption: message,
-          parse_mode: "Markdown",
-          disable_web_page_preview: true,
-          ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
-        });
-      } else {
-        ctx.reply(message, {
-          parse_mode: "Markdown",
-          disable_web_page_preview: true,
-          ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
-        });
-      };
-    } catch (err) {
-      const userUrl = `https://www.last.fm/user/${encodeURIComponent(lastfmUser)}`;
-      const message = Strings.lastFm.apiErr
-        .replace("{lastfmUser}", `[${lastfmUser}](${userUrl})`)
-        .replace("{err}", err);
-      ctx.reply(message, {
-        parse_mode: "Markdown",
-        disable_web_page_preview: true,
-        ...(ctx.message?.message_id ? { reply_parameters: { message_id: ctx.message.message_id } } : {})
-      });
-    };
+      const commandName = ctx.message?.text?.startsWith('/lt') ? 'lt' :
+                          ctx.message?.text?.startsWith('/lmu') ? 'lmu' :
+                          ctx.message?.text?.startsWith('/last') ? 'last' : 'lfm';
+      await trackCommand(db, ctx, commandName, true, undefined, startTime);
+    } catch (error) {
+      const commandName = ctx.message?.text?.startsWith('/lt') ? 'lt' :
+                          ctx.message?.text?.startsWith('/lmu') ? 'lmu' :
+                          ctx.message?.text?.startsWith('/last') ? 'last' : 'lfm';
+      await trackCommand(db, ctx, commandName, false, error.message, startTime);
+      throw error;
+    }
   });
 };

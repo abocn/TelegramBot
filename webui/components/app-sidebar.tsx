@@ -7,7 +7,9 @@ import {
   User,
   Trash2,
   LogOut,
-  Command
+  Command,
+  Briefcase,
+  BarChart3
 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
@@ -28,6 +30,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { RiTelegram2Line } from "react-icons/ri"
 import { useAuth } from "@/contexts/auth-context"
 import { Badge } from "@/components/ui/badge"
+import { useTranslation } from "react-i18next"
 
 interface AccountItem {
   title: string;
@@ -36,27 +39,28 @@ interface AccountItem {
   danger?: boolean;
 }
 
-const navigation = [
-  {
-    title: "Home",
-    url: "/",
-    icon: Home,
-  },
-  {
-    title: "About",
-    url: "/about",
-    icon: MessageSquare,
-  },
-  {
-    title: "Commands",
-    url: "/commands",
-    icon: Command,
-  },
-]
-
 export function AppSidebar() {
-  const { isAuthenticated, loading, logout } = useAuth();
+  const { isAuthenticated, loading, logout, user } = useAuth();
   const { setOpenMobile, isMobile } = useSidebar();
+  const { t } = useTranslation();
+
+  const navigation = React.useMemo(() => [
+    {
+      title: t('navigation.home'),
+      url: "/",
+      icon: Home,
+    },
+    {
+      title: t('navigation.about'),
+      url: "/about",
+      icon: MessageSquare,
+    },
+    {
+      title: t('navigation.commands'),
+      url: "/commands",
+      icon: Command,
+    },
+  ], [t]);
 
   const handleMenuItemClick = () => {
     if (isMobile) {
@@ -72,18 +76,18 @@ export function AppSidebar() {
     if (isAuthenticated) {
       return [
         {
-          title: "My Account",
+          title: t('navigation.myAccount'),
           url: "/account",
           icon: User,
         },
         {
-          title: "Logout",
+          title: t('navigation.logout'),
           url: "#",
           icon: LogOut,
           danger: true,
         },
         {
-          title: "Delete Account",
+          title: t('navigation.deleteAccount'),
           url: "/account/delete",
           icon: Trash2,
           danger: true,
@@ -92,13 +96,13 @@ export function AppSidebar() {
     } else {
       return [
         {
-          title: "Sign in with Telegram",
+          title: t('navigation.signInWithTelegram'),
           url: "/login",
           icon: RiTelegram2Line,
         },
       ];
     }
-  }, [isAuthenticated, loading]);
+  }, [isAuthenticated, loading, t]);
 
   return (
     <Sidebar variant="inset">
@@ -146,14 +150,40 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
+        {!loading && user?.isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel>{t('navigation.admin')}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <Link href="/admin" onClick={handleMenuItemClick}>
+                      <BarChart3 />
+                      <span>{t('navigation.dashboard')}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <Link href="/jobs" onClick={handleMenuItemClick}>
+                      <Briefcase />
+                      <span>{t('navigation.jobs')}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
         {!loading && (
           <SidebarGroup>
-            <SidebarGroupLabel>Account</SidebarGroupLabel>
+            <SidebarGroupLabel>{t('navigation.account')}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {accountItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
-                    {item.title === "Logout" ? (
+                    {item.title === t('navigation.logout') ? (
                       <SidebarMenuButton
                         onClick={() => {
                           logout();

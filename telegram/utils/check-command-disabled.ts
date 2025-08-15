@@ -29,10 +29,13 @@
 // For more information, please refer to <https://unlicense.org/>
 
 import { Context } from 'telegraf';
-import { getStrings } from '../plugins/checklang';
 import { replyToMessageId } from './reply-to-message-id';
 
-export async function isCommandDisabled(ctx: Context, db: any, commandId: string): Promise<boolean> {
+import { getUserAndStrings } from '../utils/get-user-strings';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import * as schema from '../../database/schema';
+
+export async function isCommandDisabled(ctx: Context, db: NodePgDatabase<typeof schema>, commandId: string): Promise<boolean> {
   if (!ctx.from) return false;
 
   const telegramId = String(ctx.from.id);
@@ -42,16 +45,19 @@ export async function isCommandDisabled(ctx: Context, db: any, commandId: string
       where: (fields, { eq }) => eq(fields.telegramId, telegramId),
       columns: {
         disabledCommands: true,
+        disabledAdminCommands: true,
         languageCode: true,
       },
     });
 
     if (!user) return false;
 
-    const isDisabled = user.disabledCommands?.includes(commandId) || false;
+    const isAdminCommand = commandId.startsWith('admin-');
+    const disabledList = isAdminCommand ? user.disabledAdminCommands : user.disabledCommands;
+    const isDisabled = disabledList?.includes(commandId) || false;
 
     if (isDisabled) {
-      const Strings = getStrings(user.languageCode);
+      const { Strings } = await getUserAndStrings(ctx, db);
       const frontUrl = process.env.frontUrl || 'https://kowalski.social';
       const reply_to_message_id = replyToMessageId(ctx);
 

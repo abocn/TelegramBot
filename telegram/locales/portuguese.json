@@ -1,4 +1,5 @@
 {
+  "userNotFound": "Usuário não encontrado.",
   "botWelcome": "*Olá! Eu sou o {botName}!*\nEu fui feito com amor por uns nerds que amam programação!\n\n*Ao usar o {botName}, você afirma que leu e concorda com a política de privacidade (/privacy). Isso ajuda você a entender onde seus dados vão ao usar este bot.*\n\nAlém disso, você pode usar /help para ver os meus comandos!",
   "botHelp": "*Oi, eu sou o {botName}, um bot simples feito do zero em Telegraf e Node.js por uns nerds que gostam de programação.*\n\nVeja o código fonte: [Clique aqui para ir ao GitHub]({sourceLink})\n\nClique nos botões abaixo para ver quais comandos você pode usar!\n",
   "botPrivacy": "Acesse [este link]({botPrivacy}) para ler a política de privacidade do bot.",
@@ -35,6 +36,28 @@
   "chatInfo": "*Informações do chat*\n\n*Nome:* `{chatName}`\n*ID do chat:* `{chatId}`\n*Identificador:* `{chatHandle}`\n*Tipo:* `{chatType}`\n*Membros:* `{chatMembersCount}`\n*É um fórum:* `{isForum}`",
   "funEmojiResult": "*Você lançou {emoji} e obteve *`{value}`*!*\nVocê não sabe o que isso significa? Nem eu!",
   "gifErr": "*Algo deu errado ao enviar o GIF. Tente novamente mais tarde.*\n\n{err}",
+  "wiki": {
+    "helpEntry": "📚 Wikipedia",
+    "helpDesc": "📚 *Wikipedia*\n\n- /wiki `<termo de pesquisa>`: Pesquise um termo na Wikipedia e exiba o resultado.",
+    "noSearchTerm": "Por favor, forneça um termo de pesquisa.",
+    "error": "Falha ao buscar artigo da Wikipedia.",
+    "noContent": "Nenhum conteúdo encontrado.",
+    "showMore": "Mostrar Mais (Página {current}/{total})",
+    "previous": "⬅️ Anterior",
+    "next": "Próxima ➡️ (Página {current}/{total})",
+    "endPage": "Página {current}/{total} (Fim)",
+    "pageInfo": "Página {current} de {total}",
+    "alreadyOnPage": "Já na página {current} de {total}",
+    "contentUnavailable": "Conteúdo não está mais disponível. Por favor, pesquise novamente.",
+    "sentAsNewMessage": "Enviado como nova mensagem",
+    "updateFailed": "Falha ao atualizar conteúdo. Por favor, tente novamente.",
+    "endReached": "Você chegou ao fim do artigo."
+  },
+  "quote": {
+    "helpEntry": "💭 Citações",
+    "helpDesc": "💭 *Citações*\n\n- /quote: Obtenha uma citação inspiradora aleatória.",
+    "error": "*Falha ao buscar uma citação. Por favor, tente novamente mais tarde.*"
+  },
   "lastFm": {
     "helpEntry": "🎵 Last.fm",
     "helpDesc": "🎵 *Last.fm*\n\n- /lt | /lmu | /last | /lfm: Mostra a última música do seu perfil no Last.fm + o número de reproduções.\n- /setuser `<usuário>`: Define o usuário para o comando acima.",
@@ -47,6 +70,8 @@
   },
   "gitCurrentCommit": "*Commit atual:* `{commitHash}`",
   "gitErrRetrievingCommit": "*Erro ao obter o commit:* {error}",
+  "errorRetrievingStats": "*Erro ao obter estatísticas:* {error}",
+  "kickedMyself": "*Saí do chat com sucesso.*",
   "weatherStatus": {
     "provideLocation": "*Por favor, forneça uma localização.*",
     "invalidLocation": "*Localização inválida. Tente novamente.*",
@@ -55,7 +80,7 @@
     "apiKeyErr": "*Uma chave de API não foi definida pelo proprietário do bot. Tente novamente mais tarde.*"
   },
   "mainCommands": "ℹ️ Comandos principais",
-  "mainCommandsDesc": "ℹ️ *Comandos principais*\n\n- /help: Exibe a ajuda do bot\n- /start: Inicia o bot\n- /privacy: Leia a política de privacidade do bot\n- /settings: Exibe suas configurações",
+  "mainCommandsDesc": "ℹ️ *Comandos principais*\n\n- /help: Exibe a ajuda do bot\n- /help verbose: Mostrar todos os comandos em formato de lista\n- /start: Inicia o bot\n- /privacy: Leia a política de privacidade do bot\n- /settings: Exibe suas configurações",
   "usefulCommands": "🛠️ Comandos úteis",
   "usefulCommandsDesc": "🛠️ *Comandos úteis*\n\n- /chatinfo: Envia informações sobre o grupo\n- /userinfo: Envia informações sobre você\n- /d | /device `<modelo>`: Pesquisa um dispositivo no GSMArena e mostra suas especificações.\n- /weather | /clima `<cidade>`: Veja o status do clima para uma localização específica\n- /modarchive | /tma `<id do módulo>`: Baixa um módulo do The Mod Archive.\n- /http `<código HTTP>`: Envia detalhes sobre um código HTTP específico. Exemplo: `/http 404`",
   "funnyCommands": "😂 Comandos engraçados",
@@ -64,11 +89,13 @@
   "interactiveEmojisDesc": "🎲 *Emojis interativos*\n\n- /dice: Jogue um dado\n- /idice: Role infinitamente um dado colorido\n- /slot: Tente combinar as figuras!\n- /ball: Tente chutar a bola no gol!\n- /bowling: Tente derrubar os pinos!\n- /dart: Tente acertar o alvo!",
   "animalCommands": "🐱 Animais",
   "animalCommandsDesc": "🐱 *Animais*\n\n- /soggy | /soggycat `<1 | 2 | 3 | 4 | orig | thumb | sticker | alt>`: Envia o [meme do gato encharcado](https://knowyourmeme.com/memes/soggy-cat)\n- /cat - Envia uma foto aleatória de um gato.\n- /fox - Envia uma foto aleatória de uma raposa.\n- /duck - Envia uma foto aleatória de um pato.\n- /dog - Envia uma imagem aleatória de um cachorro.\n- /httpcat `<código http>`: Envia memes de gato do http.cat com o código HTTP especificado. Exemplo: `/httpcat 404`",
+  "adminSettings": "⚙️ Configurações de Admin",
+  "adminSettingsDesc": "⚙️ *Configurações de Admin*\n\n*Gerenciamento do Bot:*\n- /getbotstats: Obter estatísticas do servidor e informações do sistema\n- /getbotcommit: Obter o hash do commit git atual do bot\n- /setbotname `<nome>`: Alterar o nome de exibição do bot\n- /setbotdesc `<descrição>`: Alterar a descrição do bot\n- /botkickme: Fazer o bot sair do chat atual\n\n*Gerenciamento de IA:*\n- /queue: Listar fila de solicitações de IA atual\n- /qdel `<user_id>`: Limpar itens da fila para um usuário específico\n- /qlimit `<user_id>` `<duração>`: Timeout de usuário dos comandos de IA\n- /setexec `<user_id>` `<duração>`: Definir tempo máximo de execução para usuário\n- /rlimit `<user_id>`: Remover todos os limites de IA para usuário\n- /limits: Listar todos os limites e timeouts de IA atuais",
   "ai": {
     "helpEntry": "✨ Comandos de IA",
     "helpDesc": "✨ *Comandos de IA*\n\n- /ask `<prompt>`: Fazer uma pergunta a uma IA\n- /think `<prompt>`: Fazer uma pergunta a um modelo de pensamento\n- /ai `<prompt>`: Fazer uma pergunta a um modelo de IA personalizado\n- /aistop: Parar sua solicitação de IA atual\n- /aistats: Mostra suas estatísticas de uso de IA",
     "helpDescAdmin": "✨ *Comandos de IA*\n\n- /ask `<prompt>`: Fazer uma pergunta a uma IA\n- /think `<prompt>`: Fazer uma pergunta a um modelo de pensamento\n- /ai `<prompt>`: Fazer uma pergunta a um modelo de IA personalizado\n- /aistop: Parar sua solicitação de IA atual\n- /aistats: Mostra suas estatísticas de uso de IA\n\n*Comandos de Admin:*\n- /queue: Listar fila atual de IA\n- /qdel `<user_id>`: Limpar itens da fila para um usuário\n- /qlimit `<user_id>` `<duration>`: Timeout de usuário dos comandos de IA\n- /setexec `<user_id>` `<duration>`: Definir tempo máximo de execução para usuário\n- /rlimit `<user_id>`: Remover todos os limites de IA para usuário\n- /limits: Listar todos os limites atuais de IA",
-    "disabled": "A AIApi foi desativada\\.",
+    "disabled": "✨ As funcionalidades de IA estão atualmente desativadas globalmente.",
     "disabledForUser": "As funções de IA estão desativadas para a sua conta. Você pode ativá-las com o comando /settings.",
     "pulling": "🔄 Modelo {model} não encontrado localmente, baixando...",
     "askGenerating": "✨ Gerando resposta com {model}...",
@@ -175,7 +202,6 @@
     "unknownAction": "Ação desconhecida."
   },
   "botUpdated": "Bot atualizado com sucesso.\n\n```{result}```",
-  "errorUpdatingBot": "Erro ao atualizar o bot\n\n{error}",
   "catImgErr": "Desculpe, mas não consegui obter a foto do gato que você queria.",
   "catGifErr": "Desculpe, mas não consegui obter o GIF do gato que você queria.",
   "dogImgErr": "Desculpe, mas não consegui obter a foto do cacbhorro que você queria.",
@@ -211,6 +237,7 @@
     "resultMsg": "*Nome:* `{name}`\n*Marca:* `{brand}`\n*Modelo:* `{model}`\n*Codinome:* `{codename}`",
     "apiErr": "Ocorreu um erro ao buscar os dados da API.\n\n`{err}`"
   },
+  "chatNotFound": "Chat não encontrado.",
   "noFileProvided": "Por favor, forneça um arquivo para envio.",
   "gsmarenaProvidePhoneName": "Por favor, forneça o nome do celular.",
   "gsmarenaSearchingFor": "Procurando por `{phone}`...",
@@ -221,6 +248,13 @@
   "gsmarenaInvalidOrExpired": "Ops! Opção inválida ou expirada. Por favor, tente novamente.",
   "gsmarenaDeviceDetails": "estes são os detalhes do seu dispositivo:",
   "gsmarenaErrorFetchingDetails": "Erro ao buscar detalhes do celular.",
+  "info": {
+    "ping": "Pong!",
+    "pinging": "Pingando...",
+    "pong": "Pong em {ms}ms.",
+    "botInfo": "Kowalski é um bot multiuso com várias funcionalidades, incluindo IA, moderação e muito mais.",
+    "credits": "Kowalski foi criado por ihatenodejs/Aidan, com contribuições da comunidade open-source. É licenciado sob a licença Unlicense."
+  },
   "aiStats": {
     "header": "✨ *Suas estatísticas de uso de IA*",
     "requests": "*Total de requisições de IA:* {aiRequests}",
