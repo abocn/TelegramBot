@@ -155,3 +155,6 @@ docker-compose.yml
 
 # postgres
 db/
+
+# VSCode
+.vscode/
