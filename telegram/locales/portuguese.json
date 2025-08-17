@@ -248,13 +248,6 @@
   "gsmarenaInvalidOrExpired": "Ops! Opção inválida ou expirada. Por favor, tente novamente.",
   "gsmarenaDeviceDetails": "estes são os detalhes do seu dispositivo:",
   "gsmarenaErrorFetchingDetails": "Erro ao buscar detalhes do celular.",
-  "info": {
-    "ping": "Pong!",
-    "pinging": "Pingando...",
-    "pong": "Pong em {ms}ms.",
-    "botInfo": "Kowalski é um bot multiuso com várias funcionalidades, incluindo IA, moderação e muito mais.",
-    "credits": "Kowalski foi criado por ihatenodejs/Aidan, com contribuições da comunidade open-source. É licenciado sob a licença Unlicense."
-  },
   "aiStats": {
     "header": "✨ *Suas estatísticas de uso de IA*",
     "requests": "*Total de requisições de IA:* {aiRequests}",
