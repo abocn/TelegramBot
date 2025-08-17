@@ -30,7 +30,7 @@ function parseCommandsFromString(text: string): string[] {
   const commands: string[] = [];
 
   for (const line of lines) {
-    const match = line.match(/^-\s*\/([^\s:|/]+(?:\s*\|\s*\/[^\s:|/]+)*)[^:]*:\s*(.+)/);
+    const match = line.match(/^-\s*\/([^\s:]+(?:\s*\|\s*\/[^\s:]+)*)[^:]*:\s*(.+)/);
     if (match) {
       const [, cmdList, description] = match;
       const mainCmd = cmdList.split('|')[0].trim();
