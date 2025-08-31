@@ -1,0 +1,57 @@
+---
+title: Docker
+description: Run Kowalski in Docker
+---
+import {TbSparkles} from "react-icons/tb";
+
+Running Kowalski with Docker simplifies the setup, deployment, and management process significantly. Make sure you have Docker and Docker Compose installed, then continue to the next steps.
+
+1. **Clone the repo**
+
+   ```bash
+   git clone --recurse-submodules https://github.com/ABOCN/TelegramBot
+   ```
+
+2. **Copy a Docker Compose file**
+
+   _Without AI Features (Ollama)_
+
+   ```bash
+   mv examples/docker-compose.yml docker-compose.yml
+   ```
+
+   _With AI Features (Ollama)_
+
+   ```bash
+   mv examples/docker-compose.ai.yml docker-compose.yml
+   ```
+
+3. **Setup your `.env`**
+
+   In order to successfully deploy Kowalski, you will need to have a valid `.env`. An example is provided in `.env.example`. You will need to edit both your `.env` file and enter matching values in `webui/.env`. Don't worry... it's mostly copy-paste!
+
+   You can learn more about the different options in the [.env section](#env-functions).
+
+   <blockquote><div className="flex flex-row items-center gap-0.5 text-orange-300"><TbSparkles /> Tip</div> If you intend to set up AI, the defaults for Docker are already included (just uncomment) and don't need to be changed. Further setup may be needed for GPUs. See the [Ollama documentation](https://github.com/ollama/ollama/blob/main/docs/gpu.md) for more.</blockquote>
+
+4. **Prepare the database**
+
+   The WebUI and bot requires a Postgres database, which requires some setup. Again, don't worry as it's a pretty quick setup!
+
+   **Migrate the schema to DB:**
+
+   ```bash
+   docker compose up postgres -d # Bring up just the database
+   bunx drizzle-kit push
+   ```
+
+   5. **Run the container**
+
+   You're all done! You can run the container with:
+
+   ```bash
+   docker compose up -d
+   ```
+
+
+The web interface will be available at [localhost:3000](http://localhost:3000). We suggest putting it a reverse proxy if you plan to use Kowalski for production use.

@@ -5,17 +5,17 @@
     "serve:docs": "bun run serve-docs.ts"
   },
   "dependencies": {
-    "@dotenvx/dotenvx": "^1.48.4",
-    "@types/bun": "^1.2.20",
+    "@dotenvx/dotenvx": "^1.49.0",
+    "@types/bun": "^1.2.21",
     "axios": "^1.11.0",
     "dotenv": "^17.2.1",
-    "drizzle-orm": "^0.44.4",
+    "drizzle-orm": "^0.44.5",
     "express": "^5.1.0",
     "markdown-escape": "^2.0.0",
     "node-html-parser": "^7.0.1",
     "nodemon": "^3.1.10",
     "pg": "^8.16.3",
-    "redis": "^5.8.1",
+    "redis": "^5.8.2",
     "telegraf": "^4.16.3",
     "uuid": "^11.1.0",
     "youtube-url": "^0.5.0"
@@ -23,6 +23,6 @@
   "devDependencies": {
     "@types/pg": "^8.15.5",
     "drizzle-kit": "^0.31.4",
-    "tsx": "^4.20.4"
+    "tsx": "^4.20.5"
   }
 }

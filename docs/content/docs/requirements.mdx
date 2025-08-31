@@ -1,19 +1,14 @@
-# Kowalski (Node.js Telegram Bot)
-
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
-[![GitHub License](https://img.shields.io/github/license/abocn/TelegramBot)](https://github.com/abocn/TelegramBot/blob/main/LICENSE)
-[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=fff)](https://www.typescriptlang.org)
-[![CodeQL](https://github.com/abocn/TelegramBot/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/abocn/TelegramBot/actions/workflows/github-code-scanning/codeql)
-[![Dependabot Updates](https://github.com/abocn/TelegramBot/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/abocn/TelegramBot/actions/workflows/dependabot/dependabot-updates)
-
-Kowalski is a extendable Telegram bot written in TypeScript.
-
-- You can find Kowalski on Telegram as [@KowalskiNodeBot](https://t.me/KowalskiNodeBot)
+---
+title: Requirements
+description: What it takes to run Kowalski
+---
+import {Cards} from "fumadocs-ui/components/card";
+import {Card} from "fumadocs-ui/components/card";
+import {TbAlertCircle} from "react-icons/tb";
 
 ## Self-host requirements
 
-> [!IMPORTANT]
-> You will only need all of them if you are not running Kowalski Dockerized. Read ["Running with Docker"](https://docs.kowalski.social/installing/docker) for more information.
+<blockquote><div className="flex flex-row items-center gap-0.5 text-red-500"><TbAlertCircle /> Important</div> You will only need all of them if you are not running it dockerized. Read ["Running with Docker"](/installing/docker) for more information.</blockquote>
 
 - [Bun](https://bun.sh) (latest is suggested)
 - A Telegram bot (create one at [@BotFather](https://t.me/botfather))
@@ -39,16 +34,7 @@ Your GPU will require enough VRAM to load the models, which will limit the size 
 
 Please ensure your GPU is compatible with Ollama, as well. Supported GPUs can be found on in the [Ollama documentation](https://github.com/ollama/ollama/blob/main/docs/gpu.md)
 
-## Contributors
-
-<a href="https://github.com/abocn/TelegramBot/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=abocn/TelegramBot" alt="Profile pictures of Kowalski contributors" />
-</a>
-
-Made with [contrib.rocks](https://contrib.rocks).
-
-## About/License
-
-BSD-3-Clause - 2024 Lucas Gabriel (lucmsilva).
-
-With some components under the [Unlicense](https://unlicense.org).
+<Cards>
+    <Card title="Install in Docker" href="/installing/docker" />
+    <Card title="Install Locally" href="/installing/local" />
+</Cards>
