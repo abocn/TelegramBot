@@ -323,6 +323,19 @@
     "privateTitle": "Privado",
     "privateDescription": "Não usamos nenhuma análise, rastreamento ou scripts de terceiros."
   },
+  "login": {
+    "title": "Entrar no Kowalski",
+    "usernameSubtitle": "Por favor, digite seu nome de usuário do Telegram para continuar.",
+    "usernamePlaceholder": "Digite seu nome de usuário do Telegram",
+    "continue": "Continuar",
+    "findingAccount": "Encontrando sua conta...",
+    "twoFaTitle": "Digite o Código 2FA",
+    "twoFaSubtitle": "Enviamos um código de 6 dígitos para seu Telegram. Por favor, digite-o abaixo.",
+    "twoFaPlaceholder": "000000",
+    "back": "Voltar",
+    "verify": "Verificar",
+    "verifying": "Verificando..."
+  },
   "account": {
     "title": "Configurações da Conta",
     "aiSettings": "Configurações de IA",

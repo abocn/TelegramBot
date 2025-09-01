@@ -7,6 +7,7 @@ import { TbLoader } from "react-icons/tb";
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 export const dynamic = 'force-dynamic'
 
@@ -26,6 +27,7 @@ const buttonVariants = {
 };
 
 function LoginForm() {
+  const { t } = useTranslation();
   const [step, setStep] = useState<FormStep>("username");
   const [username, setUsername] = useState("");
   const [twoFaCode, setTwoFaCode] = useState("");
@@ -151,18 +153,18 @@ function LoginForm() {
                 className="max-w-md mx-auto"
               >
                 <h1 className="text-6xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent mb-4">
-                  Login to Kowalski
+                  {t('login.title')}
                 </h1>
 
                 <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-8">
-                  Please enter your Telegram username to continue.
+                  {t('login.usernameSubtitle')}
                 </p>
 
                 <form onSubmit={handleUsernameSubmit} className="max-w-md mx-auto space-y-4">
                   <div className="space-y-2">
                     <Input
                       type="text"
-                      placeholder="Enter your Telegram username"
+                      placeholder={t('login.usernamePlaceholder')}
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       disabled={isLoading}
@@ -196,9 +198,9 @@ function LoginForm() {
                       className="w-full py-6 text-lg"
                     >
                       {isLoading ? (
-                        <LoadingSpinner text="Finding your account..." />
+                        <LoadingSpinner text={t('login.findingAccount')} />
                       ) : (
-                        "Continue"
+                        t('login.continue')
                       )}
                     </Button>
                   </motion.div>
@@ -216,18 +218,18 @@ function LoginForm() {
                 className="max-w-md mx-auto"
               >
                 <h1 className="text-6xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent mb-4">
-                  Enter 2FA Code
+                  {t('login.twoFaTitle')}
                 </h1>
 
                 <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-8">
-                  We&apos;ve sent a 6-digit code to your Telegram. Please enter it below.
+                  {t('login.twoFaSubtitle')}
                 </p>
 
                 <form onSubmit={handleTwoFaSubmit} className="max-w-md mx-auto space-y-4">
                   <div className="space-y-2">
                     <Input
                       type="text"
-                      placeholder="000000"
+                      placeholder={t('login.twoFaPlaceholder')}
                       value={twoFaCode}
                       onChange={(e) => setTwoFaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                       disabled={isLoading}
@@ -265,7 +267,7 @@ function LoginForm() {
                         disabled={isLoading}
                         className="w-full py-6"
                       >
-                        Back
+                        {t('login.back')}
                       </Button>
                     </motion.div>
 
@@ -281,9 +283,9 @@ function LoginForm() {
                         className="w-full py-6 text-lg"
                       >
                         {isLoading ? (
-                          <LoadingSpinner text="Verifying..." />
+                          <LoadingSpinner text={t('login.verifying')} />
                         ) : (
-                          "Verify"
+                          t('login.verify')
                         )}
                       </Button>
                     </motion.div>
