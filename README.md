@@ -10,6 +10,10 @@ Kowalski is a extendable Telegram bot written in TypeScript.
 
 - You can find Kowalski on Telegram as [@KowalskiNodeBot](https://t.me/KowalskiNodeBot)
 
+## Documentation and Self-Hosting
+
+You can find the full documentation at [docs.kowalski.social](https://docs.kowalski.social), along with guidance on how to self-host Kowalski.
+
 ## Bot requirements
 
 > [!IMPORTANT]

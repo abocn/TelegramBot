@@ -9,7 +9,8 @@ import {
   LogOut,
   Command,
   Briefcase,
-  BarChart3
+  BarChart3,
+  Book,
 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
@@ -54,6 +55,11 @@ export function AppSidebar() {
       title: t('navigation.about'),
       url: "/about",
       icon: MessageSquare,
+    },
+    {
+      title: t('navigation.documentation'),
+      url: "https://docs.kowalski.social",
+      icon: Book,
     },
     {
       title: t('navigation.commands'),

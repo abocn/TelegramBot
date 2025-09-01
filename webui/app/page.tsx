@@ -55,7 +55,7 @@ export default function Home() {
               </Link>
             </Button>
             <Button variant="outline" size="lg" className="min-w-32" asChild>
-              <Link href="https://github.com/abocn/TelegramBot/blob/main/README.md" target="_blank" rel="noopener noreferrer">
+              <Link href="https://docs.kowalski.social" target="_blank" rel="noopener noreferrer">
                 <Settings />
                 {t('home.documentation')}
               </Link>
