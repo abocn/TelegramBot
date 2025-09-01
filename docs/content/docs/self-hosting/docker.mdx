@@ -40,7 +40,14 @@ In order to successfully deploy Kowalski, you will need to have a valid `.env`. 
 
 You can learn more about the different options in the [.env section](#env-functions).
 
-<blockquote><div className="flex flex-row items-center gap-0.5 text-orange-300"><TbSparkles /> Tip</div> If you intend to set up AI, the defaults for Docker are already included (just uncomment) and don't need to be changed. Further setup may be needed for GPUs. See the [Ollama documentation](https://github.com/ollama/ollama/blob/main/docs/gpu.md) for more.</blockquote>
+<Cards className="grid-cols-1">
+    <Card>
+        <div className="flex flex-row items-center gap-1 text-orange-300 -mb-2">
+            <TbSparkles /> <div>Tip</div>
+        </div>
+        If you intend to set up AI, the defaults for Docker are already included (just uncomment) and don't need to be changed. Further setup may be needed for GPUs. See the [Ollama documentation](https://github.com/ollama/ollama/blob/main/docs/gpu.md) for more.
+    </Card>
+</Cards>
 </Step>
 <Step>
 ### Prepare the database

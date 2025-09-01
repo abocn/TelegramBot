@@ -4,7 +4,7 @@ description: Run Kowalski without Docker
 icon: Laptop
 ---
 import { Step, Steps } from 'fumadocs-ui/components/steps';
-import { TbSparkles } from "react-icons/tb";
+import { TbSparkles, TbInfoCircle } from "react-icons/tb";
 
 You may also opt to run Kowalski without Docker on your local machine. This is not recommended for most users, as the setup and maintenance is more difficult.
 
@@ -46,7 +46,14 @@ In order to successfully deploy Kowalski, you will need to have a valid `.env`. 
 
 You can learn more about the different options in the [.env section](#env-functions).
 
-<blockquote><div className="flex flex-row items-center gap-0.5 text-orange-300"><TbSparkles /> Tip</div> Further setup may be needed for GPUs. See the [Ollama documentation](https://github.com/ollama/ollama/blob/main/docs/gpu.md) for more.</blockquote>
+<Cards className="grid-cols-1">
+    <Card>
+        <div className="flex flex-row items-center gap-1 text-orange-300 -mb-2">
+            <TbSparkles /> <div>Tip</div>
+        </div>
+        Further setup may be needed for GPUs. See the [Ollama documentation](https://github.com/ollama/ollama/blob/main/docs/gpu.md) for more.
+    </Card>
+</Cards>
 </Step>
 <Step>
 ### Run the bot and WebUI
@@ -56,19 +63,23 @@ chmod +x start-services.sh # makes the script executable
 ./start-services.sh # starts the bot and webui
 ```
 
-<blockquote>
-<div className="flex flex-row items-center gap-0.5 text-blue-400"><TbSparkles /> Note</div>
-<div>
-If you want to run the bot and webui separately, you can do so with:
-```bash
-# In terminal 1
-bun start
-# In terminal 2
-cd webui
-bun dev
-```
-</div>
-</blockquote>
+<Cards className="grid-cols-1">
+    <Card>
+        <div className="flex flex-row items-center gap-1 text-blue-400 -mb-2">
+            <TbInfoCircle /> <div>Note</div>
+        </div>
+        If you want to run the bot and WebUI separately, you can do so with:
+
+        ```bash
+        # In terminal 1
+        bun start
+
+        # In terminal 2
+        cd webui
+        bun dev
+        ```
+    </Card>
+</Cards>
 </Step>
 </Steps>
 
