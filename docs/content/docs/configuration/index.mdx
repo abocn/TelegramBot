@@ -1,0 +1,63 @@
+---
+title: Configuration
+description: How to configure Kowalski to your liking
+icon: Settings
+---
+import { Cards, Card } from "fumadocs-ui/components/card";
+import { BookLock, Settings } from "lucide-react";
+
+Kowalski is meant to be highly configurable, but you may be wondering how you can do so. There are a few methods which this documentation will guide you through. We suggest starting with the [Environment Variables](/configuration/env) page.
+
+## Configuration Methods
+
+<Cards>
+    <Card href="/configuration/env">
+        <div className="flex flex-row items-center gap-4">
+            <div className="not-prose w-fit shadow-md rounded-lg border bg-fd-muted p-1.5 text-fd-muted-foreground [&_svg]:size-4">
+                <BookLock className="size-5" />
+            </div>
+            <div className="text-white">Environment Variables</div>
+        </div>
+    </Card>
+    <Card href="/configuration/config">
+        <div className="flex flex-row items-center gap-4">
+            <div className="not-prose w-fit shadow-md rounded-lg border bg-fd-muted p-1.5 text-fd-muted-foreground [&_svg]:size-4">
+                <Settings className="size-5" />
+            </div>
+            <div className="text-white">Configuration Files</div>
+        </div>
+    </Card>
+</Cards>
+
+## Making Modifications to Source
+
+There are a few things you should know about the Kowalski codebase which can be useful to know before making source-level modifications.
+
+### General Modifications
+
+The most common modifications can be done in the `/config` directory. At the moment, `ai.ts` and `settings.ts` are the primary configuration files. We hope to expand the amount of easily-configurable settings in the future.
+
+The settings in the `/config` directory are used throughout the bot and WebUI, so some settings will apply globally. You can see more information about this in the respective configuration files.
+
+### WebUI
+
+The WebUI is contained inside the `/webui` directory, and is a standard Next.js application.
+
+We encourage contributors to continue with our current stack, in order to maintain consistency. This includes:
+
+- [Next.js](https://nextjs.org)
+- [shadcn/ui](https://ui.shadcn.com)
+- [Tailwind CSS](https://tailwindcss.com)
+- [Drizzle ORM](https://orm.drizzle.team)
+
+### Bot
+
+The Kowalski bot component is contained in the `/telegram` directory, and is a Telegraf bot.
+
+You can find the commands, grouped into category files, in `/telegram/commands`. The main entrypoint is `/telegram/bot.ts`.
+
+### Documentation
+
+The documentation for Kowalski (what you're reading right now!) is contained in the `/docs` directory. It uses [Fumadocs](https://www.fumadocs.com).
+
+You can find the actual content in `/docs/content`.
