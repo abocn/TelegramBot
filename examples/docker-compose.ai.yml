@@ -13,6 +13,7 @@ services:
     depends_on:
       - postgres
       - ollama
+    restart: always
   ollama:
     image: ollama/ollama
     container_name: kowalski-ollama
@@ -20,6 +21,7 @@ services:
       - ./ollama:/root/.ollama
     networks:
       - kowalski
+    restart: always
   postgres:
     image: postgres:17
     container_name: kowalski-postgres
@@ -31,11 +33,24 @@ services:
       - POSTGRES_DB=kowalski
     networks:
       - kowalski
+    restart: always
   valkey:
     image: valkey/valkey
     container_name: kowalski-valkey
     networks:
       - kowalski
+    restart: always
+  # Most likely you won't need this
+  #docs:
+  #  build:
+  #    context: ./docs
+  #    dockerfile: Dockerfile
+  #  container_name: kowalski-docs
+  #  restart: always
+  #  environment:
+  #    - NODE_ENV=production
+  #  networks:
+  #    - kowalski
 
 networks:
   kowalski:

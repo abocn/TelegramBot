@@ -8,6 +8,10 @@ webui/.gitignore
 .env*
 webui/.env*
 webui/.next
+docs/.next
+docs/.source
+docs/node_modules
+docs/bun.lock*
 *.md
 !README.md
 ollama/

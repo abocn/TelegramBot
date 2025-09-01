@@ -3,11 +3,11 @@ WORKDIR /usr/src/app
 
 FROM base AS deps
 COPY package*.json ./
-RUN bun install --frozen-lockfile
+RUN bun install
 
 COPY webui/package*.json ./webui/
 WORKDIR /usr/src/app/webui
-RUN bun install --frozen-lockfile
+RUN bun install
 
 FROM base AS test
 WORKDIR /usr/src/app
@@ -41,6 +41,7 @@ RUN git rev-parse --short HEAD > .git-commit || echo "unknown" > .git-commit
 RUN cp database/schema.ts webui/lib/schema.ts
 
 WORKDIR /usr/src/app/webui
+ENV NEXT_TELEMETRY_DISABLED=1
 RUN bun run build
 
 FROM base AS runtime

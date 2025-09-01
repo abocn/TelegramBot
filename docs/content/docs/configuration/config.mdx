@@ -1,0 +1,60 @@
+---
+title: Configuration Files
+description: How to configure Kowalski using configuration files
+icon: Settings
+---
+
+If you are familiar with TypeScript, you can modify Kowalski's internal configuration files to suit your needs. There are currently two main configuration files.
+
+## ai.ts
+
+`ai.ts` contains settings for Kowalski's AI features, including which models may be used with the bot. You can restrict/allow models as needed from this file.
+
+### Behavior
+
+You can change the behavior in a few ways with the following variables:
+
+| Variable            | Description                                                           |
+|---------------------|-----------------------------------------------------------------------|
+| `unloadModelAfterB` | For models of *`x`* billion parameters and higher, unload after usage |
+| `maxUserQueueSize`  | Maximum number of queue items a user can have at once                 |
+
+### Models
+
+Models are configured through one big array, in a variable called `models`, and defined with the `ModelInfo` type.
+
+```ts
+export const models: ModelInfo[] = [
+  {
+    name: 'example-model', // Internal name
+    label: 'Example Model', // What users see
+    descriptionEn: 'Example description in English.',
+    descriptionPt: 'Exemplo de descrição em Português.',
+    models: [ // A model may have different sizes/variants, defined in this array
+      {
+        name: 'example-model:4b', // Internal name for Ollama
+        label: 'Example Model 2B', // What users see
+        parameterSize: '2B', // Parameter size of the model (with "B")
+        thinking: false, // Whether the model is capable of thinking
+        uncensored: false // Whether the model is censored/has safety features
+      },
+      {
+        name: 'gemma3n:8b', // Internal name for Ollama
+        label: 'Example Model 4B', // What users see
+        parameterSize: '4B', // Parameter size of the model (with "B")
+        thinking: false, // Whether the model is capable of thinking
+        uncensored: false // Whether the model is censored/has safety features
+      },
+    ]
+  },
+];
+```
+
+## settings.ts
+
+There are a few ways you can change the user experience for the Settings UI in Telegram.
+
+| Variable            | Default | Description                                 |
+|---------------------|---------|---------------------------------------------|
+| `modelPageSize`     | `4`     | The page size for the model selector        |
+| `seriesPageSize`    | `4`     | The page size for the model series selector |

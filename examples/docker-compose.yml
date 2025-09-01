@@ -12,6 +12,7 @@ services:
       - kowalski
     depends_on:
       - postgres
+    restart: always
   postgres:
     image: postgres:17
     container_name: kowalski-postgres
@@ -23,11 +24,23 @@ services:
       - POSTGRES_DB=kowalski
     networks:
       - kowalski
+    restart: always
   valkey:
     image: valkey/valkey
     container_name: kowalski-valkey
     networks:
       - kowalski
+    restart: always
+  #docs:
+  #  build:
+  #    context: ./docs
+  #    dockerfile: Dockerfile
+  #  container_name: kowalski-docs
+  #  environment:
+  #    - NODE_ENV=production
+  #  networks:
+  #    - kowalski
+  #  restart: always
 
 networks:
   kowalski:

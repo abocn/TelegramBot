@@ -1,0 +1,43 @@
+---
+title: Self-Hosting
+description: How to host Kowalski on your own server or computer
+icon: Server
+---
+import { Cards, Card } from "fumadocs-ui/components/card";
+import { SiDocker } from "react-icons/si";
+import { Laptop, Check, X } from "lucide-react";
+
+Kowalski can easily be self-hosted on your own hardware, such as a server or computer. You may either do this in Docker (recommended) or natively on your machine.
+
+## Docker vs Local Deployment
+
+<Cards className="grid-cols-2">
+    <Card className="pt-2.5" href="/self-hosting/docker">
+        <div className="text-lg font-semibold flex flex-row items-center gap-2.5 mb-3.5 text-white"><SiDocker className="size-5" /> Docker</div>
+
+        <div className="flex flex-col space-y-1">
+            <div className="flex flex-row items-center gap-1.5"><Check className="text-green-500 size-4" /> Utilize all features of Kowalski</div>
+            <div className="flex flex-row items-center gap-1.5"><Check className="text-green-500 size-4" /> Easier setup and deployment</div>
+            <div className="flex flex-row items-center gap-1.5"><Check className="text-green-500 size-4" /> Use external resources (e.g. database, AI)</div>
+            <div className="flex flex-row items-center gap-1.5"><Check className="text-green-500 size-4" /> Isolation from host system</div>
+            <div className="flex flex-row items-center gap-1.5"><Check className="text-green-500 size-4" /> Works out-of-the-box</div>
+            <div className="flex flex-row items-center gap-1.5"><X className="text-red-500 size-4" /> Develop/modify Kowalski quickly</div>
+        </div>
+    </Card>
+    <Card className="pt-2.5" href="/self-hosting/local">
+        <div className="text-lg font-semibold flex flex-row items-center gap-2.5 mb-3.5 text-white"><Laptop className="size-5" /> Local</div>
+
+        <div className="flex flex-col space-y-1">
+            <div className="flex flex-row items-center gap-1.5"><Check className="text-green-500 size-4" /> Utilize all features of Kowalski</div>
+            <div className="flex flex-row items-center gap-1.5"><X className="text-red-500 size-4" /> Harder to manage and setup management</div>
+            <div className="flex flex-row items-center gap-1.5"><Check className="text-green-500 size-4" /> Use external resources (e.g. database, AI)</div>
+            <div className="flex flex-row items-center gap-1.5"><X className="text-red-500 size-4" /> No isolation</div>
+            <div className="flex flex-row items-center gap-1.5"><X className="text-red-500 size-4" /> Requires additional setup</div>
+            <div className="flex flex-row items-center gap-1.5"><Check className="text-green-500 size-4" /> Develop/modify Kowalski quickly</div>
+        </div>
+    </Card>
+</Cards>
+
+As you can see, Docker is the best way to run Kowalski in most cases. However, if you have a need to run it locally (or a hybrid model w/ Docker), you can do so.
+
+We aim to make your experience as best as possible, no matter which option you pick.

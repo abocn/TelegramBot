@@ -3,6 +3,7 @@
   "navigation": {
     "home": "Início",
     "about": "Sobre",
+    "documentation": "Documentação",
     "commands": "Comandos",
     "admin": "Admin",
     "dashboard": "Painel",
