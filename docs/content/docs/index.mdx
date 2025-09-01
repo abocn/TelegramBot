@@ -1,15 +1,41 @@
 ---
 title: Home
 description: Welcome to Kowalski's documentation!
+icon: House
 ---
-import {Cards} from "fumadocs-ui/components/card";
-import {Card} from "fumadocs-ui/components/card";
+import { Cards } from "fumadocs-ui/components/card";
+import { Card } from "fumadocs-ui/components/card";
+import { SiTypescript, SiBun, SiNextdotjs, SiShadcnui, SiTailwindcss, SiTelegram, SiPostgresql } from "react-icons/si";
 
 ABOCN and its contributors are happy to present you with the official Kowalski documentation.
 
 We've done our best to make it as comprehensive and easy to follow as possible, but if any issues arise, you can always make an [Issue on GitHub](https://github.com/abocn/TelegramBot/issues)!
 
 ## What is Kowalski?
+
+<Cards className="grid-cols-7 justify-items-center items-center my-8">
+    <Card href="https://www.typescriptlang.org/">
+        <SiTypescript className="text-3xl" />
+    </Card>
+    <Card href="https://bun.sh">
+        <SiBun className="text-3xl" />
+    </Card>
+    <Card href="https://nextjs.org">
+        <SiNextdotjs className="text-3xl" />
+    </Card>
+    <Card href="https://ui.shadcn.com">
+        <SiShadcnui className="text-3xl" />
+    </Card>
+    <Card href="https://tailwindcss.com">
+        <SiTailwindcss className="text-3xl" />
+    </Card>
+    <Card href="https://telegram.org">
+        <SiTelegram className="text-3xl" />
+    </Card>
+    <Card href="https://www.postgresql.org">
+        <SiPostgresql className="text-3xl" />
+    </Card>
+</Cards>
 
 Sometimes referred to as "TelegramBot" or "Kowalski," it is a highly-extendable Telegram bot and WebUI written in TypeScript using [Bun](https://bun.sh).
 
@@ -30,7 +56,3 @@ While we're always still working on building Kowalski, our main point is that we
 Kowalski is very much in need of contributors! If you want to help out, please check out our [Code of Conduct](https://github.com/abocn/TelegramBot/blob/main/CODE_OF_CONDUCT.md), then make your way to a pull request/issue on [GitHub](https://github.com/abocn/TelegramBot)!
 
 We welcome all kinds of contributions, whether it's fixing a typo in the documentation, or adding a new feature. Every little bit helps!
-
-<Cards>
-  <Card title="Requirements" href="/requirements" />
-</Cards>
