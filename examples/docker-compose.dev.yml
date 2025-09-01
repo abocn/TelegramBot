@@ -14,6 +14,7 @@ services:
       - NODE_ENV=production
     env_file:
       - .env
+    restart: always
     depends_on:
       - postgres
   # Uncomment the following to test AI features
@@ -24,6 +25,7 @@ services:
   #    - ./ollama:/root/.ollama
   #  ports:
   #    - "11434:11434"
+  #  restart: always
   postgres:
     image: postgres:17
     container_name: kowalski-postgres
@@ -35,8 +37,21 @@ services:
       - POSTGRES_DB=kowalski
     ports:
       - "5432:5432"
+    restart: always
   valkey:
     image: valkey/valkey
     container_name: kowalski-valkey
     ports:
       - "6379:6379"
+    restart: always
+  # Most likely you won't need this
+  #docs:
+  #  build:
+  #    context: ./docs
+  #    dockerfile: Dockerfile
+  #  container_name: kowalski-docs
+  #  ports:
+  #    - "3001:3000"
+  #  restart: always
+  #  environment:
+  #    - NODE_ENV=development
