@@ -323,6 +323,19 @@
     "privateTitle": "Private",
     "privateDescription": "We don't use any analytics, tracking, or third-party scripts."
   },
+  "login": {
+    "title": "Login to Kowalski",
+    "usernameSubtitle": "Please enter your Telegram username to continue.",
+    "usernamePlaceholder": "Enter your Telegram username",
+    "continue": "Continue",
+    "findingAccount": "Finding your account...",
+    "twoFaTitle": "Enter 2FA Code",
+    "twoFaSubtitle": "We've sent a 6-digit code to your Telegram. Please enter it below.",
+    "twoFaPlaceholder": "000000",
+    "back": "Back",
+    "verify": "Verify",
+    "verifying": "Verifying..."
+  },
   "account": {
     "title": "Account Settings",
     "aiSettings": "AI Settings",
