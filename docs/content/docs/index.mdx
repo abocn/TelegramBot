@@ -3,9 +3,6 @@ title: Home
 description: Welcome to Kowalski's documentation!
 icon: House
 ---
-import { Cards } from "fumadocs-ui/components/card";
-import { Card } from "fumadocs-ui/components/card";
-import { SiTypescript, SiBun, SiNextdotjs, SiShadcnui, SiTailwindcss, SiTelegram, SiPostgresql } from "react-icons/si";
 
 ABOCN and its contributors are happy to present you with the official Kowalski documentation.
 
@@ -13,29 +10,7 @@ We've done our best to make it as comprehensive and easy to follow as possible, 
 
 ## What is Kowalski?
 
-<Cards className="grid-cols-7 justify-items-center items-center my-8">
-    <Card href="https://www.typescriptlang.org/">
-        <SiTypescript className="text-3xl" />
-    </Card>
-    <Card href="https://bun.sh">
-        <SiBun className="text-3xl" />
-    </Card>
-    <Card href="https://nextjs.org">
-        <SiNextdotjs className="text-3xl" />
-    </Card>
-    <Card href="https://ui.shadcn.com">
-        <SiShadcnui className="text-3xl" />
-    </Card>
-    <Card href="https://tailwindcss.com">
-        <SiTailwindcss className="text-3xl" />
-    </Card>
-    <Card href="https://telegram.org">
-        <SiTelegram className="text-3xl" />
-    </Card>
-    <Card href="https://www.postgresql.org">
-        <SiPostgresql className="text-3xl" />
-    </Card>
-</Cards>
+<TechCards />
 
 Sometimes referred to as "TelegramBot" or "Kowalski," it is a highly-extendable Telegram bot and WebUI written in TypeScript using [Bun](https://bun.sh).
 
@@ -50,6 +25,14 @@ What makes Kowalski special is its modular design. We want to make it as easy as
 For example, we're written APIs for both the bot and WebUI, allowing you to directly communicate with either inside of your code. And they're well-documented, too!
 
 While we're always still working on building Kowalski, our main point is that we don't want to lock you in or make it difficult to contribute. Many repositories have a high barrier to entry, and we want to refrain from these practices.
+
+## Our Contributors
+
+<a href="https://github.com/abocn/TelegramBot/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=abocn/TelegramBot" alt="Profile pictures of Kowalski contributors" />
+</a>
+
+Made with [contrib.rocks](https://contrib.rocks).
 
 ## How can I contribute?
 

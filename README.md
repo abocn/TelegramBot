@@ -10,10 +10,10 @@ Kowalski is a extendable Telegram bot written in TypeScript.
 
 - You can find Kowalski on Telegram as [@KowalskiNodeBot](https://t.me/KowalskiNodeBot)
 
-## Self-host requirements
+## Bot requirements
 
 > [!IMPORTANT]
-> You will only need all of them if you are not running Kowalski Dockerized. Read ["Running with Docker"](https://docs.kowalski.social/installing/docker) for more information.
+> You will only need all of them if you are not running Kowalski Dockerized. Read ["Running with Docker"](https://docs.kowalski.social/self-hosting/docker) for more information.
 
 - [Bun](https://bun.sh) (latest is suggested)
 - A Telegram bot (create one at [@BotFather](https://t.me/botfather))
@@ -21,17 +21,17 @@ Kowalski is a extendable Telegram bot written in TypeScript.
 - Docker and Docker Compose (only required for Docker setup)
 - Postgres
 
-### AI Requirements
+## AI Requirements
 
 Using AI features is not suggested for all users who plan to host Kowalski. It requires a server or computer capable of being under intense load when users are active. In the future, we plan to support for using LLM APIs to remove this requirement.
 
-#### CPU-Only
+### CPU-Only
 
 A CPU with **at least** 8 cores is recommended, otherwise AI commands will be extremely slow, and not worth the stress you are putting on the CPU.
 
 If you plan to use CPU, you will also need a lot of RAM to load the models themselves. 16GB is suggested at a **minimum**, and larger models can require upwards of 64-256GB of RAM. If you have a GPU available, you can use it to speed up the process.
 
-#### GPU-Only
+### GPU-Only
 
 GPU support has not been tested. With some extra configuration, you should have no problem using your GPU, as Ollama has amazing support. Using a GPU will speed up the model's responses **significantly**. We are not rich enough to afford them, so if you have tested Kowalski with GPU, please let us know.
 

@@ -25,7 +25,7 @@ export function baseOptions(): BaseLayoutProps {
               fillRule="evenodd"
             ></path>
           </svg>
-          Kowalski
+          Kowalski Docs
         </>
       ),
     },
