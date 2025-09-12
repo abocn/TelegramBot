@@ -7,6 +7,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { AuthProvider } from "@/contexts/auth-context";
 import { HeaderAuth } from "@/components/header-auth";
 import { LanguageChooser } from "@/components/language-chooser";
+import { Toaster } from "@/components/ui/sonner";
 
 const sora = Sora({
   variable: "--font-sora",
@@ -49,6 +50,7 @@ export default function RootLayout({
               </SidebarInset>
             </SidebarProvider>
           </AuthProvider>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

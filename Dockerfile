@@ -32,6 +32,9 @@ RUN echo "Running WebUI tests..." && \
 
 FROM base AS build
 WORKDIR /usr/src/app
+
+RUN apt-get update && apt-get install -y git && apt-get clean && rm -rf /var/lib/apt/lists/*
+
 COPY --from=test /usr/src/app/node_modules ./node_modules
 COPY --from=test /usr/src/app/webui/node_modules ./webui/node_modules
 COPY --from=test /usr/src/app/ ./
@@ -48,7 +51,6 @@ FROM base AS runtime
 
 RUN apt-get update && apt-get install -y \
     ffmpeg \
-    git \
     supervisor \
     python3 \
     python3-pip \

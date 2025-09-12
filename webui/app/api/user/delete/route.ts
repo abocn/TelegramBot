@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { validateSession } from "@/lib/auth";
+import { authenticateRequest, createAuthResponse } from "@/lib/auth-middleware";
 import { SESSION_COOKIE_NAME } from "@/lib/auth-constants";
 import { db } from "@/lib/db";
 import { usersTable, sessionsTable, twoFactorTable } from "@/lib/schema";
@@ -7,22 +7,18 @@ import { eq } from "drizzle-orm";
 
 export async function DELETE(request: NextRequest) {
   try {
-    const cookieToken = request.cookies.get(SESSION_COOKIE_NAME)?.value;
-    const authHeader = request.headers.get('authorization');
-    const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
-    const sessionToken = bearerToken || cookieToken;
+    const authResult = await authenticateRequest(request);
+    const authResponse = createAuthResponse(authResult);
 
-    if (!sessionToken) {
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    if (authResponse) {
+      return authResponse;
     }
 
-    const sessionData = await validateSession(sessionToken);
-
-    if (!sessionData || !sessionData.user) {
-      return NextResponse.json({ error: "Invalid or expired session" }, { status: 401 });
+    if (!authResult.user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const userId = sessionData.user.telegramId;
+    const userId = authResult.user.telegramId;
 
     await db.transaction(async (tx) => {
       await tx.delete(sessionsTable)

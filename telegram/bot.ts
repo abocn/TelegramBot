@@ -14,6 +14,8 @@ import { getSpamwatchBlockedCount } from './spamwatch/spamwatch';
 import { startServer } from './api/server';
 import { createClient } from 'redis';
 import { syncAdminStatus } from './utils/sync-admin-status';
+import { initializeMetrics, shutdownMetrics, botUptime, databaseConnectionStatus, valkeyConnectionStatus } from './monitoring/metrics';
+import { initHealthRecorder } from './utils/health-recorder';
 
 (async function main() {
   const { botToken, handlerTimeout, maxRetries, databaseUrl, ollamaEnabled } = process.env;
@@ -37,11 +39,12 @@ import { syncAdminStatus } from './utils/sync-admin-status';
         const client = new Client({ connectionString: databaseUrl });
         await client.connect();
         const db = drizzle(client, { schema });
-        console.log('[💽  DB] Initial connection successful');
+        databaseConnectionStatus.set(1);
         return { client, db };
       } catch (error) {
         retryCount++;
-        console.error(`[💽  DB] Connection attempt ${retryCount} failed:`, error.message);
+        databaseConnectionStatus.set(0);
+        console.error(`[💽  DB] Connection attempt ${retryCount} failed:`, error instanceof Error ? error.message : String(error));
         if (retryCount < maxDbRetries) {
           console.log(`[🔄  DB] Retrying in 5 seconds... (attempt ${retryCount}/${maxDbRetries})`);
           await new Promise(resolve => setTimeout(resolve, 5000));
@@ -85,12 +88,12 @@ import { syncAdminStatus } from './utils/sync-admin-status';
             loadedCount++;
           }
         } catch (error) {
-          console.error(`Failed to load command file ${file}: ${error.message}`);
+          console.error(`Failed to load command file ${file}: ${error instanceof Error ? error.message : String(error)}`);
         }
       });
       console.log(`[🤖 BOT] Loaded ${loadedCount} commands.`);
     } catch (error) {
-      console.error(`Failed to read commands directory: ${error.message}`);
+      console.error(`Failed to read commands directory: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -99,9 +102,11 @@ import { syncAdminStatus } from './utils/sync-admin-status';
       const botInfo = await bot.telegram.getMe();
       console.log(`${botInfo.first_name} is running...`);
       await bot.launch();
+      botUptime.set(1);
       restartCount = 0;
     } catch (error) {
-      console.error('Failed to start bot:', error.message);
+      console.error('Failed to start bot:', error instanceof Error ? error.message : String(error));
+      botUptime.set(0);
       if (restartCount < maxRetriesNum) {
         restartCount++;
         console.log(`Retrying to start bot... Attempt ${restartCount}`);
@@ -115,6 +120,11 @@ import { syncAdminStatus } from './utils/sync-admin-status';
 
   function handleShutdown(signal: string) {
     console.log(`Received ${signal}. Stopping bot...`);
+    const healthRecorder = require('./utils/health-recorder').getHealthRecorder();
+    if (healthRecorder) {
+      healthRecorder.stop();
+    }
+    shutdownMetrics();
     bot.stop(signal);
     process.exit(0);
   }
@@ -123,8 +133,10 @@ import { syncAdminStatus } from './utils/sync-admin-status';
   process.once('SIGTERM', () => handleShutdown('SIGTERM'));
 
   process.on('uncaughtException', (error) => {
-    console.error('Uncaught Exception:', error.message);
-    console.error(error.stack);
+    console.error('Uncaught Exception:', error instanceof Error ? error.message : String(error));
+    if (error instanceof Error && error.stack) {
+      console.error(error.stack);
+    }
   });
 
   process.on('unhandledRejection', (reason, promise) => {
@@ -155,11 +167,13 @@ import { syncAdminStatus } from './utils/sync-admin-status';
         await client.connect();
         await client.ping();
         console.log('[🟢  VK] Connected to Valkey');
+        valkeyConnectionStatus.set(1);
         await client.destroy();
         break;
       } catch (err) {
         retryCount++;
-        console.error(`[🔴  VK] Connection attempt ${retryCount} failed:`, err.message);
+        valkeyConnectionStatus.set(0);
+        console.error(`[🔴  VK] Connection attempt ${retryCount} failed:`, err instanceof Error ? err.message : String(err));
         if (retryCount < maxValkeyRetries) {
           console.log(`[🔄  VK] Retrying in 5 seconds... (attempt ${retryCount}/${maxValkeyRetries})`);
           await new Promise(resolve => setTimeout(resolve, 5000));
@@ -180,7 +194,7 @@ import { syncAdminStatus } from './utils/sync-admin-status';
         console.log(`[💽  DB] Connected [${userCount} users]`);
         break;
       } catch (err) {
-        console.error('[💽  DB] Failed to connect:', err.message);
+        console.error('[💽  DB] Failed to connect:', err instanceof Error ? err.message : String(err));
         console.log('[🔄  DB] Retrying in 5 seconds...');
         await new Promise(resolve => setTimeout(resolve, 5000));
       }
@@ -188,6 +202,7 @@ import { syncAdminStatus } from './utils/sync-admin-status';
   }
 
   await testValkeyConnection();
+  await initializeMetrics();
   await testDbConnection();
   await syncAdminStatus(db);
 
@@ -201,5 +216,17 @@ import { syncAdminStatus } from './utils/sync-admin-status';
 
   loadCommands();
   startServer();
+
+  const healthRecorder = initHealthRecorder(db, 5);
+  healthRecorder.start(true);
+
   startBot();
+
+  setTimeout(async () => {
+    try {
+      await healthRecorder.recordHealth();
+    } catch (error) {
+      console.error('[!] Failed to record initial health state:', error);
+    }
+  }, 2000);
 })();
