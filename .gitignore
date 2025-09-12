@@ -160,3 +160,14 @@ db/
 
 # JetBrains
 .idea/
+
+# macOS
+.DS_Store
+
+# prometheus
+prometheus/
+prometheus.yml
+!examples/prometheus.yml
+
+# grafana
+grafana/

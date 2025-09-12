@@ -1,8 +1,8 @@
 import { docs } from '@/.source';
 import { loader } from 'fumadocs-core/source';
 import { icons } from 'lucide-react';
-import { SiDocker, SiYoutube } from 'react-icons/si';
-import { TbSparkles, TbServer } from "react-icons/tb";
+import { SiDocker, SiPrometheus, SiYoutube } from 'react-icons/si';
+import { TbSparkles, TbServer, TbDashboard } from "react-icons/tb";
 import { createElement, ElementType } from 'react';
 
 const customIcons: Record<string, ElementType> = {
@@ -10,6 +10,8 @@ const customIcons: Record<string, ElementType> = {
   Sparkles: TbSparkles,
   Youtube: SiYoutube,
   Server: TbServer,
+  Dashboard: TbDashboard,
+  Prometheus: SiPrometheus,
 };
 
 export const source = loader({

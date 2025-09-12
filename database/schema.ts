@@ -90,3 +90,52 @@ export const commandUsageTable = pgTable("command_usage", {
   index("idx_command_usage_command_name").on(table.commandName),
   index("idx_command_usage_created_at").on(table.createdAt),
 ]);
+
+export const botErrorsTable = pgTable("bot_errors", {
+  id: varchar({ length: 255 }).notNull().primaryKey(),
+  errorType: varchar({ length: 100 }).notNull(),
+  errorMessage: varchar({ length: 2000 }).notNull(),
+  errorStack: varchar(),
+  commandName: varchar({ length: 255 }),
+  chatType: varchar({ length: 50 }),
+  severity: varchar({ length: 20 }).notNull().default('error'),
+  resolved: boolean().notNull().default(false),
+  createdAt: timestamp().notNull().defaultNow(),
+  resolvedAt: timestamp(),
+}, (table) => [
+  index("idx_bot_errors_created_at").on(table.createdAt),
+  index("idx_bot_errors_error_type").on(table.errorType),
+  index("idx_bot_errors_resolved").on(table.resolved),
+  index("idx_bot_errors_severity").on(table.severity),
+]);
+
+export const telegramErrorsTable = pgTable("telegram_errors", {
+  id: varchar({ length: 255 }).notNull().primaryKey(),
+  errorCode: integer(),
+  errorDescription: varchar({ length: 1000 }).notNull(),
+  method: varchar({ length: 100 }),
+  parameters: varchar(),
+  retryCount: integer().notNull().default(0),
+  resolved: boolean().notNull().default(false),
+  createdAt: timestamp().notNull().defaultNow(),
+  lastRetryAt: timestamp(),
+}, (table) => [
+  index("idx_telegram_errors_created_at").on(table.createdAt),
+  index("idx_telegram_errors_error_code").on(table.errorCode),
+  index("idx_telegram_errors_resolved").on(table.resolved),
+]);
+
+export const systemHealthTable = pgTable("system_health", {
+  id: varchar({ length: 255 }).notNull().primaryKey(),
+  timestamp: timestamp().notNull().defaultNow(),
+  botUptime: boolean().notNull(),
+  databaseConnected: boolean().notNull(),
+  valkeyConnected: boolean().notNull(),
+  memoryUsageBytes: integer(),
+  activeUsers24h: integer(),
+  commandsLastHour: integer(),
+  errorRate: real(),
+  avgResponseTime: integer(),
+}, (table) => [
+  index("idx_system_health_timestamp").on(table.timestamp),
+]);

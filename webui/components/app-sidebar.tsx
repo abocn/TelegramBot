@@ -9,8 +9,9 @@ import {
   LogOut,
   Command,
   Briefcase,
-  BarChart3,
   Book,
+  Shield,
+  AlertTriangle,
 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
@@ -163,9 +164,17 @@ export function AppSidebar() {
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <Link href="/admin" onClick={handleMenuItemClick}>
-                      <BarChart3 />
-                      <span>{t('navigation.dashboard')}</span>
+                    <Link href="/admin/monitoring" onClick={handleMenuItemClick}>
+                      <Shield />
+                      <span>Monitoring</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <Link href="/admin/errors" onClick={handleMenuItemClick}>
+                      <AlertTriangle />
+                      <span>Error Review</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

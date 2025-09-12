@@ -30,7 +30,7 @@ export async function syncAdminStatus(db: NodePgDatabase<typeof schema>) {
         .where(eq(schema.usersTable.telegramId, userId));
     }
 
-    console.log(`[INFO] Admin status synced for ${adminIds.length} admins`);
+    console.log(`[👥 ADM] Admin status synced for ${adminIds.length} admins`);
   } catch (error) {
     console.error('[ERROR] Failed to sync admin status:', error);
   }

@@ -1,0 +1,19 @@
+---
+title: Prometheus
+description: Different methods of monitoring Kowalski
+icon: Prometheus
+---
+
+You can monitor Kowalski's backend easily though a variety of ways. The best way to monitor Kowalski is through the admin dashboard, though we provide a Prometheus-compatible metrics endpoint for those looking to use tools like [Grafana](https://grafana.com/grafana/).
+
+## Metrics Endpoint
+
+The /metrics endpoint runs on port `3030`, and is bundled as a part of the Telegram bot. Its code lives in the `telegram/api` directory.
+
+You can use this data to build, for instance, a custom Grafana dashboard. Or you could even make your own monitoring dashboard! The choice is really yours.
+
+## Grafana Dashboard
+
+We've included a sample Grafana dashboard in the `examples` directory of the source, which can be a great way to get started with monitoring Kowalski with Prometheus. You can find it named as `examples/monitoring/grafana.json`, and import through the Grafana UI.
+
+An example `docker-compose.monitoring.yml` file has also been provided for a quick-start of Kowalski, Prometheus, and Grafana.

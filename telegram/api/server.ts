@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Client } from "pg";
 import * as schema from "../../database/schema";
@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 import { twoFactorTable, usersTable } from "../../database/schema";
 import { Telegraf } from "telegraf";
 import { getStrings } from "../plugins/checklang";
+import { register } from "../monitoring/metrics";
 
 const client = new Client({ connectionString: process.env.databaseUrl });
 const db = drizzle(client, { schema });
@@ -24,11 +25,28 @@ export async function startServer() {
 
   app.use(express.json());
 
-  app.get("/health", (res) => {
+  app.get("/health", (_req: Request, res: Response) => {
     res.send("OK");
   });
 
-  app.post("/2fa/get", async (req, res) => {
+  app.get("/metrics", async (_req: Request, res: Response) => {
+    try {
+      const { performLiveHealthCheck } = require('../utils/real-time-health');
+      try {
+        await performLiveHealthCheck();
+      } catch (error) {
+        console.error("[🌐 API] Error performing health checks:", error);
+      }
+
+      res.set('Content-Type', register.contentType);
+      res.end(await register.metrics());
+    } catch (error) {
+      console.error("[🌐 API] Error generating metrics:", error);
+      res.status(500).send("Error generating metrics");
+    }
+  });
+
+  app.post("/2fa/get", async (req: Request, res: Response) => {
     try {
       const { userId } = req.body;
 
