@@ -65,7 +65,7 @@ export default function About() {
               </Link>
             </Button>
             <Button variant="outline" size="lg" className="min-w-32" asChild>
-              <Link href="https://t.me/KowalskiNodeBot" target="_blank">
+              <Link href="https://t.me/kowalski4tgbot" target="_blank">
                 <RiTelegram2Line />
                 {t('about.tryOnTelegram')}
               </Link>

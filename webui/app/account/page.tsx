@@ -458,7 +458,7 @@ export default function AccountPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 lg:gap-20 p-4 sm:p-6 lg:p-8 rounded-xl bg-gradient-to-r from-muted/30 to-muted/60 border border-border/50 shadow-lg backdrop-blur-sm">
             <h3 className="font-semibold text-base sm:text-lg lg:text-xl text-center sm:text-left flex-1 sm:flex-none">{t('account.readyToStart')}</h3>
             <Button asChild size="lg" className="shrink-0 shadow-md hover:shadow-lg transition-all duration-200 w-full sm:w-auto">
-              <a href="https://t.me/KowalskiNodeBot" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
+              <a href="https://t.me/kowalski4tgbot" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
                 <RiTelegram2Line className="w-4 h-4 sm:w-5 sm:h-5" />
                 <span className="text-sm sm:text-base">{t('account.openOnTelegram')}</span>
               </a>

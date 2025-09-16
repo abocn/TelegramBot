@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
-      const botUsername = process.env.botUsername || "KowalskiNodeBot";
+      const botUsername = process.env.botUsername || "kowalski4tgbot";
       return NextResponse.json({ success: false, error: `Please DM @${botUsername} before signing in.` }, { status: 404 });
     }
 

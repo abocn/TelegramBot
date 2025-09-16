@@ -1,6 +1,6 @@
 # Terms of Use
 
-By using Kowalski ([@KowalskiNodeBot](https://t.me/KowalskiNodeBot), you agree to the terms outlined below. If you do not agree with any of these terms, please discontinue use of the bot immediately.
+By using Kowalski ([@kowalski4tgbot](https://t.me/kowalski4tgbot), you agree to the terms outlined below. If you do not agree with any of these terms, please discontinue use of the bot immediately.
 
 ## 1. Blocklist System
 
@@ -10,7 +10,7 @@ Additionally, Kowalski integrates with the SpamWatch API to automatically deny a
 
 ## 2. Source Code
 
-The bot's source code is publicly available. You can review it at the Kowalski GitHub Repository:  
+The bot's source code is publicly available. You can review it at the Kowalski GitHub Repository:
 [https://github.com/abocn/TelegramBot](https://github.com/abocn/TelegramBot)
 
 ## 3. Changes to These Terms

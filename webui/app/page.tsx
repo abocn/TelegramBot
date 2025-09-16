@@ -49,7 +49,7 @@ export default function Home() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
             <Button size="lg" className="min-w-32" asChild>
-              <Link href="https://t.me/KowalskiNodeBot" target="_blank" rel="noopener noreferrer">
+              <Link href="https://t.me/kowalski4tgbot" target="_blank" rel="noopener noreferrer">
                 <RiTelegram2Line />
                 {t('home.tryOnTelegram')}
               </Link>
