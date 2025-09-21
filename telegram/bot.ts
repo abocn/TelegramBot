@@ -101,7 +101,9 @@ import { initHealthRecorder } from './utils/health-recorder';
     try {
       const botInfo = await bot.telegram.getMe();
       console.log(`${botInfo.first_name} is running...`);
-      await bot.launch();
+      await bot.launch({
+        dropPendingUpdates: true
+      });
       botUptime.set(1);
       restartCount = 0;
     } catch (error) {
