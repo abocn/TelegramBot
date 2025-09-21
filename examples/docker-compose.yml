@@ -14,7 +14,7 @@ services:
       - postgres
     restart: always
   postgres:
-    image: postgres:17
+    image: image: postgres:17-bookworm
     container_name: kowalski-postgres
     volumes:
       - ./db:/var/lib/postgresql/data
