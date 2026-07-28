@@ -5,7 +5,7 @@
     "serve:docs": "bun run serve-docs.ts"
   },
   "dependencies": {
-    "@dotenvx/dotenvx": "^1.49.0",
+    "@dotenvx/dotenvx": "^2.19.0",
     "@types/bun": "^1.2.21",
     "@types/express": "^5.0.3",
     "axios": "^1.12.0",
