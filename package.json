@@ -14,7 +14,7 @@
     "express": "^5.1.0",
     "markdown-escape": "^2.0.0",
     "nanoid": "^5.1.5",
-    "node-html-parser": "^7.0.1",
+    "node-html-parser": "^9.0.0",
     "nodemon": "^3.1.10",
     "pg": "^8.16.3",
     "prom-client": "^15.1.3",
